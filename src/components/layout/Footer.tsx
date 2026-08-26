@@ -1,104 +1,96 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { Shield, Lock, EyeOff } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
+import { ShieldCheck, AlertCircle } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer
-      style={{
-        marginTop: 'auto',
-        backgroundColor: 'var(--bg-secondary)',
-        borderTop: '1px solid var(--border-subtle)',
-        padding: '3rem 0 2rem 0',
-      }}
-    >
-      <div className="container">
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '2rem',
-            marginBottom: '2.5rem',
-          }}
-        >
-          {/* Col 1 */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-              <span style={{ fontWeight: 800, fontSize: '1.2rem', color: '#fff' }}>
-                PORTAL<span style={{ color: 'var(--accent-gold)' }}>NACIONAL</span>
-              </span>
-              <Badge variant="ruby">18+</Badge>
-            </div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-              Plataforma tecnológica brasileira destinada exclusivamente à divulgação de anúncios e perfis de profissionais adultos independentes.
-            </p>
-          </div>
-
-          {/* Col 2 */}
-          <div>
-            <h4 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Navegação</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.875rem' }}>
-              <Link href="/" style={{ color: 'var(--text-secondary)' }}>Início / Feed</Link>
-              <Link href="/advertiser" style={{ color: 'var(--text-secondary)' }}>Quero Anunciar</Link>
-              <Link href="/account" style={{ color: 'var(--text-secondary)' }}>Área do Usuário</Link>
-              <Link href="/login" style={{ color: 'var(--text-secondary)' }}>Acessar Conta</Link>
-            </div>
-          </div>
-
-          {/* Col 3 */}
-          <div>
-            <h4 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Segurança & Legal</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.875rem' }}>
-              <span style={{ color: 'var(--text-secondary)' }}>Termos de Serviço</span>
-              <span style={{ color: 'var(--text-secondary)' }}>Política de Privacidade</span>
-              <span style={{ color: 'var(--text-secondary)' }}>Canal de Denúncias 24h</span>
-              <span style={{ color: 'var(--text-secondary)' }}>Conformidade Legal 18+</span>
-            </div>
-          </div>
-
-          {/* Col 4 */}
-          <div>
-            <h4 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Blindagem Técnica</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Shield size={16} color="var(--accent-gold)" />
-                <span>Supabase PostgreSQL + RLS Ativo</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Lock size={16} color="var(--color-success)" />
-                <span>Criptografia de Ponta a Ponta</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <EyeOff size={16} color="var(--accent-ruby)" />
-                <span>Storage Privado de Documentos</span>
-              </div>
-            </div>
+    <footer className="footer">
+      <div className="container footer-container">
+        {/* Brand & 18+ Warning */}
+        <div className="footer-brand">
+          <Link href="/" className="logo-brand">
+            <span className="logo-accent">PORTAL</span>
+            <span className="logo-highlight">18+</span>
+          </Link>
+          <p className="footer-tagline">
+            Plataforma nacional de entretenimento adulto e divulgação de profissionais independentes.
+          </p>
+          <div className="footer-compliance-badge">
+            <ShieldCheck size={16} color="var(--accent-gold)" />
+            <span>Conformidade com a legislação brasileira • Proteção de dados e maioridade estrita.</span>
           </div>
         </div>
 
-        <hr style={{ borderColor: 'var(--border-subtle)', margin: '1.5rem 0' }} />
+        {/* 5 Columns (Requirement 19) */}
+        <div className="footer-links-grid">
+          {/* Column 1: Portal */}
+          <div className="footer-column">
+            <h4 className="footer-heading">Portal</h4>
+            <ul className="footer-list">
+              <li><Link href="/explorar" className="footer-link">Explorar</Link></li>
+              <li><Link href="/explorar" className="footer-link">Categorias</Link></li>
+              <li><Link href="/explorar" className="footer-link">Cidades</Link></li>
+              <li><Link href="/advertiser/start" className="footer-link">Anunciar</Link></li>
+            </ul>
+          </div>
 
-        {/* Legal Warning Notice */}
-        <div
-          style={{
-            background: 'rgba(255, 45, 85, 0.05)',
-            border: '1px solid rgba(255, 45, 85, 0.2)',
-            borderRadius: 'var(--radius-md)',
-            padding: '1rem 1.25rem',
-            fontSize: '0.75rem',
-            color: 'var(--text-muted)',
-            lineHeight: '1.5',
-            textAlign: 'center',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <strong>AVISO DE MAIORIDADE E RESPONSABILIDADE:</strong> O acesso a este portal é estritamente proibido a menores de 18 anos. Todos os anunciantes são profissionais independentes com confirmação de maioridade e termos legais. Tolerância zero contra exploração ou abusos.
+          {/* Column 2: Conta */}
+          <div className="footer-column">
+            <h4 className="footer-heading">Conta</h4>
+            <ul className="footer-list">
+              <li><Link href="/login" className="footer-link">Entrar</Link></li>
+              <li><Link href="/register" className="footer-link">Criar conta</Link></li>
+              <li><Link href="/account" className="footer-link">Minha conta</Link></li>
+              <li><Link href="/account/favorites" className="footer-link">Favoritos</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 3: Segurança */}
+          <div className="footer-column">
+            <h4 className="footer-heading">Segurança</h4>
+            <ul className="footer-list">
+              <li><Link href="/account/privacy" className="footer-link">Central de Segurança</Link></li>
+              <li><Link href="/account/privacy" className="footer-link">Denunciar</Link></li>
+              <li><Link href="/account/privacy" className="footer-link">Privacidade</Link></li>
+              <li><Link href="/account/privacy" className="footer-link">LGPD</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 4: Legal */}
+          <div className="footer-column">
+            <h4 className="footer-heading">Legal</h4>
+            <ul className="footer-list">
+              <li><Link href="/account/privacy" className="footer-link">Termos de Uso</Link></li>
+              <li><Link href="/account/privacy" className="footer-link">Política de Privacidade</Link></li>
+              <li><Link href="/account/privacy" className="footer-link">Cookies</Link></li>
+              <li><Link href="/account/privacy" className="footer-link">Diretrizes da Comunidade</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 5: Institucional */}
+          <div className="footer-column">
+            <h4 className="footer-heading">Institucional</h4>
+            <ul className="footer-list">
+              <li><Link href="/explorar" className="footer-link">Sobre o Portal</Link></li>
+              <li><Link href="/account/privacy" className="footer-link">Ajuda & Suporte</Link></li>
+              <li><Link href="/advertiser/start" className="footer-link">Contato</Link></li>
+            </ul>
+          </div>
         </div>
+      </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', gap: '1rem' }}>
-          <div>© {new Date().getFullYear()} Portal Nacional 18+. Todos os direitos reservados.</div>
-          <div>Tecnologia: Next.js + React + Supabase Engine</div>
+      {/* Bottom Bar with 18+ Notice */}
+      <div className="footer-bottom">
+        <div className="container footer-bottom-container">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-ruby)', fontWeight: 600 }}>
+            <AlertCircle size={16} />
+            <span>Conteúdo destinado exclusivamente a maiores de 18 anos. Proibida a entrada de menores.</span>
+          </div>
+          <div className="footer-copyright">
+            © {new Date().getFullYear()} Portal Nacional de Entretenimento Adulto. Todos os direitos reservados.
+          </div>
         </div>
       </div>
     </footer>

@@ -1,10 +1,26 @@
 import { createClient } from '@/lib/supabase/client';
-import { Database } from '@/types/database.types';
 import { AdvertiserMedia } from '@/types/app.types';
 
-type MediaInsert = Database['public']['Tables']['advertiser_media']['Insert'];
-
 export const mediaService = {
+  async getApprovedPublicMedia(advertiserId: string): Promise<AdvertiserMedia[]> {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('advertiser_media')
+      .select('*')
+      .eq('advertiser_id', advertiserId)
+      .eq('moderation_status', 'approved')
+      .eq('visibility', 'public')
+      .is('deleted_at', null)
+      .order('position', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching approved media:', error);
+      return [];
+    }
+    return (data as AdvertiserMedia[]) || [];
+  },
+
   async getAdvertiserMedia(advertiserId: string): Promise<AdvertiserMedia[]> {
     const supabase = createClient();
     const { data, error } = await supabase
@@ -15,7 +31,7 @@ export const mediaService = {
       .order('position', { ascending: true });
 
     if (error) {
-      console.error('Error fetching media:', error);
+      console.error('Error fetching advertiser media:', error);
       return [];
     }
     return (data as AdvertiserMedia[]) || [];
@@ -24,14 +40,14 @@ export const mediaService = {
   async uploadMedia(
     advertiserId: string,
     file: File,
-    mediaType: 'image' | 'video'
+    mediaType: 'image' | 'video' = 'image'
   ): Promise<{ success: boolean; data?: AdvertiserMedia; error?: string }> {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: 'Usuário não autenticado.' };
 
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+    const fileExt = file.name.split('.').pop() || 'jpg';
+    const filePath = `${advertiserId}/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
 
     // Upload to advertiser-media bucket
     const { error: uploadError } = await supabase.storage
@@ -45,25 +61,27 @@ export const mediaService = {
       return { success: false, error: uploadError.message };
     }
 
-    const insertPayload: MediaInsert = {
-      advertiser_id: advertiserId,
-      media_type: mediaType,
-      storage_path: filePath,
-      moderation_status: 'pending',
-      visibility: 'public',
-    };
+    const { data: { publicUrl } } = supabase.storage
+      .from('advertiser-media')
+      .getPublicUrl(filePath);
 
-    // Insert database record (will automatically have moderation_status = 'pending' via trigger)
+    // Insert record with default 'pending' moderation status
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error: dbError } = await (supabase.from('advertiser_media') as any)
-      .insert(insertPayload)
+    const { data, error } = await (supabase.from('advertiser_media') as any)
+      .insert({
+        advertiser_id: advertiserId,
+        media_type: mediaType,
+        storage_path: publicUrl,
+        position: 0,
+        visibility: 'public',
+        moderation_status: 'pending',
+      })
       .select()
       .single();
 
-    if (dbError) {
-      return { success: false, error: dbError.message };
+    if (error) {
+      return { success: false, error: error.message };
     }
-
     return { success: true, data: data as AdvertiserMedia };
   },
 

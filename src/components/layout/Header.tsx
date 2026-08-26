@@ -2,211 +2,224 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Sheet } from '@/components/ui/Sheet';
 import { Avatar } from '@/components/ui/Avatar';
-import { Dropdown } from '@/components/ui/Dropdown';
-import { Shield, Sparkles, User, LogOut, LayoutDashboard, Megaphone, Menu } from 'lucide-react';
+import { Sheet } from '@/components/ui/Sheet';
+import { 
+  Sparkles, 
+  Menu, 
+  X, 
+  User, 
+  Megaphone, 
+  LogOut, 
+  Search, 
+  ShieldCheck, 
+  Heart, 
+  MapPin, 
+  Tag, 
+  Home 
+} from 'lucide-react';
 
 export function Header() {
+  const pathname = usePathname();
   const { user, profile, isAdvertiser, isAdmin, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const userMenuItems = [
-    {
-      label: 'Minha Conta',
-      icon: <User size={16} />,
-      onClick: () => {
-        window.location.href = '/account';
-      },
-    },
-    ...(isAdvertiser || isAdmin
-      ? [
-          {
-            label: 'Painel do Anunciante',
-            icon: <Megaphone size={16} />,
-            onClick: () => {
-              window.location.href = '/advertiser';
-            },
-          },
-        ]
-      : []),
-    ...(isAdmin
-      ? [
-          {
-            label: 'Administração',
-            icon: <LayoutDashboard size={16} />,
-            onClick: () => {
-              window.location.href = '/admin';
-            },
-          },
-        ]
-      : []),
-    {
-      label: 'Sair da Conta',
-      icon: <LogOut size={16} />,
-      variant: 'danger' as const,
-      onClick: () => signOut(),
-    },
+  const navLinks = [
+    { href: '/explorar', label: 'Explorar', icon: <Search size={18} /> },
+    { href: '/explorar?categoria=acompanhantes', label: 'Categorias', icon: <Tag size={18} /> },
+    { href: '/explorar', label: 'Cidades', icon: <MapPin size={18} /> },
+    { href: '/account/privacy', label: 'Segurança', icon: <ShieldCheck size={18} /> },
   ];
 
+  const handleLinkClick = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        backgroundColor: 'rgba(10, 12, 16, 0.85)',
-        backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid var(--border-subtle)',
-      }}
-    >
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '72px' }}>
-        {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-ruby) 100%)',
-              display: 'grid',
-              placeItems: 'center',
-              fontWeight: 800,
-              fontSize: '1.2rem',
-              color: '#fff',
-              boxShadow: 'var(--shadow-glow-gold)',
-            }}
-          >
-            P18
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span style={{ fontWeight: 800, fontSize: '1.2rem', letterSpacing: '-0.02em', color: '#fff' }}>
-                PORTAL<span style={{ color: 'var(--accent-gold)' }}>NACIONAL</span>
-              </span>
-              <Badge variant="ruby">18+</Badge>
-            </div>
-            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Anúncios Independentes
-            </div>
-          </div>
-        </Link>
+    <>
+      <header className="header">
+        <div className="container header-container">
+          {/* Brand Logo */}
+          <Link href="/" className="logo-brand">
+            <span className="logo-accent">PORTAL</span>
+            <span className="logo-highlight">18+</span>
+          </Link>
 
-        {/* Desktop Navigation */}
-        <nav style={{ display: 'none', alignItems: 'center', gap: '1.5rem' }} className="desktop-nav">
-          <Link href="/" style={{ color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.95rem' }}>
-            Explorar
-          </Link>
-          <Link href="/account/profile" style={{ color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.95rem' }}>
-            Cidades
-          </Link>
-          <Link href="/advertiser" style={{ color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.95rem' }}>
-            Anunciar
-          </Link>
-        </nav>
+          {/* Desktop Nav */}
+          <nav className="nav-desktop">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href + link.label}
+                  href={link.href}
+                  className={`nav-link ${isActive ? 'active' : ''}`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
 
-        {/* Auth / CTA */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {user ? (
-            <Dropdown
-              trigger={
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.3rem', borderRadius: 'var(--radius-full)', background: 'var(--bg-tertiary)', border: '1px solid var(--border-subtle)' }}>
-                  <Avatar fallback={profile?.display_name || user.email || 'U'} size="sm" />
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, paddingRight: '0.5rem', color: 'var(--text-primary)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {profile?.display_name || user.email?.split('@')[0]}
-                  </span>
-                </div>
-              }
-              items={userMenuItems}
-            />
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <Link href="/login">
-                <Button variant="ghost" size="sm">
-                  Entrar
+          {/* Desktop Actions */}
+          <div className="header-actions">
+            {!user ? (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    Entrar
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button variant="secondary" size="sm">
+                    Criar conta
+                  </Button>
+                </Link>
+                <Link href="/advertiser/start">
+                  <Button variant="ruby" size="sm" leftIcon={<Megaphone size={14} />}>
+                    Anunciar
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                {isAdvertiser ? (
+                  <Link href="/advertiser">
+                    <Button variant="primary" size="sm" leftIcon={<Megaphone size={14} />}>
+                      Painel do Anunciante
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/advertiser/start">
+                    <Button variant="ruby" size="sm" leftIcon={<Megaphone size={14} />}>
+                      Quero Anunciar
+                    </Button>
+                  </Link>
+                )}
+
+                <Link href="/account" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+                  <Avatar
+                    src={profile?.avatar_path}
+                    fallback={profile?.display_name || user.email || 'U'}
+                    size="sm"
+                  />
+                </Link>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => signOut()}
+                  aria-label="Sair da conta"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  <LogOut size={16} />
                 </Button>
-              </Link>
-              <Link href="/register">
-                <Button variant="primary" size="sm" leftIcon={<Sparkles size={14} />}>
-                  Cadastrar
-                </Button>
-              </Link>
-            </div>
-          )}
+              </div>
+            )}
 
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setMobileMenuOpen(true)}
-            className="btn btn-ghost btn-sm mobile-menu-btn"
-            style={{ padding: '0.5rem' }}
-            aria-label="Abrir menu"
-          >
-            <Menu size={20} />
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Drawer */}
-      <Sheet isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} title="Menu Principal">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <Link href="/" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-            Início / Explorar
-          </Link>
-          <Link href="/advertiser" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--accent-gold)' }}>
-            Área do Anunciante
-          </Link>
-          <Link href="/account" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-            Minha Conta
-          </Link>
-          {isAdmin && (
-            <Link href="/admin" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--accent-ruby)' }}>
-              Painel Administrativo
-            </Link>
-          )}
-
-          <hr style={{ borderColor: 'var(--border-subtle)', margin: '1rem 0' }} />
-
-          {user ? (
-            <Button
-              variant="ruby"
-              fullWidth
-              onClick={() => {
-                signOut();
-                setMobileMenuOpen(false);
+            {/* Mobile Hamburger Button */}
+            <button
+              type="button"
+              className="btn-mobile-toggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Menu principal"
+              style={{
+                display: 'none',
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                padding: '0.5rem',
               }}
             >
-              Encerrar Sessão
-            </Button>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="secondary" fullWidth>
-                  Entrar
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Drawer Sheet */}
+      <Sheet isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} title="Menu do Portal">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '0.5rem 0' }}>
+          <Link href="/" className="mobile-nav-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0', color: 'var(--text-primary)', textDecoration: 'none', borderBottom: '1px solid var(--border-subtle)' }}>
+            <Home size={18} color="var(--accent-gold)" /> Início
+          </Link>
+          <Link href="/explorar" className="mobile-nav-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0', color: 'var(--text-primary)', textDecoration: 'none', borderBottom: '1px solid var(--border-subtle)' }}>
+            <Search size={18} color="var(--accent-gold)" /> Explorar Perfis
+          </Link>
+          <Link href="/explorar" className="mobile-nav-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0', color: 'var(--text-primary)', textDecoration: 'none', borderBottom: '1px solid var(--border-subtle)' }}>
+            <Tag size={18} color="var(--accent-gold)" /> Categorias
+          </Link>
+          <Link href="/explorar" className="mobile-nav-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0', color: 'var(--text-primary)', textDecoration: 'none', borderBottom: '1px solid var(--border-subtle)' }}>
+            <MapPin size={18} color="var(--accent-gold)" /> Cidades
+          </Link>
+          <Link href="/account/favorites" className="mobile-nav-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0', color: 'var(--text-primary)', textDecoration: 'none', borderBottom: '1px solid var(--border-subtle)' }}>
+            <Heart size={18} color="var(--accent-ruby)" /> Favoritos
+          </Link>
+          <Link href="/account/privacy" className="mobile-nav-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 0', color: 'var(--text-primary)', textDecoration: 'none', borderBottom: '1px solid var(--border-subtle)' }}>
+            <ShieldCheck size={18} color="var(--color-success)" /> Segurança & Privacidade
+          </Link>
+
+          <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {!user ? (
+              <>
+                <Link href="/login" onClick={handleLinkClick}>
+                  <Button variant="secondary" fullWidth size="md">
+                    Entrar
+                  </Button>
+                </Link>
+                <Link href="/register" onClick={handleLinkClick}>
+                  <Button variant="primary" fullWidth size="md">
+                    Criar Conta
+                  </Button>
+                </Link>
+                <Link href="/advertiser/start" onClick={handleLinkClick}>
+                  <Button variant="ruby" fullWidth size="md" leftIcon={<Megaphone size={16} />}>
+                    Quero Anunciar
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/account" onClick={handleLinkClick}>
+                  <Button variant="secondary" fullWidth size="md" leftIcon={<User size={16} />}>
+                    Minha Conta
+                  </Button>
+                </Link>
+                {isAdvertiser ? (
+                  <Link href="/advertiser" onClick={handleLinkClick}>
+                    <Button variant="primary" fullWidth size="md" leftIcon={<Megaphone size={16} />}>
+                      Painel do Anunciante
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/advertiser/start" onClick={handleLinkClick}>
+                    <Button variant="ruby" fullWidth size="md" leftIcon={<Megaphone size={16} />}>
+                      Quero Anunciar
+                    </Button>
+                  </Link>
+                )}
+                <Button
+                  variant="ghost"
+                  fullWidth
+                  size="md"
+                  onClick={() => {
+                    signOut();
+                    handleLinkClick();
+                  }}
+                  leftIcon={<LogOut size={16} />}
+                  style={{ color: 'var(--accent-ruby)', marginTop: '0.5rem' }}
+                >
+                  Encerrar Sessão
                 </Button>
-              </Link>
-              <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="primary" fullWidth>
-                  Criar Conta 18+
-                </Button>
-              </Link>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </Sheet>
-
-      <style jsx>{`
-        @media (min-width: 768px) {
-          .desktop-nav {
-            display: flex !important;
-          }
-          .mobile-menu-btn {
-            display: none !important;
-          }
-        }
-      `}</style>
-    </header>
+    </>
   );
 }

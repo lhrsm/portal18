@@ -7,7 +7,7 @@ export type Json =
   | Json[];
 
 export type AccountType = 'user' | 'advertiser' | 'moderator' | 'admin' | 'super_admin';
-export type ProfileStatus = 'draft' | 'pending_review' | 'approved' | 'rejected' | 'suspended';
+export type ProfileStatus = 'draft' | 'pending_review' | 'approved' | 'active' | 'rejected' | 'suspended' | 'archived';
 export type VerificationStatus = 'not_started' | 'pending' | 'processing' | 'verified' | 'rejected' | 'requires_review' | 'expired';
 export type Visibility = 'public' | 'unlisted' | 'hidden' | 'private';
 export type MediaType = 'image' | 'video';
@@ -534,9 +534,90 @@ export type Database = {
         };
         Relationships: [];
       };
+      profile_contact_events: {
+        Row: {
+          id: string;
+          advertiser_id: string;
+          contact_type: ContactType;
+          viewer_profile_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          advertiser_id: string;
+          contact_type: ContactType;
+          viewer_profile_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          advertiser_id?: string;
+          contact_type?: ContactType;
+          viewer_profile_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      advertiser_daily_stats: {
+        Row: {
+          id: string;
+          advertiser_id: string;
+          date: string;
+          views: number;
+          contact_clicks: number;
+          favorites_added: number;
+        };
+        Insert: {
+          id?: string;
+          advertiser_id: string;
+          date?: string;
+          views?: number;
+          contact_clicks?: number;
+          favorites_added?: number;
+        };
+        Update: {
+          id?: string;
+          advertiser_id?: string;
+          date?: string;
+          views?: number;
+          contact_clicks?: number;
+          favorites_added?: number;
+        };
+        Relationships: [];
+      };
     };
     Views: {
-      [_ in never]: never;
+      public_advertiser_profiles: {
+        Row: {
+          advertiser_id: string;
+          profile_id: string;
+          slug: string;
+          stage_name: string;
+          headline: string | null;
+          bio: string | null;
+          age: number;
+          gender: string | null;
+          presentation: string | null;
+          state_id: string | null;
+          state_code: string | null;
+          state_name: string | null;
+          state_slug: string | null;
+          city_id: string | null;
+          city_name: string | null;
+          city_slug: string | null;
+          neighborhood: string | null;
+          verification_status: VerificationStatus;
+          profile_status: ProfileStatus;
+          visibility: Visibility;
+          last_active_at: string | null;
+          created_at: string;
+          updated_at: string;
+          primary_photo_url: string | null;
+          approved_media_count: number;
+          category_ids: string[];
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       current_profile_id: {
@@ -566,6 +647,14 @@ export type Database = {
       become_advertiser: {
         Args: { p_terms_accepted: boolean; p_is_adult: boolean };
         Returns: { success: boolean; advertiser_id: string; already_existed: boolean };
+      };
+      increment_profile_view: {
+        Args: { p_advertiser_id: string };
+        Returns: void;
+      };
+      increment_contact_click: {
+        Args: { p_advertiser_id: string; p_contact_type: string };
+        Returns: void;
       };
     };
     Enums: {

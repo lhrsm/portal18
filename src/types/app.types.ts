@@ -14,6 +14,11 @@ export type AuditLog = Database['public']['Tables']['audit_logs']['Row'];
 export type LegalDocument = Database['public']['Tables']['legal_documents']['Row'];
 export type ConsentRecord = Database['public']['Tables']['consent_records']['Row'];
 export type AdvertiserContact = Database['public']['Tables']['advertiser_contacts']['Row'];
+export type ProfileContactEvent = Database['public']['Tables']['profile_contact_events']['Row'];
+export type AdvertiserDailyStats = Database['public']['Tables']['advertiser_daily_stats']['Row'];
+
+// View Type
+export type PublicAdvertiser = Database['public']['Views']['public_advertiser_profiles']['Row'];
 
 export interface UserSession {
   id: string;
@@ -30,4 +35,16 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
+}
+
+export interface ExploreFilters {
+  state?: string;
+  city?: string;
+  category?: string;
+  ageRange?: string; // '18-24', '25-34', '35-44', '45+'
+  verified?: boolean;
+  withPhoto?: boolean;
+  sort?: 'recommended' | 'recent' | 'active';
+  page?: number;
+  limit?: number;
 }
