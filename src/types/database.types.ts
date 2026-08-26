@@ -184,6 +184,10 @@ export type Database = {
           submitted_at: string | null;
           rejection_reason: string | null;
           moderation_notes: string | null;
+          review_feedback: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          published_at: string | null;
           last_active_at: string | null;
           created_at: string;
           updated_at: string;
@@ -210,6 +214,10 @@ export type Database = {
           submitted_at?: string | null;
           rejection_reason?: string | null;
           moderation_notes?: string | null;
+          review_feedback?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          published_at?: string | null;
           last_active_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -236,6 +244,10 @@ export type Database = {
           submitted_at?: string | null;
           rejection_reason?: string | null;
           moderation_notes?: string | null;
+          review_feedback?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          published_at?: string | null;
           last_active_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -343,6 +355,8 @@ export type Database = {
           description: string | null;
           severity: ReportSeverity;
           status: ReportStatus;
+          assigned_to: string | null;
+          resolution_notes: string | null;
           created_at: string;
           reviewed_at: string | null;
           reviewed_by: string | null;
@@ -356,6 +370,8 @@ export type Database = {
           description?: string | null;
           severity?: ReportSeverity;
           status?: ReportStatus;
+          assigned_to?: string | null;
+          resolution_notes?: string | null;
           created_at?: string;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
@@ -369,6 +385,8 @@ export type Database = {
           description?: string | null;
           severity?: ReportSeverity;
           status?: ReportStatus;
+          assigned_to?: string | null;
+          resolution_notes?: string | null;
           created_at?: string;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
@@ -630,6 +648,99 @@ export type Database = {
         };
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          id: string;
+          profile_id: string;
+          type: string;
+          title: string;
+          message: string;
+          read_at: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          type: string;
+          title: string;
+          message: string;
+          read_at?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          type?: string;
+          title?: string;
+          message?: string;
+          read_at?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      moderation_notes: {
+        Row: {
+          id: string;
+          entity_type: string;
+          entity_id: string;
+          author_profile_id: string;
+          note: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          entity_type: string;
+          entity_id: string;
+          author_profile_id: string;
+          note: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          entity_type?: string;
+          entity_id?: string;
+          author_profile_id?: string;
+          note?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      moderation_feedback: {
+        Row: {
+          id: string;
+          advertiser_id: string;
+          entity_type: string;
+          entity_id: string;
+          message: string;
+          created_by: string;
+          resolved_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          advertiser_id: string;
+          entity_type: string;
+          entity_id: string;
+          message: string;
+          created_by: string;
+          resolved_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          advertiser_id?: string;
+          entity_type?: string;
+          entity_id?: string;
+          message?: string;
+          created_by?: string;
+          resolved_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_advertiser_profiles: {
@@ -677,7 +788,15 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
+      is_super_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
       is_moderator: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      is_staff: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
@@ -708,6 +827,54 @@ export type Database = {
       submit_advertiser_profile: {
         Args: { p_advertiser_id: string };
         Returns: { success: boolean; status: string; message: string; missing_requirements?: string[]; error?: string };
+      };
+      approve_advertiser_profile: {
+        Args: { p_advertiser_id: string };
+        Returns: { success: boolean; status: string; message: string };
+      };
+      request_changes_advertiser_profile: {
+        Args: { p_advertiser_id: string; p_feedback: string };
+        Returns: { success: boolean; status: string; message: string };
+      };
+      reject_advertiser_profile: {
+        Args: { p_advertiser_id: string; p_reason: string };
+        Returns: { success: boolean; status: string };
+      };
+      suspend_advertiser_profile: {
+        Args: { p_advertiser_id: string; p_reason: string };
+        Returns: { success: boolean; status: string };
+      };
+      reactivate_advertiser_profile: {
+        Args: { p_advertiser_id: string };
+        Returns: { success: boolean; status: string };
+      };
+      approve_advertiser_media: {
+        Args: { p_media_id: string };
+        Returns: { success: boolean; status: string };
+      };
+      reject_advertiser_media: {
+        Args: { p_media_id: string; p_reason: string };
+        Returns: { success: boolean; status: string };
+      };
+      block_advertiser_media: {
+        Args: { p_media_id: string; p_reason: string };
+        Returns: { success: boolean; status: string };
+      };
+      assign_report: {
+        Args: { p_report_id: string };
+        Returns: { success: boolean; assigned_to: string };
+      };
+      update_report_status: {
+        Args: { p_report_id: string; p_status: string; p_notes?: string };
+        Returns: { success: boolean; status: string };
+      };
+      grant_role: {
+        Args: { p_target_profile_id: string; p_role: string };
+        Returns: { success: boolean; granted_role: string; message?: string };
+      };
+      revoke_role: {
+        Args: { p_target_profile_id: string; p_role: string };
+        Returns: { success: boolean; revoked_role: string };
       };
     };
     Enums: {

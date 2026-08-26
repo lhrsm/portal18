@@ -1,97 +1,190 @@
 'use client';
 
-import React from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { adminService } from '@/services/adminService';
+import { AdminDashboardMetrics } from '@/types/app.types';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { Shield, Lock, AlertTriangle, Activity, Database, Users, FileCheck } from 'lucide-react';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { 
+  Users, 
+  Megaphone, 
+  UserCheck, 
+  Clock, 
+  Image as ImageIcon, 
+  AlertTriangle, 
+  ShieldAlert, 
+  FileCheck2, 
+  Ban, 
+  ArrowRight,
+  Sparkles
+} from 'lucide-react';
 
 export default function AdminDashboardPage() {
-  const { user, profile, isAdmin } = useAuth();
+  const [metrics, setMetrics] = useState<AdminDashboardMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadMetrics() {
+      const data = await adminService.getDashboardMetrics();
+      setMetrics(data);
+      setLoading(false);
+    }
+    loadMetrics();
+  }, []);
 
   return (
-    <div className="container" style={{ padding: '3rem 1rem' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', gap: '1rem' }}>
-        <div>
-          <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.4rem' }}>
-            <Badge variant="ruby">ÁREA RESTRITA</Badge>
-            <Badge variant="gold">ADMIN / SUPER_ADMIN</Badge>
+    <AdminLayout>
+      {/* Top Banner Alert if there are Critical Reports (Requirements 8 & 34) */}
+      {metrics && metrics.criticalReports > 0 && (
+        <Card variant="glass" padding="md" style={{ border: '1px solid var(--accent-ruby)', backgroundColor: 'rgba(163, 0, 33, 0.1)', marginBottom: '1.75rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <ShieldAlert size={26} color="var(--accent-ruby)" />
+              <div>
+                <div style={{ fontWeight: 800, color: 'var(--accent-ruby)', fontSize: '1rem' }}>
+                  🚨 {metrics.criticalReports} Denúncia(s) Crítica(s) Aguardando Análise Imediata!
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                  Casos de suspeita de menor de idade ou violações graves requerem ação prioritária.
+                </div>
+              </div>
+            </div>
+            <Link href="/admin/reports">
+              <Button variant="ruby" size="sm">
+                Ver Fila de Denúncias
+              </Button>
+            </Link>
           </div>
-          <h1 style={{ fontSize: '2.2rem' }}>Painel Administrativo</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Supervisão de segurança, moderação de mídias, conformidade 18+ e integridade do banco
-          </p>
-        </div>
+        </Card>
+      )}
 
-        <Badge variant="success">Sistema Saudável</Badge>
+      {/* Main Metrics Grid (Requirement 7) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        {/* Pending Profiles */}
+        <Card variant="glass" padding="md" style={{ border: metrics && metrics.pendingProfiles > 0 ? '1px solid var(--accent-gold)' : undefined }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Perfis Pendentes</span>
+            <Clock size={18} color="var(--accent-gold)" />
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
+            {loading ? <Skeleton width="60px" height="32px" /> : metrics?.pendingProfiles}
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Aguardando moderação</span>
+        </Card>
+
+        {/* Pending Media */}
+        <Card variant="glass" padding="md">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Fotos Pendentes</span>
+            <ImageIcon size={18} color="var(--color-info)" />
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 800 }}>
+            {loading ? <Skeleton width="60px" height="32px" /> : metrics?.pendingMedia}
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Fila de imagens</span>
+        </Card>
+
+        {/* Open Reports */}
+        <Card variant="glass" padding="md" style={{ border: metrics && metrics.openReports > 0 ? '1px solid var(--accent-ruby)' : undefined }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Denúncias Abertas</span>
+            <AlertTriangle size={18} color="var(--accent-ruby)" />
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-ruby)' }}>
+            {loading ? <Skeleton width="60px" height="32px" /> : metrics?.openReports}
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            {metrics?.criticalReports} com prioridade crítica
+          </span>
+        </Card>
+
+        {/* Active Profiles */}
+        <Card variant="glass" padding="md">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Perfis Ativos</span>
+            <UserCheck size={18} color="var(--color-success)" />
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--color-success)' }}>
+            {loading ? <Skeleton width="60px" height="32px" /> : metrics?.activeProfiles}
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Publicados no portal</span>
+        </Card>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
-        {/* Security Metric 1 */}
-        <Card variant="glass" padding="lg">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
-            <Shield size={22} color="var(--accent-gold)" />
-            <h3 style={{ fontSize: '1.2rem' }}>Status do RLS</h3>
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--color-success)', marginBottom: '0.4rem' }}>
-            11 / 11
-          </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Tabelas de domínio com RLS ativo e políticas de isolamento Deny-by-Default
-          </p>
+      {/* Secondary Metrics */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        <Card variant="glass" padding="md">
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Usuários Cadastrados</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{loading ? '...' : metrics?.totalUsers}</div>
         </Card>
 
-        {/* Security Metric 2 */}
-        <Card variant="glass" padding="lg">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
-            <FileCheck size={22} color="var(--color-info)" />
-            <h3 style={{ fontSize: '1.2rem' }}>Storage Privado</h3>
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', marginBottom: '0.4rem' }}>
-            Protegido
-          </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Bucket <code>verification-private</code> sem URLs públicas abertas
-          </p>
+        <Card variant="glass" padding="md">
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Anunciantes Totais</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{loading ? '...' : metrics?.totalAdvertisers}</div>
         </Card>
 
-        {/* Security Metric 3 */}
-        <Card variant="glass" padding="lg">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
-            <Lock size={22} color="var(--accent-ruby)" />
-            <h3 style={{ fontSize: '1.2rem' }}>Proteção de Roles</h3>
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-ruby)', marginBottom: '0.4rem' }}>
-            Blindado
-          </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Auto-escalação bloqueada por triggers e RLS em <code>user_roles</code>
-          </p>
+        <Card variant="glass" padding="md">
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Verificações Pendentes</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{loading ? '...' : metrics?.pendingVerifications}</div>
+        </Card>
+
+        <Card variant="glass" padding="md">
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Perfis Suspensos</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-ruby)' }}>{loading ? '...' : metrics?.suspendedProfiles}</div>
         </Card>
       </div>
 
-      {/* Admin Operations Info */}
-      <Card variant="elevated" padding="lg">
-        <h3 style={{ fontSize: '1.35rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Activity size={20} color="var(--accent-gold)" /> Auditoria & Governança da Plataforma
-        </h3>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
-          Operador logado: <strong>{profile?.display_name || user?.email}</strong>. Todas as ações administrativas são registradas na tabela <code>audit_logs</code> com hash de identificação e restrição imutável contra deleções.
-        </p>
+      {/* Quick Action Navigation Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+        <Card variant="glass" padding="lg">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <UserCheck size={20} color="var(--accent-gold)" />
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Moderação de Perfis</h3>
+          </div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+            Avalie cadastros completos submetidos pelos anunciantes, valide fotos e libere para publicação.
+          </p>
+          <Link href="/admin/moderation/profiles">
+            <Button variant="secondary" size="sm" fullWidth rightIcon={<ArrowRight size={14} />}>
+              Abrir Fila de Perfis ({metrics?.pendingProfiles || 0})
+            </Button>
+          </Link>
+        </Card>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-          <Button variant="secondary" size="sm">
-            Ver Logs de Auditoria
-          </Button>
-          <Button variant="secondary" size="sm">
-            Fila de Moderação de Mídias
-          </Button>
-          <Button variant="secondary" size="sm">
-            Fila de Verificação KYC
-          </Button>
-        </div>
-      </Card>
-    </div>
+        <Card variant="glass" padding="lg">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <ImageIcon size={20} color="var(--color-info)" />
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Moderação de Mídias</h3>
+          </div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+            Inspecione novas fotos adicionadas às galerias antes de permitir sua exibição pública.
+          </p>
+          <Link href="/admin/moderation/media">
+            <Button variant="secondary" size="sm" fullWidth rightIcon={<ArrowRight size={14} />}>
+              Abrir Fila de Imagens ({metrics?.pendingMedia || 0})
+            </Button>
+          </Link>
+        </Card>
+
+        <Card variant="glass" padding="lg">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <AlertTriangle size={20} color="var(--accent-ruby)" />
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Central de Denúncias</h3>
+          </div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+            Trate denúncias de usuários, assuma chamados e aplique suspensões preventivas quando necessário.
+          </p>
+          <Link href="/admin/reports">
+            <Button variant="secondary" size="sm" fullWidth rightIcon={<ArrowRight size={14} />}>
+              Abrir Denúncias ({metrics?.openReports || 0})
+            </Button>
+          </Link>
+        </Card>
+      </div>
+    </AdminLayout>
   );
 }

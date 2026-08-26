@@ -17,6 +17,9 @@ export type AdvertiserContact = Database['public']['Tables']['advertiser_contact
 export type ProfileContactEvent = Database['public']['Tables']['profile_contact_events']['Row'];
 export type AdvertiserDailyStats = Database['public']['Tables']['advertiser_daily_stats']['Row'];
 export type AdvertiserProfileHistory = Database['public']['Tables']['advertiser_profile_history']['Row'];
+export type Notification = Database['public']['Tables']['notifications']['Row'];
+export type ModerationNote = Database['public']['Tables']['moderation_notes']['Row'];
+export type ModerationFeedback = Database['public']['Tables']['moderation_feedback']['Row'];
 
 // View Type
 export type PublicAdvertiser = Database['public']['Views']['public_advertiser_profiles']['Row'];
@@ -28,7 +31,9 @@ export interface UserSession {
   roles: string[];
   isAdvertiser: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   isModerator: boolean;
+  isStaff: boolean;
 }
 
 export interface ApiResponse<T = unknown> {
@@ -63,4 +68,16 @@ export interface CompletenessResult {
   isReadyForSubmission: boolean;
   items: CompletenessItem[];
   missingSuggestions: string[];
+}
+
+export interface AdminDashboardMetrics {
+  totalUsers: number;
+  totalAdvertisers: number;
+  activeProfiles: number;
+  pendingProfiles: number;
+  pendingMedia: number;
+  openReports: number;
+  criticalReports: number;
+  pendingVerifications: number;
+  suspendedProfiles: number;
 }
