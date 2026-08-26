@@ -9,7 +9,8 @@ export const contactsService = {
       .from('advertiser_contacts')
       .select('*')
       .eq('advertiser_id', advertiserId)
-      .order('is_primary', { ascending: false });
+      .order('is_primary', { ascending: false })
+      .order('created_at', { ascending: true });
 
     if (error) {
       console.error('Error fetching advertiser contacts:', error);
@@ -26,12 +27,25 @@ export const contactsService = {
     isVisible: boolean = true
   ): Promise<{ success: boolean; data?: AdvertiserContact; error?: string }> {
     const supabase = createClient();
+    // Normalize phone/WhatsApp (Requirement 20)
+    let normalizedValue = contactValue.trim();
+    if (contactType === 'whatsapp' || contactType === 'phone') {
+      const digitsOnly = contactValue.replace(/\D/g, '');
+      if (digitsOnly.length === 10 || digitsOnly.length === 11) {
+        normalizedValue = `+55${digitsOnly}`;
+      } else if (digitsOnly.length > 11 && !contactValue.startsWith('+')) {
+        normalizedValue = `+${digitsOnly}`;
+      }
+    } else if (contactType === 'telegram') {
+      normalizedValue = normalizedValue.startsWith('@') ? normalizedValue : `@${normalizedValue}`;
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase.from('advertiser_contacts') as any)
       .insert({
         advertiser_id: advertiserId,
         contact_type: contactType,
-        contact_value: contactValue,
+        contact_value: normalizedValue,
         is_primary: isPrimary,
         is_visible: isVisible,
       })
@@ -42,6 +56,42 @@ export const contactsService = {
       return { success: false, error: error.message };
     }
     return { success: true, data: data as AdvertiserContact };
+  },
+
+  async updateContact(
+    contactId: string,
+    updates: Partial<AdvertiserContact>
+  ): Promise<{ success: boolean; data?: AdvertiserContact; error?: string }> {
+    const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from('advertiser_contacts') as any)
+      .update(updates)
+      .eq('id', contactId)
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true, data: data as AdvertiserContact };
+  },
+
+  async setPrimaryContact(
+    advertiserId: string,
+    contactId: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const supabase = createClient();
+    // Setting is_primary = true triggers enforce_single_primary_contact in database
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from('advertiser_contacts') as any)
+      .update({ is_primary: true })
+      .eq('id', contactId)
+      .eq('advertiser_id', advertiserId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true };
   },
 
   async deleteContact(contactId: string): Promise<{ success: boolean; error?: string }> {

@@ -10,7 +10,8 @@
     "type-check": "tsc --noEmit",
     "verify-security": "tsx scripts/verify-security.ts",
     "verify-phase1": "tsx scripts/verify-phase1.ts",
-    "verify-phase2": "tsx scripts/verify-phase2.ts"
+    "verify-phase2": "tsx scripts/verify-phase2.ts",
+    "verify-phase3": "tsx scripts/verify-phase3.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

@@ -6,9 +6,10 @@ export interface AlertProps {
   title?: string;
   children: ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export function Alert({ type = 'info', title, children, className }: AlertProps) {
+export function Alert({ type = 'info', title, children, className, style }: AlertProps) {
   const icons = {
     success: '✅',
     error: '🚫',
@@ -17,7 +18,7 @@ export function Alert({ type = 'info', title, children, className }: AlertProps)
   };
 
   return (
-    <div className={clsx('alert', `alert-${type}`, className)} role="alert">
+    <div className={clsx('alert', `alert-${type}`, className)} style={style} role="alert">
       <span className="alert-icon" style={{ fontSize: '1.2rem' }}>
         {icons[type]}
       </span>

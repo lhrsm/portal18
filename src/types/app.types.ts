@@ -16,6 +16,7 @@ export type ConsentRecord = Database['public']['Tables']['consent_records']['Row
 export type AdvertiserContact = Database['public']['Tables']['advertiser_contacts']['Row'];
 export type ProfileContactEvent = Database['public']['Tables']['profile_contact_events']['Row'];
 export type AdvertiserDailyStats = Database['public']['Tables']['advertiser_daily_stats']['Row'];
+export type AdvertiserProfileHistory = Database['public']['Tables']['advertiser_profile_history']['Row'];
 
 // View Type
 export type PublicAdvertiser = Database['public']['Views']['public_advertiser_profiles']['Row'];
@@ -47,4 +48,19 @@ export interface ExploreFilters {
   sort?: 'recommended' | 'recent' | 'active';
   page?: number;
   limit?: number;
+}
+
+export interface CompletenessItem {
+  key: string;
+  label: string;
+  points: number;
+  completed: boolean;
+  actionUrl: string;
+}
+
+export interface CompletenessResult {
+  score: number;
+  isReadyForSubmission: boolean;
+  items: CompletenessItem[];
+  missingSuggestions: string[];
 }

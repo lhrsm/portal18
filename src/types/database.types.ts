@@ -181,6 +181,9 @@ export type Database = {
           visibility: Visibility;
           onboarding_step: number;
           onboarding_completed: boolean;
+          submitted_at: string | null;
+          rejection_reason: string | null;
+          moderation_notes: string | null;
           last_active_at: string | null;
           created_at: string;
           updated_at: string;
@@ -204,6 +207,9 @@ export type Database = {
           visibility?: Visibility;
           onboarding_step?: number;
           onboarding_completed?: boolean;
+          submitted_at?: string | null;
+          rejection_reason?: string | null;
+          moderation_notes?: string | null;
           last_active_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -227,6 +233,9 @@ export type Database = {
           visibility?: Visibility;
           onboarding_step?: number;
           onboarding_completed?: boolean;
+          submitted_at?: string | null;
+          rejection_reason?: string | null;
+          moderation_notes?: string | null;
           last_active_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -262,6 +271,9 @@ export type Database = {
           position: number;
           visibility: Visibility;
           moderation_status: ModerationStatus;
+          moderation_reason: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
@@ -275,6 +287,9 @@ export type Database = {
           position?: number;
           visibility?: Visibility;
           moderation_status?: ModerationStatus;
+          moderation_reason?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
@@ -288,6 +303,9 @@ export type Database = {
           position?: number;
           visibility?: Visibility;
           moderation_status?: ModerationStatus;
+          moderation_reason?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
@@ -585,6 +603,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      advertiser_profile_history: {
+        Row: {
+          id: string;
+          advertiser_id: string;
+          changed_by: string;
+          change_type: string;
+          changed_fields: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          advertiser_id: string;
+          changed_by: string;
+          change_type: string;
+          changed_fields?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          advertiser_id?: string;
+          changed_by?: string;
+          change_type?: string;
+          changed_fields?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_advertiser_profiles: {
@@ -655,6 +700,14 @@ export type Database = {
       increment_contact_click: {
         Args: { p_advertiser_id: string; p_contact_type: string };
         Returns: void;
+      };
+      reorder_advertiser_media: {
+        Args: { p_advertiser_id: string; p_media_ids: string[] };
+        Returns: boolean;
+      };
+      submit_advertiser_profile: {
+        Args: { p_advertiser_id: string };
+        Returns: { success: boolean; status: string; message: string; missing_requirements?: string[]; error?: string };
       };
     };
     Enums: {

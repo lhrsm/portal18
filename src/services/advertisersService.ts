@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
 import { Database } from '@/types/database.types';
-import { AdvertiserProfile } from '@/types/app.types';
+import { AdvertiserProfile, AdvertiserProfileHistory } from '@/types/app.types';
 
 type AdvertiserInsert = Database['public']['Tables']['advertiser_profiles']['Insert'];
 type AdvertiserUpdate = Database['public']['Tables']['advertiser_profiles']['Update'];
@@ -76,7 +76,7 @@ export const advertisersService = {
     partialData: Partial<AdvertiserProfile>
   ): Promise<{ success: boolean; data?: AdvertiserProfile; error?: string }> {
     const supabase = createClient();
-    // Strip restricted columns
+    // Strip restricted admin columns
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { profile_status, verification_status, profile_id, ...safeUpdates } = partialData;
 
@@ -104,7 +104,6 @@ export const advertisersService = {
     const { data, error } = await (supabase.from('advertiser_profiles') as any)
       .update({
         onboarding_completed: true,
-        profile_status: 'pending_review',
       } as AdvertiserUpdate)
       .eq('id', advertiserId)
       .select()
@@ -116,54 +115,101 @@ export const advertisersService = {
     return { success: true, data: data as AdvertiserProfile };
   },
 
-  async createAdvertiserProfile(profileData: {
-    profile_id: string;
-    stage_name: string;
-    slug: string;
-    headline?: string;
-    bio?: string;
-    birth_date: string;
-    gender?: string;
-    presentation?: string;
-    state_id?: string;
-    city_id?: string;
-    neighborhood?: string;
-  }): Promise<{ success: boolean; data?: AdvertiserProfile; error?: string }> {
+  async submitProfileForReview(
+    advertiserId: string
+  ): Promise<{ success: boolean; status?: string; message?: string; missing_requirements?: string[]; error?: string }> {
     const supabase = createClient();
-    const insertPayload: AdvertiserInsert = {
-      profile_id: profileData.profile_id,
-      stage_name: profileData.stage_name,
-      slug: profileData.slug,
-      headline: profileData.headline || null,
-      bio: profileData.bio || null,
-      birth_date: profileData.birth_date,
-      gender: profileData.gender || null,
-      presentation: profileData.presentation || null,
-      state_id: profileData.state_id || null,
-      city_id: profileData.city_id || null,
-      neighborhood: profileData.neighborhood || null,
-      profile_status: 'draft',
-      verification_status: 'not_started',
-      visibility: 'hidden',
-      onboarding_step: 1,
-      onboarding_completed: false,
-    };
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('advertiser_profiles') as any)
-      .insert(insertPayload)
-      .select()
-      .single();
+    const { data, error } = await (supabase.rpc as any)('submit_advertiser_profile', {
+      p_advertiser_id: advertiserId,
+    });
 
     if (error) {
       return { success: false, error: error.message };
     }
-    return { success: true, data: data as AdvertiserProfile };
+    return data as { success: boolean; status: string; message: string; missing_requirements?: string[]; error?: string };
+  },
+
+  async getAdvertiserCategoryIds(advertiserId: string): Promise<string[]> {
+    const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase
+      .from('advertiser_categories')
+      .select('category_id')
+      .eq('advertiser_id', advertiserId) as any);
+
+    if (error || !data) return [];
+    return data.map((c: any) => c.category_id);
+  },
+
+  async updateAdvertiserCategories(advertiserId: string, categoryIds: string[]): Promise<{ success: boolean; error?: string }> {
+    const supabase = createClient();
+    // Limit to max 5 categories (Requirement 16)
+    const limitedIds = categoryIds.slice(0, 5);
+
+    // Delete existing categories
+    const { error: deleteError } = await supabase
+      .from('advertiser_categories')
+      .delete()
+      .eq('advertiser_id', advertiserId);
+
+    if (deleteError) {
+      return { success: false, error: deleteError.message };
+    }
+
+    if (limitedIds.length === 0) {
+      return { success: true };
+    }
+
+    const payload = limitedIds.map((cid) => ({
+      advertiser_id: advertiserId,
+      category_id: cid,
+    }));
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: insertError } = await (supabase.from('advertiser_categories') as any)
+      .insert(payload);
+
+    if (insertError) {
+      return { success: false, error: insertError.message };
+    }
+    return { success: true };
+  },
+
+  async updateVisibility(
+    advertiserId: string,
+    visibility: Database['public']['Enums']['visibility']
+  ): Promise<{ success: boolean; error?: string }> {
+    const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from('advertiser_profiles') as any)
+      .update({ visibility } as AdvertiserUpdate)
+      .eq('id', advertiserId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  },
+
+  async getAdvertiserHistory(advertiserId: string): Promise<AdvertiserProfileHistory[]> {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('advertiser_profile_history')
+      .select('*')
+      .eq('advertiser_id', advertiserId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching advertiser history:', error);
+      return [];
+    }
+    return (data as AdvertiserProfileHistory[]) || [];
   },
 
   async updateAdvertiserProfile(id: string, updates: Partial<AdvertiserProfile>): Promise<{ success: boolean; data?: AdvertiserProfile; error?: string }> {
     const supabase = createClient();
-    // Strip non-editable status columns
+    // Strip restricted admin columns
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { profile_status, verification_status, profile_id, ...safeUpdates } = updates;
 
