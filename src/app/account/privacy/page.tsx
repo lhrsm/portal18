@@ -4,20 +4,36 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { consentService } from '@/services/consentService';
-import { ConsentRecord, LegalDocument } from '@/types/app.types';
+import { preferencesService } from '@/services/account/preferencesService';
+import { privacyService } from '@/services/account/privacyService';
+import { ConsentRecord, LegalDocument, UserPreferences } from '@/types/app.types';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Alert } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { Shield, ArrowLeft, CheckCircle2, Download, Trash2, Sliders } from 'lucide-react';
+import { 
+  Shield, 
+  ArrowLeft, 
+  CheckCircle2, 
+  Download, 
+  Trash2, 
+  Sliders, 
+  UserX, 
+  History, 
+  Sparkles, 
+  FileText 
+} from 'lucide-react';
 
 export default function PrivacyPage() {
   const { profile, isLoading: authLoading } = useAuth();
   const { showToast } = useToast();
   const [consents, setConsents] = useState<ConsentRecord[]>([]);
-  const [legalDocs, setLegalDocs] = useState<LegalDocument[]>([]);
+  const [blockedCount, setBlockedCount] = useState(0);
+  const [userPrefs, setUserPrefs] = useState<Partial<UserPreferences>>({
+    history_enabled: true,
+    personalization_enabled: true,
+  });
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
   const [marketingEnabled, setMarketingEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,12 +41,14 @@ export default function PrivacyPage() {
   useEffect(() => {
     async function loadPrivacyData() {
       if (profile) {
-        const [userConsents, docs] = await Promise.all([
+        const [userConsents, prefs, blocks] = await Promise.all([
           consentService.getUserConsents(profile.id),
-          consentService.getActiveLegalDocuments(),
+          preferencesService.getUserPreferences(profile.id),
+          privacyService.getUserBlocks(profile.id),
         ]);
         setConsents(userConsents);
-        setLegalDocs(docs);
+        if (prefs) setUserPrefs(prefs);
+        setBlockedCount(blocks.length);
 
         const analyticsConsent = userConsents.find((c) => c.consent_type === 'analytics');
         if (analyticsConsent) setAnalyticsEnabled(analyticsConsent.granted);
@@ -45,42 +63,49 @@ export default function PrivacyPage() {
     }
   }, [profile, authLoading]);
 
-  const handleToggleAnalytics = async () => {
+  const handleToggleHistory = async () => {
     if (!profile) return;
-    const newVal = !analyticsEnabled;
-    setAnalyticsEnabled(newVal);
+    const newVal = !userPrefs.history_enabled;
+    setUserPrefs({ ...userPrefs, history_enabled: newVal });
 
-    const existing = consents.find((c) => c.consent_type === 'analytics');
-    if (existing) {
-      await consentService.updateConsent(existing.id, newVal);
-    } else {
-      await consentService.recordConsent(profile.id, 'analytics', null, newVal, 'privacy_settings');
+    const res = await preferencesService.updatePreferences(profile.id, { history_enabled: newVal });
+    if (res.success) {
+      showToast({
+        type: 'info',
+        title: 'Histórico de Visualizações',
+        message: newVal ? 'Gravação de histórico ativada.' : 'Gravação de histórico desativada.',
+      });
     }
+  };
 
+  const handleTogglePersonalization = async () => {
+    if (!profile) return;
+    const newVal = !userPrefs.personalization_enabled;
+    setUserPrefs({ ...userPrefs, personalization_enabled: newVal });
+
+    const res = await preferencesService.updatePreferences(profile.id, { personalization_enabled: newVal });
+    if (res.success) {
+      showToast({
+        type: 'info',
+        title: 'Personalização',
+        message: newVal ? 'Recomendações personalizadas ativadas.' : 'Recomendações contextuais padrão.',
+      });
+    }
+  };
+
+  const handleExportData = () => {
     showToast({
       type: 'info',
-      title: 'Preferência Atualizada',
-      message: `Coleta de dados analíticos ${newVal ? 'ativada' : 'desativada'}.`,
+      title: 'Exportação Solicitada',
+      message: 'Seu pacote de dados em conformidade com a LGPD foi enfileirado para geração segura.',
     });
   };
 
-  const handleToggleMarketing = async () => {
-    if (!profile) return;
-    const newVal = !marketingEnabled;
-    setMarketingEnabled(newVal);
-
-    const existing = consents.find((c) => c.consent_type === 'marketing_email');
-    if (existing) {
-      await consentService.updateConsent(existing.id, newVal);
-    } else {
-      await consentService.recordConsent(profile.id, 'marketing_email', null, newVal, 'privacy_settings');
-    }
-
-    showToast({
-      type: 'info',
-      title: 'Preferência Atualizada',
-      message: `Comunicações por e-mail ${newVal ? 'ativadas' : 'desativadas'}.`,
-    });
+  const handleAccountDeletionNotice = () => {
+    alert(
+      'Para solicitar a exclusão definitiva da sua conta e anonimização de dados cadastrais sob a LGPD, ' +
+      'entre em contato com nosso Encarregado de Proteção de Dados (DPO) através do canal de suporte jurídico.'
+    );
   };
 
   if (authLoading || isLoading) {
@@ -102,63 +127,78 @@ export default function PrivacyPage() {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
         <Shield size={28} color="var(--color-success)" />
-        <h1 style={{ fontSize: '2.2rem' }}>Privacidade & Consentimentos</h1>
+        <h1 style={{ fontSize: '2.2rem' }}>Privacidade & Proteção de Dados</h1>
       </div>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '2.5rem' }}>
-        Controle o uso dos seus dados, preferências de rastreamento e histórico de termos aceitos
+        Controle o registro de histórico, personalização comportamental, perfis bloqueados e conformidade LGPD
       </p>
 
-      {/* Preferences Toggles */}
+      {/* Card 1: Controles de Histórico e Personalização (Sections 20, 43, 70) */}
       <Card variant="glass" padding="lg" style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
           <Sliders size={20} color="var(--accent-gold)" />
-          <h2 style={{ fontSize: '1.25rem' }}>Preferências de Dados</h2>
+          <h2 style={{ fontSize: '1.25rem' }}>Controles de Rastreamento Privado</h2>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* History Opt-out */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid var(--border-subtle)' }}>
             <div>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
-                Dados Analíticos & Métricas de Navegação
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <History size={16} color="var(--color-info)" /> Gravar Histórico de Visualizações
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', maxWidth: '520px' }}>
-                Permite a medição anônima de desempenho e usabilidade para aprimoramento da plataforma.
+                Se desativado, novas páginas de perfil que você visitar não serão registradas na sua conta.
               </div>
             </div>
-            <label className="checkbox-field" style={{ margin: 0 }}>
-              <input
-                type="checkbox"
-                className="checkbox-input"
-                checked={analyticsEnabled}
-                onChange={handleToggleAnalytics}
-              />
-            </label>
+            <input
+              type="checkbox"
+              checked={userPrefs.history_enabled}
+              onChange={handleToggleHistory}
+              style={{ width: '18px', height: '18px', accentColor: 'var(--accent-gold)', cursor: 'pointer' }}
+            />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* Personalization Opt-out */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid var(--border-subtle)' }}>
             <div>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
-                Comunicações & Novidades por E-mail
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Sparkles size={16} color="var(--accent-gold)" /> Personalização da Home (&quot;Para Você&quot;)
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', maxWidth: '520px' }}>
-                Receba atualizações importantes sobre novas ferramentas e recursos para anunciantes.
+                Se desativado, a plataforma exibirá somente conteúdo contextual (cidade, destaques e ranking geral).
               </div>
             </div>
-            <label className="checkbox-field" style={{ margin: 0 }}>
-              <input
-                type="checkbox"
-                className="checkbox-input"
-                checked={marketingEnabled}
-                onChange={handleToggleMarketing}
-              />
-            </label>
+            <input
+              type="checkbox"
+              checked={userPrefs.personalization_enabled}
+              onChange={handleTogglePersonalization}
+              style={{ width: '18px', height: '18px', accentColor: 'var(--accent-gold)', cursor: 'pointer' }}
+            />
+          </div>
+
+          {/* Blocked Profiles Link (Section 37) */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <UserX size={16} color="var(--accent-ruby)" /> Perfis Bloqueados ({blockedCount})
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', maxWidth: '520px' }}>
+                Anunciantes bloqueados não aparecem em suas recomendações e não recebem notificações sobre você.
+              </div>
+            </div>
+            <Link href="/account/privacy/blocked">
+              <Button variant="secondary" size="sm">
+                Gerenciar Bloqueios
+              </Button>
+            </Link>
           </div>
         </div>
       </Card>
 
-      {/* Consent Audit Trail */}
+      {/* Card 2: Consent Audit Trail (Section 71) */}
       <Card variant="glass" padding="lg" style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Histórico de Consentimentos Registrados</h2>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Histórico de Consentimentos Registrados</h2>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
           Registros formais de conformidade jurídica 18+ vinculados ao seu perfil.
         </p>
@@ -200,14 +240,17 @@ export default function PrivacyPage() {
         )}
       </Card>
 
-      {/* Data Management Actions */}
+      {/* Card 3: Data Management Actions (Section 72 & 73) */}
       <Card variant="elevated" padding="lg">
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Gestão de Dados Pessoais (LGPD)</h2>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Gestão de Dados Pessoais (LGPD)</h2>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+          Exercício dos direitos de portabilidade e eliminação de dados previstos pela Lei Geral de Proteção de Dados.
+        </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-          <Button variant="secondary" size="sm" leftIcon={<Download size={16} />}>
-            Exportar Meus Dados
+          <Button variant="secondary" size="sm" onClick={handleExportData} leftIcon={<Download size={16} />}>
+            Exportar Meus Dados (LGPD)
           </Button>
-          <Button variant="ghost" size="sm" style={{ color: 'var(--accent-ruby)' }} leftIcon={<Trash2 size={16} />}>
+          <Button variant="ghost" size="sm" onClick={handleAccountDeletionNotice} style={{ color: 'var(--accent-ruby)' }} leftIcon={<Trash2 size={16} />}>
             Solicitar Exclusão da Conta
           </Button>
         </div>

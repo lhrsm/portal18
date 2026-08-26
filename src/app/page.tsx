@@ -5,8 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { publicProfilesService } from '@/services/publicProfilesService';
-import { locationService } from '@/services/locationService';
-import { PublicAdvertiser, Category } from '@/types/app.types';
+import { favoritesService } from '@/services/favoritesService';
+import { historyService } from '@/services/account/historyService';
+import { followingService } from '@/services/account/followingService';
+import { preferencesService } from '@/services/account/preferencesService';
+import { recommendationService } from '@/services/discovery/recommendationService';
+import { PublicAdvertiser, Category, DiscoveryProfileCard } from '@/types/app.types';
 import { AdvertiserCard } from '@/components/public/AdvertiserCard';
 import { CityAutocomplete } from '@/components/public/CityAutocomplete';
 import { Button } from '@/components/ui/Button';
@@ -24,13 +28,14 @@ import {
   Lock, 
   ArrowRight, 
   CheckCircle2, 
-  Eye, 
-  Heart 
+  Heart, 
+  History, 
+  Users 
 } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
-  const { user, isAdvertiser } = useAuth();
+  const { user, profile, isAdvertiser } = useAuth();
 
   const [selectedCity, setSelectedCity] = useState<{ cityName: string; citySlug: string; stateCode: string; stateSlug: string } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -38,6 +43,12 @@ export default function HomePage() {
   const [recommendedProfiles, setRecommendedProfiles] = useState<PublicAdvertiser[]>([]);
   const [recentProfiles, setRecentProfiles] = useState<PublicAdvertiser[]>([]);
   const [activeCities, setActiveCities] = useState<{ cityName: string; citySlug: string; stateCode: string; stateSlug: string; profileCount: number }[]>([]);
+
+  // Authenticated Personalized Feeds (Section 74 to 78)
+  const [forYouProfiles, setForYouProfiles] = useState<DiscoveryProfileCard[]>([]);
+  const [userRecentViews, setUserRecentViews] = useState<any[]>([]);
+  const [userFavorites, setUserFavorites] = useState<any[]>([]);
+  const [userFollowing, setUserFollowing] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -53,6 +64,26 @@ export default function HomePage() {
         setRecentProfiles(recents);
         setCategories(cats);
         setActiveCities(cities);
+
+        // Load authenticated sections if logged in
+        if (profile) {
+          const [userFavs, userHist, userFollows, userPrefs] = await Promise.all([
+            favoritesService.getUserFavorites(profile.id),
+            historyService.getUserHistory(profile.id),
+            followingService.getFollowedProfiles(profile.id),
+            preferencesService.getUserPreferences(profile.id),
+          ]);
+
+          setUserFavorites(userFavs.slice(0, 6));
+          setUserRecentViews(userHist.slice(0, 6));
+          setUserFollowing(userFollows.slice(0, 6));
+
+          // Load "Para você" recommendations if personalization is enabled (Section 43 & 50)
+          if (!userPrefs || userPrefs.personalization_enabled) {
+            const forYou = await recommendationService.getRecommendedHome(8);
+            setForYouProfiles(forYou);
+          }
+        }
       } catch (err) {
         console.error('Error loading home data:', err);
       } finally {
@@ -60,7 +91,7 @@ export default function HomePage() {
       }
     }
     loadHomeData();
-  }, []);
+  }, [profile]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,7 +114,7 @@ export default function HomePage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem', paddingBottom: '4rem' }}>
-      {/* 1. HERO SECTION (Requirements 9, 10, 11, 12) */}
+      {/* 1. HERO SECTION */}
       <section className="hero-section">
         <div className="container" style={{ textAlign: 'center', maxWidth: '860px', margin: '0 auto' }}>
           <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '1.25rem' }}>
@@ -130,7 +161,132 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. RECOMMENDED PROFILES (Requirement 13) */}
+      {/* 2. AUTHENTICATED: "PARA VOCÊ" (Section 50 & 74) */}
+      {profile && forYouProfiles.length > 0 && (
+        <section className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.75rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                <Sparkles size={16} /> Recomendações Personalizadas
+              </div>
+              <h2 style={{ fontSize: '1.85rem' }}>Para Você</h2>
+            </div>
+            <Link href="/account/preferences">
+              <Button variant="ghost" size="sm">
+                Ajustar Preferências
+              </Button>
+            </Link>
+          </div>
+
+          <div className="advertiser-grid">
+            {forYouProfiles.map((adv) => (
+              <AdvertiserCard
+                key={adv.advertiser_id}
+                advertiser={{
+                  advertiser_id: adv.advertiser_id,
+                  slug: adv.slug,
+                  stage_name: adv.stage_name,
+                  age: adv.age,
+                  city_name: adv.city_name,
+                  state_code: adv.state_code,
+                  headline: adv.headline,
+                  primary_media_url: adv.thumbnail_url,
+                  verification_status: adv.verification_status as any,
+                  profile_status: 'active',
+                  visibility: 'public',
+                  category_names: [],
+                  distance_label: adv.distance_label,
+                  activity_label: adv.activity_label,
+                  is_sponsored: adv.is_sponsored,
+                } as any}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 3. AUTHENTICATED: "RECENTEMENTE VISUALIZADOS" (Section 74 & 75) */}
+      {profile && userRecentViews.length > 0 && (
+        <section className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.75rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-info)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                <History size={16} /> Seu Histórico Privado
+              </div>
+              <h2 style={{ fontSize: '1.85rem' }}>Recentemente Visualizados</h2>
+            </div>
+            <Link href="/account/history">
+              <Button variant="ghost" size="sm" rightIcon={<ArrowRight size={14} />}>
+                Ver Histórico Completo
+              </Button>
+            </Link>
+          </div>
+
+          <div className="advertiser-grid">
+            {userRecentViews.map((adv) => (
+              <AdvertiserCard
+                key={adv.advertiser_id}
+                advertiser={{
+                  advertiser_id: adv.advertiser_id,
+                  slug: adv.slug,
+                  stage_name: adv.stage_name,
+                  city_name: adv.city_name,
+                  state_code: adv.state_code,
+                  headline: adv.headline,
+                  primary_media_url: adv.primary_photo_url,
+                  verification_status: adv.verification_status as any,
+                  profile_status: adv.profile_status as any,
+                  visibility: 'public',
+                  category_names: [],
+                } as any}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 4. AUTHENTICATED: "MEUS FAVORITOS" (Section 74 & 76) */}
+      {profile && userFavorites.length > 0 && (
+        <section className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.75rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-ruby)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                <Heart size={16} /> Seus Perfis Salvos
+              </div>
+              <h2 style={{ fontSize: '1.85rem' }}>Meus Favoritos</h2>
+            </div>
+            <Link href="/account/favorites">
+              <Button variant="ghost" size="sm" rightIcon={<ArrowRight size={14} />}>
+                Ver todos ({userFavorites.length})
+              </Button>
+            </Link>
+          </div>
+
+          <div className="advertiser-grid">
+            {userFavorites.map((adv) => (
+              <AdvertiserCard
+                key={adv.advertiser_id}
+                initialFavorite={true}
+                advertiser={{
+                  advertiser_id: adv.advertiser_id,
+                  slug: adv.slug,
+                  stage_name: adv.stage_name,
+                  city_name: adv.city_name,
+                  state_code: adv.state_code,
+                  headline: adv.headline,
+                  primary_media_url: adv.primary_photo_url,
+                  verification_status: adv.verification_status as any,
+                  profile_status: adv.profile_status as any,
+                  visibility: 'public',
+                  category_names: [],
+                } as any}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 5. RECOMMENDED PROFILES (Public / General) */}
       <section className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.75rem' }}>
           <div>
@@ -172,7 +328,7 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* 3. RECENT PROFILES (Requirement 14) */}
+      {/* 6. RECENT PROFILES */}
       <section className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.75rem' }}>
           <div>
@@ -201,7 +357,7 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* 4. EXPLORE BY CITY (Requirement 15) */}
+      {/* 7. EXPLORE BY CITY */}
       {activeCities.length > 0 && (
         <section className="container">
           <div style={{ marginBottom: '1.5rem' }}>
@@ -238,7 +394,7 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* 5. EXPLORE BY CATEGORY (Requirement 16) */}
+      {/* 8. EXPLORE BY CATEGORY */}
       <section className="container">
         <div style={{ marginBottom: '1.5rem' }}>
           <h2 style={{ fontSize: '1.85rem', marginBottom: '0.35rem' }}>Explore por Categoria</h2>
@@ -270,7 +426,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. SAFETY & PRIVACY SECTION (Requirement 17) */}
+      {/* 9. SAFETY & PRIVACY */}
       <section className="container">
         <Card variant="glass" padding="lg" style={{ border: '1px solid rgba(229, 185, 92, 0.2)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem', alignItems: 'center' }}>
@@ -318,7 +474,7 @@ export default function HomePage() {
         </Card>
       </section>
 
-      {/* 7. ADVERTISER CTA BANNER (Requirement 18) */}
+      {/* 10. ADVERTISER CTA BANNER */}
       <section className="container">
         <Card variant="elevated" padding="lg" style={{ background: 'linear-gradient(135deg, rgba(163, 0, 33, 0.25) 0%, rgba(20, 20, 25, 0.95) 100%)', border: '1px solid var(--accent-ruby)' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '2rem' }}>

@@ -7,6 +7,11 @@ import { publicProfilesService } from '@/services/publicProfilesService';
 import { mediaService } from '@/services/mediaService';
 import { contactsService } from '@/services/contactsService';
 import { favoritesService } from '@/services/favoritesService';
+import { followingService } from '@/services/account/followingService';
+import { privacyService } from '@/services/account/privacyService';
+import { userListsService } from '@/services/account/userListsService';
+import { historyService } from '@/services/account/historyService';
+import { relationshipService } from '@/services/account/relationshipService';
 import { recommendationService } from '@/services/discovery/recommendationService';
 import { PublicAdvertiser, AdvertiserMedia, AdvertiserContact, DiscoveryProfileCard } from '@/types/app.types';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,7 +36,11 @@ import {
   MessageCircle, 
   Sparkles, 
   Camera, 
-  Users 
+  Users, 
+  ListPlus, 
+  UserX, 
+  Unlock, 
+  X 
 } from 'lucide-react';
 
 export default function PublicProfilePage() {
@@ -52,6 +61,10 @@ export default function PublicProfilePage() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [isListModalOpen, setIsListModalOpen] = useState(false);
+  const [userLists, setUserLists] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -67,19 +80,29 @@ export default function PublicProfilePage() {
 
         setAdvertiser(adv);
 
-        // Fetch media, contacts, and similar profiles in parallel (Section 49, 50, 111)
-        const [approvedMedia, advContacts, similar] = await Promise.all([
+        // Fetch media, contacts, similar profiles, and user relationships in parallel
+        const [approvedMedia, advContacts, similar, relMap] = await Promise.all([
           mediaService.getApprovedPublicMedia(adv.advertiser_id),
           contactsService.getContactsByAdvertiser(adv.advertiser_id),
           recommendationService.getSimilarProfiles(adv.advertiser_id, 4),
+          relationshipService.getUserRelationshipMap([adv.advertiser_id]),
         ]);
 
         setMediaList(approvedMedia);
         setContacts(advContacts.filter((c) => c.is_visible));
         setSimilarProfiles(similar);
 
-        // Non-blocking profile view increment
+        if (relMap[adv.advertiser_id]) {
+          setIsFavorite(relMap[adv.advertiser_id].is_favorite);
+          setIsFollowing(relMap[adv.advertiser_id].is_following);
+          setIsBlocked(relMap[adv.advertiser_id].is_blocked);
+        }
+
+        // Non-blocking view & history recording (Section 16, 57, 99)
         publicProfilesService.incrementProfileView(adv.advertiser_id);
+        if (profile) {
+          historyService.recordProfileView(adv.advertiser_id);
+        }
       } catch (err) {
         console.error('Error loading public profile:', err);
       } finally {
@@ -90,7 +113,7 @@ export default function PublicProfilePage() {
     if (stateSlug && citySlug && slug) {
       loadProfile();
     }
-  }, [stateSlug, citySlug, slug]);
+  }, [stateSlug, citySlug, slug, profile]);
 
   const handleContactClick = (contact: AdvertiserContact) => {
     if (!advertiser) return;
@@ -150,15 +173,69 @@ export default function PublicProfilePage() {
     setIsFavorite(newState);
 
     try {
-      if (newState) {
-        await favoritesService.addFavorite(profile.id, advertiser.advertiser_id);
-        showToast({ type: 'success', title: 'Adicionado aos Favoritos', message: `${advertiser.stage_name} foi salvo.` });
-      } else {
-        await favoritesService.removeFavorite(profile.id, advertiser.advertiser_id);
-        showToast({ type: 'info', title: 'Removido dos Favoritos', message: 'Anúncio removido da sua lista.' });
-      }
+      const res = await favoritesService.toggleFavorite(advertiser.advertiser_id);
+      if (!res.success) throw new Error(res.error);
+      showToast({
+        type: newState ? 'success' : 'info',
+        title: newState ? 'Adicionado aos Favoritos' : 'Removido dos Favoritos',
+        message: `${advertiser.stage_name} foi salvo.`,
+      });
     } catch {
       setIsFavorite(!newState);
+    }
+  };
+
+  const handleToggleFollow = async () => {
+    if (!user || !profile) {
+      router.push(`/login?redirect_to=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
+    if (!advertiser) return;
+    const newState = !isFollowing;
+    setIsFollowing(newState);
+
+    const res = await followingService.toggleFollow(advertiser.advertiser_id);
+    if (res.success) {
+      showToast({
+        type: 'success',
+        title: newState ? 'Seguindo' : 'Deixou de Seguir',
+        message: newState ? `Você receberá notificações de ${advertiser.stage_name}.` : 'Notificações canceladas.',
+      });
+    } else {
+      setIsFollowing(!newState);
+    }
+  };
+
+  const handleOpenListModal = async () => {
+    if (!user || !profile) {
+      router.push(`/login?redirect_to=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+    setIsListModalOpen(true);
+    const lists = await userListsService.getUserLists(profile.id);
+    setUserLists(lists);
+  };
+
+  const handleAddToList = async (listId: string, listName: string) => {
+    if (!advertiser) return;
+    const res = await userListsService.addToList(listId, advertiser.advertiser_id);
+    if (res.success) {
+      showToast({ type: 'success', title: 'Salvo na Lista', message: `Adicionado a "${listName}".` });
+      setIsListModalOpen(false);
+    }
+  };
+
+  const handleToggleBlock = async () => {
+    if (!user || !profile || !advertiser) return;
+    const res = await privacyService.toggleBlock(advertiser.advertiser_id);
+    if (res.success) {
+      setIsBlocked(Boolean(res.is_blocked));
+      showToast({
+        type: 'info',
+        title: res.is_blocked ? 'Perfil Bloqueado' : 'Perfil Desbloqueado',
+        message: res.is_blocked ? 'Este perfil foi ocultado.' : 'Perfil desbloqueado com sucesso.',
+      });
     }
   };
 
@@ -186,6 +263,29 @@ export default function PublicProfilePage() {
           <Link href="/explorar">
             <Button variant="primary">Explorar Outros Perfis</Button>
           </Link>
+        </Card>
+      </div>
+    );
+  }
+
+  // Section 86: Blocked Profile Discrete Interstitial
+  if (isBlocked) {
+    return (
+      <div className="container" style={{ padding: '6rem 1rem', textAlign: 'center' }}>
+        <Card variant="glass" padding="lg" style={{ maxWidth: '540px', margin: '0 auto', padding: '4rem 2rem' }}>
+          <UserX size={48} color="var(--accent-ruby)" style={{ margin: '0 auto 1rem auto' }} />
+          <h1 style={{ fontSize: '1.8rem', marginBottom: '0.75rem' }}>Você bloqueou este perfil</h1>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6 }}>
+            Este anunciante está em sua lista de bloqueios e não aparece em suas buscas e recomendações.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+            <Button variant="secondary" onClick={() => router.back()}>
+              Voltar
+            </Button>
+            <Button variant="primary" onClick={handleToggleBlock} leftIcon={<Unlock size={16} />}>
+              Desbloquear e Visualizar
+            </Button>
+          </div>
         </Card>
       </div>
     );
@@ -284,7 +384,7 @@ export default function PublicProfilePage() {
             </div>
 
             {/* Location & Activity */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <MapPin size={16} color="var(--accent-gold)" />
                 <span>
@@ -297,6 +397,26 @@ export default function PublicProfilePage() {
                 <Clock size={15} color="var(--color-success)" />
                 <span>Ativo recentemente</span>
               </div>
+            </div>
+
+            {/* Interactive Profile Actions (Section 85) */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              <Button
+                variant={isFollowing ? 'secondary' : 'primary'}
+                size="sm"
+                onClick={handleToggleFollow}
+                leftIcon={<Users size={14} />}
+              >
+                {isFollowing ? 'Seguindo' : 'Seguir'}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleOpenListModal}
+                leftIcon={<ListPlus size={14} />}
+              >
+                Salvar em Lista
+              </Button>
             </div>
           </div>
 
@@ -371,8 +491,18 @@ export default function PublicProfilePage() {
             </Card>
           )}
 
-          {/* Report Button */}
-          <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+          {/* Secondary Actions: Block and Report */}
+          <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleToggleBlock}
+              style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}
+              leftIcon={<UserX size={14} />}
+            >
+              Bloquear perfil
+            </Button>
             <Button
               type="button"
               variant="ghost"
@@ -387,7 +517,7 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      {/* Section 49 & 50: Perfis Semelhantes na Região */}
+      {/* Section: Perfis Semelhantes na Região */}
       {similarProfiles.length > 0 && (
         <section style={{ marginTop: '4.5rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '2.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
@@ -419,6 +549,65 @@ export default function PublicProfilePage() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* Save to List Modal */}
+      {isListModalOpen && (
+        <div
+          onClick={() => setIsListModalOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', maxWidth: '380px', width: '100%' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h4 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Salvar em Lista</h4>
+              <button type="button" onClick={() => setIsListModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+              Escolha uma coleção particular para salvar {advertiser.stage_name}:
+            </p>
+
+            {userLists.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Você ainda não criou nenhuma lista.</p>
+                <Link href="/account/lists">
+                  <Button variant="primary" size="sm">Criar Minha Primeira Lista</Button>
+                </Link>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '220px', overflowY: 'auto' }}>
+                {userLists.map((l) => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => handleAddToList(l.id, l.name)}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '0.75rem',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid var(--border-subtle)',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    <span>{l.name}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{l.items_count || 0} itens</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Lightbox Component */}

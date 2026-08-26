@@ -1573,6 +1573,273 @@ export type Database = {
         };
         Relationships: [];
       };
+      profile_follows: {
+        Row: {
+          id: string;
+          follower_profile_id: string;
+          advertiser_id: string;
+          notifications_enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          follower_profile_id: string;
+          advertiser_id: string;
+          notifications_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          follower_profile_id?: string;
+          advertiser_id?: string;
+          notifications_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      profile_view_history: {
+        Row: {
+          id: string;
+          viewer_profile_id: string;
+          advertiser_id: string;
+          first_viewed_at: string;
+          last_viewed_at: string;
+          view_count: number;
+        };
+        Insert: {
+          id?: string;
+          viewer_profile_id: string;
+          advertiser_id: string;
+          first_viewed_at?: string;
+          last_viewed_at?: string;
+          view_count?: number;
+        };
+        Update: {
+          id?: string;
+          viewer_profile_id?: string;
+          advertiser_id?: string;
+          first_viewed_at?: string;
+          last_viewed_at?: string;
+          view_count?: number;
+        };
+        Relationships: [];
+      };
+      user_lists: {
+        Row: {
+          id: string;
+          profile_id: string;
+          name: string;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          name: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          name?: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_list_items: {
+        Row: {
+          id: string;
+          list_id: string;
+          advertiser_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          list_id: string;
+          advertiser_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          list_id?: string;
+          advertiser_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      user_blocks: {
+        Row: {
+          id: string;
+          blocker_profile_id: string;
+          blocked_advertiser_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          blocker_profile_id: string;
+          blocked_advertiser_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          blocker_profile_id?: string;
+          blocked_advertiser_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      user_preferences: {
+        Row: {
+          profile_id: string;
+          preferred_city_id: string | null;
+          age_min: number;
+          age_max: number;
+          verified_only: boolean;
+          recently_active_only: boolean;
+          personalization_enabled: boolean;
+          history_enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          profile_id: string;
+          preferred_city_id?: string | null;
+          age_min?: number;
+          age_max?: number;
+          verified_only?: boolean;
+          recently_active_only?: boolean;
+          personalization_enabled?: boolean;
+          history_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          profile_id?: string;
+          preferred_city_id?: string | null;
+          age_min?: number;
+          age_max?: number;
+          verified_only?: boolean;
+          recently_active_only?: boolean;
+          personalization_enabled?: boolean;
+          history_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_preferred_categories: {
+        Row: {
+          profile_id: string;
+          category_id: string;
+          created_at: string;
+        };
+        Insert: {
+          profile_id: string;
+          category_id: string;
+          created_at?: string;
+        };
+        Update: {
+          profile_id?: string;
+          category_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      notification_preferences: {
+        Row: {
+          id: string;
+          profile_id: string;
+          channel: 'in_app' | 'email' | 'push';
+          category: 'transactional' | 'security' | 'profile_updates' | 'platform_news' | 'marketing';
+          enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          channel: 'in_app' | 'email' | 'push';
+          category: 'transactional' | 'security' | 'profile_updates' | 'platform_news' | 'marketing';
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          channel?: 'in_app' | 'email' | 'push';
+          category?: 'transactional' | 'security' | 'profile_updates' | 'platform_news' | 'marketing';
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_hidden_recommendations: {
+        Row: {
+          id: string;
+          profile_id: string;
+          advertiser_id: string;
+          reason: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          advertiser_id: string;
+          reason?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          advertiser_id?: string;
+          reason?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      notification_jobs: {
+        Row: {
+          id: string;
+          event_type: string;
+          entity_id: string;
+          status: 'queued' | 'processing' | 'completed' | 'failed';
+          cursor: number;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_type: string;
+          entity_id: string;
+          status?: 'queued' | 'processing' | 'completed' | 'failed';
+          cursor?: number;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_type?: string;
+          entity_id?: string;
+          status?: 'queued' | 'processing' | 'completed' | 'failed';
+          cursor?: number;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_advertiser_profiles: {
@@ -1890,6 +2157,39 @@ export type Database = {
           is_sponsored: boolean;
           organic_score: number;
         }[];
+      };
+      toggle_favorite: {
+        Args: { p_advertiser_id: string };
+        Returns: { success: boolean; is_favorite: boolean };
+      };
+      toggle_follow: {
+        Args: { p_advertiser_id: string; p_notifications_enabled?: boolean };
+        Returns: { success: boolean; is_following: boolean };
+      };
+      record_profile_history: {
+        Args: { p_advertiser_id: string };
+        Returns: boolean;
+      };
+      get_user_relationship_map: {
+        Args: { p_advertiser_ids: string[] };
+        Returns: {
+          advertiser_id: string;
+          is_favorite: boolean;
+          is_following: boolean;
+          is_blocked: boolean;
+        }[];
+      };
+      toggle_block_advertiser: {
+        Args: { p_advertiser_id: string };
+        Returns: { success: boolean; is_blocked: boolean };
+      };
+      clear_user_history: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      reset_personalization: {
+        Args: Record<string, never>;
+        Returns: boolean;
       };
     };
     Enums: {

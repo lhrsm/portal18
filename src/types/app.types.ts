@@ -44,6 +44,24 @@ export type MediaUploadReservation = Database['public']['Tables']['media_upload_
 export type AdvertiserRankingScore = Database['public']['Tables']['advertiser_ranking_scores']['Row'];
 export type RankingWeights = Database['public']['Tables']['ranking_weights']['Row'];
 
+// Phase 9 Account, Social & Personalization Types
+export type ProfileFollow = Database['public']['Tables']['profile_follows']['Row'];
+export type ProfileViewHistory = Database['public']['Tables']['profile_view_history']['Row'];
+export type UserList = Database['public']['Tables']['user_lists']['Row'];
+export type UserListItem = Database['public']['Tables']['user_list_items']['Row'];
+export type UserBlock = Database['public']['Tables']['user_blocks']['Row'];
+export type UserPreferences = Database['public']['Tables']['user_preferences']['Row'];
+export type UserPreferredCategory = Database['public']['Tables']['user_preferred_categories']['Row'];
+export type NotificationPreference = Database['public']['Tables']['notification_preferences']['Row'];
+export type UserHiddenRecommendation = Database['public']['Tables']['user_hidden_recommendations']['Row'];
+
+export interface UserRelationship {
+  advertiser_id: string;
+  is_favorite: boolean;
+  is_following: boolean;
+  is_blocked: boolean;
+}
+
 export interface DiscoveryProfileCard {
   advertiser_id: string;
   slug: string;

@@ -8,7 +8,19 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { User, Shield, Megaphone, Key, Heart, FileText, ArrowRight } from 'lucide-react';
+import { 
+  User, 
+  Key, 
+  Heart, 
+  Users, 
+  History, 
+  ListFilter, 
+  Bell, 
+  Sliders, 
+  Shield, 
+  Megaphone, 
+  ArrowRight 
+} from 'lucide-react';
 
 export default function AccountPage() {
   const { user, profile, roles, isLoading, isAdvertiser } = useAuth();
@@ -35,7 +47,7 @@ export default function AccountPage() {
             <Badge variant="neutral">{profile?.account_type || 'user'}</Badge>
           </div>
           <h1 style={{ fontSize: '2.2rem' }}>Minha Conta</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Gerencie suas preferências, dados pessoais e perfil profissional</p>
+          <p style={{ color: 'var(--text-secondary)' }}>Gerencie suas preferências, dados pessoais, listas e histórico privado</p>
         </div>
 
         {!isAdvertiser && (
@@ -82,27 +94,135 @@ export default function AccountPage() {
         </div>
       </Card>
 
-      {/* Section Cards: Meu Perfil, Segurança, Favoritos, Tornar-me Anunciante */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
-        {/* Card 1: Meu Perfil */}
+      {/* Section Cards Grid (Sections 3 & 4) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+        {/* Card 1: Favoritos */}
         <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
-              <User size={22} color="var(--accent-gold)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Meu perfil</h3>
+              <Heart size={22} color="var(--accent-ruby)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Favoritos</h3>
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
-              Atualize seu nome de exibição, username público (@) e avatar.
+              Acesse e gerencie seus anúncios salvos com remoção individual ou em lote.
             </p>
           </div>
-          <Link href="/account/profile">
+          <Link href="/account/favorites">
             <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
-              Gerenciar Perfil
+              Ver Favoritos
             </Button>
           </Link>
         </Card>
 
-        {/* Card 2: Segurança */}
+        {/* Card 2: Perfis Seguidos */}
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <Users size={22} color="var(--accent-gold)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Perfis Seguidos</h3>
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              Acompanhe novidades, mídias recém-aprovadas e notificações de perfis que você segue.
+            </p>
+          </div>
+          <Link href="/account/following">
+            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
+              Ver Perfis Seguidos
+            </Button>
+          </Link>
+        </Card>
+
+        {/* Card 3: Histórico de Visualizações */}
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <History size={22} color="var(--color-info)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Visualizados Recentemente</h3>
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              Consulte seu histórico de navegação privado, com opção de limpeza total ou exclusão individual.
+            </p>
+          </div>
+          <Link href="/account/history">
+            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
+              Ver Histórico
+            </Button>
+          </Link>
+        </Card>
+
+        {/* Card 4: Listas Personalizadas */}
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <ListFilter size={22} color="var(--accent-gold)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Listas</h3>
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              Organize seus anúncios em coleções particulares como &quot;Viagem Salvador&quot; ou &quot;Quero ver depois&quot;.
+            </p>
+          </div>
+          <Link href="/account/lists">
+            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
+              Gerenciar Listas
+            </Button>
+          </Link>
+        </Card>
+
+        {/* Card 5: Centro de Notificações */}
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <Bell size={22} color="var(--color-warning)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Notificações</h3>
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              Alertas de segurança, atualizações de perfis seguidos e comunicados da plataforma.
+            </p>
+          </div>
+          <Link href="/account/notifications">
+            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
+              Centro de Notificações
+            </Button>
+          </Link>
+        </Card>
+
+        {/* Card 6: Preferências & Personalização */}
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <Sliders size={22} color="var(--color-info)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Preferências</h3>
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              Defina sua cidade padrão, filtros favoritos e personalize suas recomendações.
+            </p>
+          </div>
+          <Link href="/account/preferences">
+            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
+              Ajustar Preferências
+            </Button>
+          </Link>
+        </Card>
+
+        {/* Card 7: Privacidade & Bloqueios */}
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <Shield size={22} color="var(--color-success)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Privacidade</h3>
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              Gerencie histórico de navegação, perfis bloqueados, consentimentos e exportação LGPD.
+            </p>
+          </div>
+          <Link href="/account/privacy">
+            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
+              Opções de Privacidade
+            </Button>
+          </Link>
+        </Card>
+
+        {/* Card 8: Segurança */}
         <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
@@ -118,70 +238,6 @@ export default function AccountPage() {
               Configurar Segurança
             </Button>
           </Link>
-        </Card>
-
-        {/* Card 3: Favoritos */}
-        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
-              <Heart size={22} color="var(--accent-ruby)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Favoritos</h3>
-            </div>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
-              Acesse sua lista privada de anúncios e perfis salvos no portal.
-            </p>
-          </div>
-          <Link href="/account/favorites">
-            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
-              Ver Favoritos
-            </Button>
-          </Link>
-        </Card>
-
-        {/* Card 4: Privacidade & Termos */}
-        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
-              <FileText size={22} color="var(--color-success)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Privacidade</h3>
-            </div>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
-              Gerencie seus consentimentos de analytics, marketing e termos aceitos.
-            </p>
-          </div>
-          <Link href="/account/privacy">
-            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
-              Opções de Privacidade
-            </Button>
-          </Link>
-        </Card>
-
-        {/* Card 5: Tornar-me Anunciante */}
-        <Card variant="elevated" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid var(--accent-gold)' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
-              <Megaphone size={22} color="var(--accent-gold)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Tornar-me anunciante</h3>
-            </div>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
-              {isAdvertiser
-                ? 'Você já possui conta de anunciante ativa. Acesse seu painel de controle.'
-                : 'Crie seu perfil profissional independente com fotos, localização e contatos.'}
-            </p>
-          </div>
-          {isAdvertiser ? (
-            <Link href="/advertiser">
-              <Button variant="primary" fullWidth size="sm">
-                Acessar Painel do Anunciante
-              </Button>
-            </Link>
-          ) : (
-            <Link href="/advertiser/start">
-              <Button variant="ruby" fullWidth size="sm">
-                Quero Anunciar
-              </Button>
-            </Link>
-          )}
         </Card>
       </div>
     </div>
