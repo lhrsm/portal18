@@ -14,6 +14,7 @@ interface AuthContextValue {
   isAdvertiser: boolean;
   isAdmin: boolean;
   isModerator: boolean;
+  isStaff: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -119,6 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdvertiser = roles.includes('advertiser') || profile?.account_type === 'advertiser';
   const isAdmin = roles.includes('admin') || roles.includes('super_admin') || profile?.account_type === 'admin' || profile?.account_type === 'super_admin';
   const isModerator = isAdmin || roles.includes('moderator') || profile?.account_type === 'moderator';
+  const isStaff = isAdmin || isModerator || roles.includes('staff') || roles.includes('support');
 
   return (
     <AuthContext.Provider
@@ -131,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdvertiser,
         isAdmin,
         isModerator,
+        isStaff,
         refreshProfile,
         signOut,
       }}

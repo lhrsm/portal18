@@ -218,3 +218,191 @@ export interface CheckoutResponse {
   redirectUrl?: string;
   error?: string;
 }
+
+// ============================================================================
+// Phase 10 Models — Communication, Push, Help, Support, Trust, LGPD & Retention
+// ============================================================================
+
+export type CommunicationChannel = 'in_app' | 'email' | 'push';
+export type CommunicationCategory = 
+  | 'security' 
+  | 'transactional' 
+  | 'account' 
+  | 'verification' 
+  | 'billing' 
+  | 'profile' 
+  | 'moderation' 
+  | 'platform' 
+  | 'marketing';
+
+export type CommunicationJobStatus = 'pending' | 'processing' | 'sent' | 'failed' | 'cancelled' | 'dead_letter';
+export type CommunicationPriority = 'low' | 'normal' | 'high' | 'critical';
+
+export interface CommunicationJob {
+  id: string;
+  profile_id: string | null;
+  channel: CommunicationChannel;
+  category: CommunicationCategory;
+  template_code: string;
+  payload: Record<string, any>;
+  status: CommunicationJobStatus;
+  priority: CommunicationPriority;
+  attempts: number;
+  max_attempts: number;
+  scheduled_at: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  failed_at?: string | null;
+  error_message?: string | null;
+  dedupe_key?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CommunicationTemplate {
+  id: string;
+  code: string;
+  channel: CommunicationChannel;
+  locale: string;
+  subject: string;
+  content_html: string;
+  content_text: string;
+  version: number;
+  status: 'active' | 'draft' | 'archived';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PushSubscriptionRecord {
+  id: string;
+  profile_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  user_agent_hash?: string | null;
+  created_at: string;
+  updated_at: string;
+  last_used_at: string;
+  revoked_at?: string | null;
+}
+
+export interface HelpCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  icon?: string | null;
+  sort_order: number;
+  status: 'active' | 'draft' | 'archived';
+  created_at: string;
+  article_count?: number;
+}
+
+export interface HelpArticle {
+  id: string;
+  category_id: string;
+  title: string;
+  slug: string;
+  summary?: string | null;
+  content: string;
+  status: 'published' | 'draft' | 'archived';
+  sort_order: number;
+  helpful_count: number;
+  unhelpful_count: number;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+  category_name?: string;
+  category_slug?: string;
+}
+
+export type SupportCategory = 
+  | 'account' 
+  | 'security' 
+  | 'verification' 
+  | 'profile' 
+  | 'media' 
+  | 'billing' 
+  | 'technical' 
+  | 'privacy' 
+  | 'report' 
+  | 'other';
+
+export type SupportTicketStatus = 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed';
+
+export interface SupportTicket {
+  id: string;
+  profile_id: string;
+  category: SupportCategory;
+  subject: string;
+  description: string;
+  priority: CommunicationPriority;
+  status: SupportTicketStatus;
+  assigned_to?: string | null;
+  created_at: string;
+  updated_at: string;
+  resolved_at?: string | null;
+}
+
+export interface SupportTicketMessage {
+  id: string;
+  ticket_id: string;
+  author_profile_id: string;
+  author_type: 'user' | 'staff' | 'system';
+  message: string;
+  attachments: { name: string; url: string; size: number; mime: string }[];
+  created_at: string;
+}
+
+export type DataExportStatus = 'requested' | 'processing' | 'ready' | 'failed' | 'expired';
+
+export interface DataExportRequest {
+  id: string;
+  profile_id: string;
+  status: DataExportStatus;
+  requested_at: string;
+  processing_started_at?: string | null;
+  completed_at?: string | null;
+  expires_at?: string | null;
+  storage_path?: string | null;
+  file_size_bytes?: number | null;
+  download_count: number;
+  created_at: string;
+  download_url?: string | null;
+}
+
+export type AccountDeletionStatus = 'requested' | 'scheduled' | 'cancelled' | 'processing' | 'completed' | 'failed' | 'blocked';
+
+export interface AccountDeletionRequest {
+  id: string;
+  profile_id: string;
+  status: AccountDeletionStatus;
+  requested_at: string;
+  scheduled_for: string;
+  cancelled_at?: string | null;
+  executed_at?: string | null;
+  reason_optional?: string | null;
+  blocked_reason?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LegalHold {
+  id: string;
+  entity_type: 'profile' | 'advertiser' | 'payment' | 'media' | 'ticket';
+  entity_id: string;
+  reason: string;
+  created_by: string;
+  created_at: string;
+  released_at?: string | null;
+  released_by?: string | null;
+}
+
+export interface DataRetentionPolicy {
+  id: string;
+  policy_key: string;
+  retention_days: number;
+  description: string;
+  updated_at: string;
+}
+

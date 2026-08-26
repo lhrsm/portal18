@@ -68,4 +68,22 @@ export const privacyService = {
     }
     return { success: true };
   },
+
+  /**
+   * Fetches user consent audit trail (Section 71).
+   */
+  async getUserConsents(profileId: string) {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('consent_records')
+      .select('*')
+      .eq('profile_id', profileId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching user consents:', error);
+      return [];
+    }
+    return data || [];
+  },
 };

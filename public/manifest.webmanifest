@@ -1,0 +1,34 @@
+{
+  "name": "Portal Nacional 18+",
+  "short_name": "Portal Nacional",
+  "description": "Plataforma de descoberta e anúncios de entretenimento adulto 18+ com máxima segurança e privacidade.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Explorar",
+      "url": "/explorar",
+      "description": "Explorar perfis na sua região"
+    },
+    {
+      "name": "Favoritos",
+      "url": "/account/favorites",
+      "description": "Ver meus perfis salvos"
+    },
+    {
+      "name": "Minha Conta",
+      "url": "/account",
+      "description": "Acessar central da conta"
+    }
+  ]
+}

@@ -3,61 +3,81 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { consentService } from '@/services/consentService';
 import { preferencesService } from '@/services/account/preferencesService';
 import { privacyService } from '@/services/account/privacyService';
-import { ConsentRecord, LegalDocument, UserPreferences } from '@/types/app.types';
+import { dataLifecycleService } from '@/services/privacy/dataLifecycleService';
+import { UserPreferences, AccountDeletionRequest, DataExportRequest } from '@/types/app.types';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
 import { 
-  Shield, 
+  ShieldCheck, 
   ArrowLeft, 
-  CheckCircle2, 
-  Download, 
-  Trash2, 
-  Sliders, 
-  UserX, 
+  Lock, 
   History, 
   Sparkles, 
-  FileText 
+  UserX, 
+  Download, 
+  Trash2, 
+  CheckCircle2, 
+  FileText, 
+  AlertTriangle, 
+  X, 
+  RotateCcw 
 } from 'lucide-react';
 
 export default function PrivacyPage() {
   const { profile, isLoading: authLoading } = useAuth();
   const { showToast } = useToast();
-  const [consents, setConsents] = useState<ConsentRecord[]>([]);
-  const [blockedCount, setBlockedCount] = useState(0);
-  const [userPrefs, setUserPrefs] = useState<Partial<UserPreferences>>({
-    history_enabled: true,
+
+  const [userPrefs, setUserPrefs] = useState<UserPreferences>({
+    profile_id: '',
+    preferred_city_id: null,
+    age_min: 18,
+    age_max: 70,
+    verified_only: false,
+    recently_active_only: false,
     personalization_enabled: true,
+    history_enabled: true,
+    created_at: '',
+    updated_at: '',
   });
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
-  const [marketingEnabled, setMarketingEnabled] = useState(false);
+
+  const [consents, setConsents] = useState<any[]>([]);
+  const [blockedCount, setBlockedCount] = useState(0);
+  const [activeDeletion, setActiveDeletion] = useState<AccountDeletionRequest | null>(null);
+  const [exportRequests, setExportRequests] = useState<DataExportRequest[]>([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletionReason, setDeletionReason] = useState('');
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadPrivacyData() {
-      if (profile) {
-        const [userConsents, prefs, blocks] = await Promise.all([
-          consentService.getUserConsents(profile.id),
-          preferencesService.getUserPreferences(profile.id),
-          privacyService.getUserBlocks(profile.id),
-        ]);
-        setConsents(userConsents);
-        if (prefs) setUserPrefs(prefs);
-        setBlockedCount(blocks.length);
+  const loadPrivacyData = async () => {
+    if (!profile) return;
+    try {
+      const [prefs, userConsents, blocks, delReq, exports] = await Promise.all([
+        preferencesService.getUserPreferences(profile.id),
+        privacyService.getUserConsents(profile.id),
+        privacyService.getUserBlocks(profile.id),
+        dataLifecycleService.getActiveDeletionRequest(profile.id),
+        dataLifecycleService.getUserExportRequests(profile.id),
+      ]);
 
-        const analyticsConsent = userConsents.find((c) => c.consent_type === 'analytics');
-        if (analyticsConsent) setAnalyticsEnabled(analyticsConsent.granted);
-
-        const marketingConsent = userConsents.find((c) => c.consent_type === 'marketing_email');
-        if (marketingConsent) setMarketingEnabled(marketingConsent.granted);
-      }
+      if (prefs) setUserPrefs(prefs);
+      setConsents(userConsents);
+      setBlockedCount(blocks.length);
+      setActiveDeletion(delReq);
+      setExportRequests(exports);
+    } catch (err) {
+      console.error('Error loading privacy data:', err);
+    } finally {
       setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
     if (!authLoading) {
       loadPrivacyData();
     }
@@ -93,59 +113,132 @@ export default function PrivacyPage() {
     }
   };
 
-  const handleExportData = () => {
-    showToast({
-      type: 'info',
-      title: 'Exportação Solicitada',
-      message: 'Seu pacote de dados em conformidade com a LGPD foi enfileirado para geração segura.',
-    });
+  const handleRequestExport = async () => {
+    setIsProcessingAction(true);
+    const res = await dataLifecycleService.requestDataExport();
+    setIsProcessingAction(false);
+
+    if (res.success) {
+      showToast({
+        type: 'success',
+        title: 'Exportação Solicitada (LGPD)',
+        message: 'Seu pacote de dados foi enfileirado para geração assíncrona.',
+      });
+      loadPrivacyData();
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Erro na Exportação',
+        message: res.error || 'Falha ao processar solicitação.',
+      });
+    }
   };
 
-  const handleAccountDeletionNotice = () => {
-    alert(
-      'Para solicitar a exclusão definitiva da sua conta e anonimização de dados cadastrais sob a LGPD, ' +
-      'entre em contato com nosso Encarregado de Proteção de Dados (DPO) através do canal de suporte jurídico.'
-    );
+  const handleConfirmDeletion = async () => {
+    setIsProcessingAction(true);
+    const res = await dataLifecycleService.requestAccountDeletion(deletionReason);
+    setIsProcessingAction(false);
+    setIsDeleteModalOpen(false);
+
+    if (res.success) {
+      showToast({
+        type: 'warning',
+        title: 'Exclusão Agendada (7 dias)',
+        message: 'Sua conta será permanentemente removida após o período de tolerância.',
+      });
+      loadPrivacyData();
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Exclusão Bloqueada',
+        message: res.error || 'Não foi possível agendar a exclusão.',
+      });
+    }
   };
 
-  if (authLoading || isLoading) {
+  const handleCancelDeletion = async () => {
+    setIsProcessingAction(true);
+    const res = await dataLifecycleService.cancelAccountDeletion();
+    setIsProcessingAction(false);
+
+    if (res.success) {
+      showToast({
+        type: 'success',
+        title: 'Exclusão Cancelada',
+        message: 'Sua conta permanece ativa normalmente.',
+      });
+      loadPrivacyData();
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Erro ao Cancelar',
+        message: res.error || 'Falha ao cancelar exclusão.',
+      });
+    }
+  };
+
+  if (isLoading) {
     return (
-      <div className="container" style={{ padding: '3rem 1rem' }}>
-        <Skeleton height="3rem" width="280px" style={{ marginBottom: '1.5rem' }} />
-        <Skeleton height="200px" style={{ marginBottom: '1.5rem' }} />
+      <div className="container" style={{ padding: '3rem 1rem', maxWidth: '820px' }}>
+        <Skeleton height="2rem" width="260px" style={{ marginBottom: '1.5rem' }} />
+        <Skeleton height="180px" style={{ marginBottom: '1.5rem' }} />
+        <Skeleton height="180px" />
       </div>
     );
   }
 
   return (
-    <div className="container" style={{ padding: '3rem 1rem', maxWidth: '780px' }}>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <Link href="/account" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          <ArrowLeft size={16} /> Voltar para Minha Conta
+    <div className="container" style={{ padding: '3rem 1rem 5rem 1rem', maxWidth: '820px' }}>
+      {/* Breadcrumb */}
+      <div style={{ marginBottom: '2rem' }}>
+        <Link href="/account" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.9rem' }}>
+          <ArrowLeft size={16} /> Voltar para Central da Conta
         </Link>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
-        <Shield size={28} color="var(--color-success)" />
-        <h1 style={{ fontSize: '2.2rem' }}>Privacidade & Proteção de Dados</h1>
-      </div>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '2.5rem' }}>
-        Controle o registro de histórico, personalização comportamental, perfis bloqueados e conformidade LGPD
-      </p>
+      {/* Scheduled Deletion Alert Banner (Section 94 & 96) */}
+      {activeDeletion && (
+        <Card variant="elevated" padding="md" style={{ background: 'rgba(163, 0, 33, 0.15)', border: '1px solid var(--accent-ruby)', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-ruby)', fontWeight: 700, marginBottom: '0.2rem' }}>
+                <AlertTriangle size={18} /> Exclusão de Conta Agendada
+              </div>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                Sua conta está em período de tolerância e será excluída em{' '}
+                <strong style={{ color: 'var(--text-primary)' }}>
+                  {new Date(activeDeletion.scheduled_for).toLocaleDateString('pt-BR')}
+                </strong>.
+              </p>
+            </div>
+            <Button variant="secondary" size="sm" onClick={handleCancelDeletion} isLoading={isProcessingAction} leftIcon={<RotateCcw size={14} />}>
+              Cancelar Exclusão
+            </Button>
+          </div>
+        </Card>
+      )}
 
-      {/* Card 1: Controles de Histórico e Personalização (Sections 20, 43, 70) */}
-      <Card variant="glass" padding="lg" style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
-          <Sliders size={20} color="var(--accent-gold)" />
-          <h2 style={{ fontSize: '1.25rem' }}>Controles de Rastreamento Privado</h2>
+      {/* Header */}
+      <div style={{ marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
+          <Lock size={28} color="var(--accent-gold)" />
+          <h1 style={{ fontSize: '2.2rem', fontWeight: 800 }}>Central de Privacidade & LGPD</h1>
         </div>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+          Controle de sigilo, gravação de histórico, trilha de consentimentos e gestão de dados.
+        </p>
+      </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      {/* Card 1: Data Controls */}
+      <Card variant="glass" padding="lg" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1.25rem' }}>Controles de Rastreamento e Sigilo</h2>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* History Opt-out */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid var(--border-subtle)' }}>
             <div>
               <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <History size={16} color="var(--color-info)" /> Gravar Histórico de Visualizações
+                <History size={16} color="var(--accent-gold)" /> Histórico Privado de Visualizações
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', maxWidth: '520px' }}>
                 Se desativado, novas páginas de perfil que você visitar não serão registradas na sua conta.
@@ -177,7 +270,7 @@ export default function PrivacyPage() {
             />
           </div>
 
-          {/* Blocked Profiles Link (Section 37) */}
+          {/* Blocked Profiles Link */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -196,7 +289,7 @@ export default function PrivacyPage() {
         </div>
       </Card>
 
-      {/* Card 2: Consent Audit Trail (Section 71) */}
+      {/* Card 2: Consent Audit Trail */}
       <Card variant="glass" padding="lg" style={{ marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Histórico de Consentimentos Registrados</h2>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
@@ -231,7 +324,7 @@ export default function PrivacyPage() {
                     </div>
                   </div>
                 </div>
-                <Badge variant={c.granted ? 'success' : 'neutral'}>
+                <Badge variant={c.granted ? 'gold' : 'neutral'}>
                   {c.granted ? 'Ativo' : 'Revogado'}
                 </Badge>
               </div>
@@ -240,21 +333,85 @@ export default function PrivacyPage() {
         )}
       </Card>
 
-      {/* Card 3: Data Management Actions (Section 72 & 73) */}
+      {/* Card 3: Data Management Actions (LGPD) */}
       <Card variant="elevated" padding="lg">
         <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Gestão de Dados Pessoais (LGPD)</h2>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
           Exercício dos direitos de portabilidade e eliminação de dados previstos pela Lei Geral de Proteção de Dados.
         </p>
+
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-          <Button variant="secondary" size="sm" onClick={handleExportData} leftIcon={<Download size={16} />}>
-            Exportar Meus Dados (LGPD)
+          <Button variant="secondary" size="md" onClick={handleRequestExport} isLoading={isProcessingAction} leftIcon={<Download size={16} />}>
+            Exportar Meus Dados (JSON)
           </Button>
-          <Button variant="ghost" size="sm" onClick={handleAccountDeletionNotice} style={{ color: 'var(--accent-ruby)' }} leftIcon={<Trash2 size={16} />}>
-            Solicitar Exclusão da Conta
+          <Button variant="ruby" size="md" onClick={() => setIsDeleteModalOpen(true)} leftIcon={<Trash2 size={16} />}>
+            Excluir Minha Conta
           </Button>
         </div>
+
+        {exportRequests.length > 0 && (
+          <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
+            <h4 style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>Solicitações de Exportação Recentes:</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {exportRequests.map((ex) => (
+                <div key={ex.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                  <span>Solicitado em {new Date(ex.requested_at).toLocaleDateString('pt-BR')}</span>
+                  <Badge variant={ex.status === 'ready' ? 'gold' : 'neutral'}>{ex.status}</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </Card>
+
+      {/* Account Deletion Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div
+          onClick={() => setIsDeleteModalOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--accent-ruby)', borderRadius: 'var(--radius-lg)', padding: '2rem', maxWidth: '480px', width: '100%' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-ruby)' }}>
+                <AlertTriangle size={22} />
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Excluir Minha Conta</h3>
+              </div>
+              <button type="button" onClick={() => setIsDeleteModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+              Ao confirmar, sua solicitação de exclusão entrará em período de tolerância de <strong>7 dias</strong>. Após este prazo, seus favoritos, histórico, listas e anúncios serão permanentemente removidos.
+            </p>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label className="label" htmlFor="del-reason" style={{ fontSize: '0.85rem' }}>Motivo da saída (opcional):</label>
+              <textarea
+                id="del-reason"
+                className="input"
+                rows={3}
+                placeholder="Conte-nos por que está saindo..."
+                value={deletionReason}
+                onChange={(e) => setDeletionReason(e.target.value)}
+                style={{ width: '100%', resize: 'none' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <Button variant="secondary" onClick={() => setIsDeleteModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button variant="ruby" onClick={handleConfirmDeletion} isLoading={isProcessingAction}>
+                Confirmar Solicitação de Exclusão
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

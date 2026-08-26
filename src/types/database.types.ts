@@ -1840,6 +1840,477 @@ export type Database = {
         };
         Relationships: [];
       };
+      communication_jobs: {
+        Row: {
+          id: string;
+          profile_id: string | null;
+          channel: 'in_app' | 'email' | 'push';
+          category: 'security' | 'transactional' | 'account' | 'verification' | 'billing' | 'profile' | 'moderation' | 'platform' | 'marketing';
+          template_code: string;
+          payload: Json;
+          status: 'pending' | 'processing' | 'sent' | 'failed' | 'cancelled' | 'dead_letter';
+          priority: 'low' | 'normal' | 'high' | 'critical';
+          attempts: number;
+          max_attempts: number;
+          scheduled_at: string;
+          started_at: string | null;
+          completed_at: string | null;
+          failed_at: string | null;
+          error_message: string | null;
+          dedupe_key: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id?: string | null;
+          channel: 'in_app' | 'email' | 'push';
+          category: 'security' | 'transactional' | 'account' | 'verification' | 'billing' | 'profile' | 'moderation' | 'platform' | 'marketing';
+          template_code: string;
+          payload?: Json;
+          status?: 'pending' | 'processing' | 'sent' | 'failed' | 'cancelled' | 'dead_letter';
+          priority?: 'low' | 'normal' | 'high' | 'critical';
+          attempts?: number;
+          max_attempts?: number;
+          scheduled_at?: string;
+          started_at?: string | null;
+          completed_at?: string | null;
+          failed_at?: string | null;
+          error_message?: string | null;
+          dedupe_key?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string | null;
+          channel?: 'in_app' | 'email' | 'push';
+          category?: 'security' | 'transactional' | 'account' | 'verification' | 'billing' | 'profile' | 'moderation' | 'platform' | 'marketing';
+          template_code?: string;
+          payload?: Json;
+          status?: 'pending' | 'processing' | 'sent' | 'failed' | 'cancelled' | 'dead_letter';
+          priority?: 'low' | 'normal' | 'high' | 'critical';
+          attempts?: number;
+          max_attempts?: number;
+          scheduled_at?: string;
+          started_at?: string | null;
+          completed_at?: string | null;
+          failed_at?: string | null;
+          error_message?: string | null;
+          dedupe_key?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      communication_templates: {
+        Row: {
+          id: string;
+          code: string;
+          channel: 'in_app' | 'email' | 'push';
+          locale: string;
+          subject: string;
+          content_html: string;
+          content_text: string;
+          version: number;
+          status: 'active' | 'draft' | 'archived';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          channel: 'in_app' | 'email' | 'push';
+          locale?: string;
+          subject: string;
+          content_html: string;
+          content_text: string;
+          version?: number;
+          status?: 'active' | 'draft' | 'archived';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          channel?: 'in_app' | 'email' | 'push';
+          locale?: string;
+          subject?: string;
+          content_html?: string;
+          content_text?: string;
+          version?: number;
+          status?: 'active' | 'draft' | 'archived';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      communication_delivery_events: {
+        Row: {
+          id: string;
+          job_id: string;
+          provider: string;
+          provider_reference: string | null;
+          event_type: 'delivered' | 'bounced' | 'complained' | 'deferred' | 'opened' | 'clicked';
+          occurred_at: string;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          job_id: string;
+          provider: string;
+          provider_reference?: string | null;
+          event_type: 'delivered' | 'bounced' | 'complained' | 'deferred' | 'opened' | 'clicked';
+          occurred_at?: string;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          job_id?: string;
+          provider?: string;
+          provider_reference?: string | null;
+          event_type?: 'delivered' | 'bounced' | 'complained' | 'deferred' | 'opened' | 'clicked';
+          occurred_at?: string;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          profile_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          user_agent_hash: string | null;
+          created_at: string;
+          updated_at: string;
+          last_used_at: string;
+          revoked_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          user_agent_hash?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          last_used_at?: string;
+          revoked_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          endpoint?: string;
+          p256dh?: string;
+          auth?: string;
+          user_agent_hash?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          last_used_at?: string;
+          revoked_at?: string | null;
+        };
+        Relationships: [];
+      };
+      help_categories: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          description: string | null;
+          icon: string | null;
+          sort_order: number;
+          status: 'active' | 'draft' | 'archived';
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          description?: string | null;
+          icon?: string | null;
+          sort_order?: number;
+          status?: 'active' | 'draft' | 'archived';
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          description?: string | null;
+          icon?: string | null;
+          sort_order?: number;
+          status?: 'active' | 'draft' | 'archived';
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      help_articles: {
+        Row: {
+          id: string;
+          category_id: string;
+          title: string;
+          slug: string;
+          summary: string | null;
+          content: string;
+          status: 'published' | 'draft' | 'archived';
+          sort_order: number;
+          helpful_count: number;
+          unhelpful_count: number;
+          published_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          category_id: string;
+          title: string;
+          slug: string;
+          summary?: string | null;
+          content: string;
+          status?: 'published' | 'draft' | 'archived';
+          sort_order?: number;
+          helpful_count?: number;
+          unhelpful_count?: number;
+          published_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          category_id?: string;
+          title?: string;
+          slug?: string;
+          summary?: string | null;
+          content?: string;
+          status?: 'published' | 'draft' | 'archived';
+          sort_order?: number;
+          helpful_count?: number;
+          unhelpful_count?: number;
+          published_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      support_tickets: {
+        Row: {
+          id: string;
+          profile_id: string;
+          category: 'account' | 'security' | 'verification' | 'profile' | 'media' | 'billing' | 'technical' | 'privacy' | 'report' | 'other';
+          subject: string;
+          description: string;
+          priority: 'low' | 'normal' | 'high' | 'critical';
+          status: 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed';
+          assigned_to: string | null;
+          created_at: string;
+          updated_at: string;
+          resolved_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          category: 'account' | 'security' | 'verification' | 'profile' | 'media' | 'billing' | 'technical' | 'privacy' | 'report' | 'other';
+          subject: string;
+          description: string;
+          priority?: 'low' | 'normal' | 'high' | 'critical';
+          status?: 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed';
+          assigned_to?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          resolved_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          category?: 'account' | 'security' | 'verification' | 'profile' | 'media' | 'billing' | 'technical' | 'privacy' | 'report' | 'other';
+          subject?: string;
+          description?: string;
+          priority?: 'low' | 'normal' | 'high' | 'critical';
+          status?: 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed';
+          assigned_to?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          resolved_at?: string | null;
+        };
+        Relationships: [];
+      };
+      support_ticket_messages: {
+        Row: {
+          id: string;
+          ticket_id: string;
+          author_profile_id: string;
+          author_type: 'user' | 'staff' | 'system';
+          message: string;
+          attachments: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          ticket_id: string;
+          author_profile_id: string;
+          author_type: 'user' | 'staff' | 'system';
+          message: string;
+          attachments?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          ticket_id?: string;
+          author_profile_id?: string;
+          author_type?: 'user' | 'staff' | 'system';
+          message?: string;
+          attachments?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      data_export_requests: {
+        Row: {
+          id: string;
+          profile_id: string;
+          status: 'requested' | 'processing' | 'ready' | 'failed' | 'expired';
+          requested_at: string;
+          processing_started_at: string | null;
+          completed_at: string | null;
+          expires_at: string | null;
+          storage_path: string | null;
+          file_size_bytes: number | null;
+          download_count: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          status?: 'requested' | 'processing' | 'ready' | 'failed' | 'expired';
+          requested_at?: string;
+          processing_started_at?: string | null;
+          completed_at?: string | null;
+          expires_at?: string | null;
+          storage_path?: string | null;
+          file_size_bytes?: number | null;
+          download_count?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          status?: 'requested' | 'processing' | 'ready' | 'failed' | 'expired';
+          requested_at?: string;
+          processing_started_at?: string | null;
+          completed_at?: string | null;
+          expires_at?: string | null;
+          storage_path?: string | null;
+          file_size_bytes?: number | null;
+          download_count?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      account_deletion_requests: {
+        Row: {
+          id: string;
+          profile_id: string;
+          status: 'requested' | 'scheduled' | 'cancelled' | 'processing' | 'completed' | 'failed' | 'blocked';
+          requested_at: string;
+          scheduled_for: string;
+          cancelled_at: string | null;
+          executed_at: string | null;
+          reason_optional: string | null;
+          blocked_reason: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          status?: 'requested' | 'scheduled' | 'cancelled' | 'processing' | 'completed' | 'failed' | 'blocked';
+          requested_at?: string;
+          scheduled_for: string;
+          cancelled_at?: string | null;
+          executed_at?: string | null;
+          reason_optional?: string | null;
+          blocked_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          status?: 'requested' | 'scheduled' | 'cancelled' | 'processing' | 'completed' | 'failed' | 'blocked';
+          requested_at?: string;
+          scheduled_for?: string;
+          cancelled_at?: string | null;
+          executed_at?: string | null;
+          reason_optional?: string | null;
+          blocked_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      legal_holds: {
+        Row: {
+          id: string;
+          entity_type: 'profile' | 'advertiser' | 'payment' | 'media' | 'ticket';
+          entity_id: string;
+          reason: string;
+          created_by: string;
+          created_at: string;
+          released_at: string | null;
+          released_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          entity_type: 'profile' | 'advertiser' | 'payment' | 'media' | 'ticket';
+          entity_id: string;
+          reason: string;
+          created_by: string;
+          created_at?: string;
+          released_at?: string | null;
+          released_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          entity_type?: 'profile' | 'advertiser' | 'payment' | 'media' | 'ticket';
+          entity_id?: string;
+          reason?: string;
+          created_by?: string;
+          created_at?: string;
+          released_at?: string | null;
+          released_by?: string | null;
+        };
+        Relationships: [];
+      };
+      data_retention_policies: {
+        Row: {
+          id: string;
+          policy_key: string;
+          retention_days: number;
+          description: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          policy_key: string;
+          retention_days: number;
+          description: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          policy_key?: string;
+          retention_days?: number;
+          description?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_advertiser_profiles: {
@@ -2190,6 +2661,18 @@ export type Database = {
       reset_personalization: {
         Args: Record<string, never>;
         Returns: boolean;
+      };
+      request_data_export: {
+        Args: Record<string, never>;
+        Returns: { success: boolean; export_id: string; status: string };
+      };
+      request_account_deletion: {
+        Args: { p_reason?: string };
+        Returns: { success: boolean; deletion_id?: string; status: string; scheduled_for?: string; error?: string };
+      };
+      cancel_account_deletion: {
+        Args: Record<string, never>;
+        Returns: { success: boolean; message: string };
       };
     };
     Enums: {
