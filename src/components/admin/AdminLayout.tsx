@@ -21,6 +21,8 @@ import {
   Settings, 
   Menu, 
   Lock,
+  Crown,
+  CreditCard,
   ArrowLeft 
 } from 'lucide-react';
 
@@ -43,6 +45,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/moderation/media', label: 'Fila de Mídias', icon: <ImageIcon size={18} />, allowed: isModerator },
     { href: '/admin/reports', label: 'Denúncias', icon: <AlertTriangle size={18} />, allowed: isModerator },
     { href: '/admin/verifications', label: 'Verificações 18+', icon: <FileCheck2 size={18} />, allowed: isModerator },
+    { href: '/admin/plans', label: 'Planos & Preços', icon: <Crown size={18} />, allowed: isAdmin },
+    { href: '/admin/payments', label: 'Faturamento', icon: <CreditCard size={18} />, allowed: isAdmin },
+    { href: '/admin/subscriptions', label: 'Assinaturas', icon: <FileCheck2 size={18} />, allowed: isAdmin },
     { href: '/admin/users', label: 'Usuários & Cargos', icon: <Users size={18} />, allowed: isSuperAdmin },
     { href: '/admin/audit', label: 'Logs de Auditoria', icon: <FileSpreadsheet size={18} />, allowed: isAdmin },
     { href: '/admin/categories', label: 'Categorias', icon: <Tag size={18} />, allowed: isAdmin },

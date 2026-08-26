@@ -22,6 +22,18 @@ export type Notification = Database['public']['Tables']['notifications']['Row'];
 export type ModerationNote = Database['public']['Tables']['moderation_notes']['Row'];
 export type ModerationFeedback = Database['public']['Tables']['moderation_feedback']['Row'];
 
+// Phase 6 Commercial Types
+export type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row'];
+export type Subscription = Database['public']['Tables']['subscriptions']['Row'];
+export type Order = Database['public']['Tables']['orders']['Row'];
+export type OrderItem = Database['public']['Tables']['order_items']['Row'];
+export type Payment = Database['public']['Tables']['payments']['Row'];
+export type PromotionProduct = Database['public']['Tables']['promotion_products']['Row'];
+export type AdvertiserCampaign = Database['public']['Tables']['advertiser_campaigns']['Row'];
+export type CampaignDailyStat = Database['public']['Tables']['campaign_daily_stats']['Row'];
+export type Coupon = Database['public']['Tables']['coupons']['Row'];
+export type CouponRedemption = Database['public']['Tables']['coupon_redemptions']['Row'];
+
 // View Type
 export type PublicAdvertiser = Database['public']['Views']['public_advertiser_profiles']['Row'];
 
@@ -81,6 +93,12 @@ export interface AdminDashboardMetrics {
   criticalReports: number;
   pendingVerifications: number;
   suspendedProfiles: number;
+  // Billing Metrics
+  totalRevenueCents?: number;
+  activeSubscriptions?: number;
+  mrrCents?: number;
+  totalPayments?: number;
+  totalRefunds?: number;
 }
 
 export type VerificationType = 'identity_and_age' | 'age_only' | 'identity_only';
@@ -92,5 +110,27 @@ export interface VerificationSessionResponse {
   sessionToken?: string;
   redirectUrl?: string;
   message?: string;
+  error?: string;
+}
+
+export interface AdvertiserEntitlements {
+  has_active_subscription: boolean;
+  plan_name: string;
+  plan_slug: string;
+  media_limit: number;
+  video_limit: number;
+  boost_allowance: number;
+  analytics_level: 'basic' | 'advanced' | 'premium';
+}
+
+export interface CheckoutResponse {
+  success: boolean;
+  orderId?: string;
+  orderNumber?: string;
+  subtotal?: number;
+  discount?: number;
+  totalAmount?: number;
+  sessionToken?: string;
+  redirectUrl?: string;
   error?: string;
 }

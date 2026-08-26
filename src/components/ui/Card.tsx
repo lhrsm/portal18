@@ -2,7 +2,7 @@ import React, { HTMLAttributes, forwardRef } from 'react';
 import clsx from 'clsx';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'glass' | 'elevated' | 'bordered';
+  variant?: 'glass' | 'elevated' | 'bordered' | 'premium';
   padding?: 'none' | 'sm' | 'md' | 'lg';
 }
 

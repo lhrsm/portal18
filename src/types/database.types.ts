@@ -15,8 +15,17 @@ export type ModerationStatus = 'pending' | 'approved' | 'rejected' | 'flagged' |
 export type ReportSeverity = 'low' | 'medium' | 'high' | 'critical';
 export type ReportStatus = 'open' | 'under_review' | 'resolved' | 'rejected' | 'escalated';
 export type LegalDocumentType = 'terms' | 'privacy' | 'cookies' | 'community_guidelines' | 'advertiser_terms';
-export type ConsentType = 'age_declaration' | 'terms' | 'privacy' | 'marketing_email' | 'analytics' | 'advertiser_terms';
+export type ConsentType = 'age_declaration' | 'terms' | 'privacy' | 'marketing_email' | 'analytics' | 'advertiser_terms' | 'subscription_terms' | 'recurring_billing' | 'promotion_purchase_terms';
 export type ContactType = 'whatsapp' | 'telegram' | 'phone' | 'website';
+
+export type BillingInterval = 'monthly' | 'quarterly' | 'semiannual' | 'annual';
+export type SubscriptionStatus = 'incomplete' | 'pending' | 'active' | 'past_due' | 'cancelled' | 'expired' | 'suspended';
+export type PaymentStatus = 'pending' | 'authorized' | 'paid' | 'failed' | 'cancelled' | 'refunded' | 'partially_refunded' | 'chargeback' | 'disputed';
+export type PaymentType = 'subscription' | 'boost' | 'featured_placement' | 'campaign' | 'other_platform_product';
+export type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled' | 'failed';
+export type CampaignStatus = 'pending_payment' | 'scheduled' | 'active' | 'completed' | 'cancelled' | 'suspended';
+export type PromotionPlacement = 'homepage_featured' | 'city_top' | 'category_top' | 'search_sponsored' | 'profile_recommendation';
+export type DiscountType = 'percentage' | 'fixed';
 
 export type Database = {
   public: {
@@ -804,6 +813,462 @@ export type Database = {
         };
         Relationships: [];
       };
+      subscription_plans: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          description: string | null;
+          price_amount: number;
+          currency: string;
+          billing_interval: BillingInterval;
+          status: string;
+          sort_order: number;
+          features: Json;
+          media_limit: number;
+          video_limit: number;
+          boost_allowance: number;
+          analytics_level: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          description?: string | null;
+          price_amount: number;
+          currency?: string;
+          billing_interval?: BillingInterval;
+          status?: string;
+          sort_order?: number;
+          features?: Json;
+          media_limit?: number;
+          video_limit?: number;
+          boost_allowance?: number;
+          analytics_level?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          description?: string | null;
+          price_amount?: number;
+          currency?: string;
+          billing_interval?: BillingInterval;
+          status?: string;
+          sort_order?: number;
+          features?: Json;
+          media_limit?: number;
+          video_limit?: number;
+          boost_allowance?: number;
+          analytics_level?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      subscriptions: {
+        Row: {
+          id: string;
+          advertiser_id: string;
+          plan_id: string;
+          provider: string;
+          provider_customer_reference: string | null;
+          provider_subscription_reference: string | null;
+          status: SubscriptionStatus;
+          billing_interval: BillingInterval;
+          current_period_start: string | null;
+          current_period_end: string | null;
+          cancel_at_period_end: boolean;
+          cancelled_at: string | null;
+          trial_start: string | null;
+          trial_end: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          advertiser_id: string;
+          plan_id: string;
+          provider?: string;
+          provider_customer_reference?: string | null;
+          provider_subscription_reference?: string | null;
+          status?: SubscriptionStatus;
+          billing_interval?: BillingInterval;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+          cancel_at_period_end?: boolean;
+          cancelled_at?: string | null;
+          trial_start?: string | null;
+          trial_end?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          advertiser_id?: string;
+          plan_id?: string;
+          provider?: string;
+          provider_customer_reference?: string | null;
+          provider_subscription_reference?: string | null;
+          status?: SubscriptionStatus;
+          billing_interval?: BillingInterval;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+          cancel_at_period_end?: boolean;
+          cancelled_at?: string | null;
+          trial_start?: string | null;
+          trial_end?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      orders: {
+        Row: {
+          id: string;
+          advertiser_id: string;
+          order_number: string;
+          status: OrderStatus;
+          subtotal: number;
+          discount_amount: number;
+          total_amount: number;
+          currency: string;
+          coupon_id: string | null;
+          idempotency_key: string | null;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          advertiser_id: string;
+          order_number: string;
+          status?: OrderStatus;
+          subtotal: number;
+          discount_amount?: number;
+          total_amount: number;
+          currency?: string;
+          coupon_id?: string | null;
+          idempotency_key?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          advertiser_id?: string;
+          order_number?: string;
+          status?: OrderStatus;
+          subtotal?: number;
+          discount_amount?: number;
+          total_amount?: number;
+          currency?: string;
+          coupon_id?: string | null;
+          idempotency_key?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      order_items: {
+        Row: {
+          id: string;
+          order_id: string;
+          product_type: PaymentType;
+          product_id: string;
+          description_snapshot: string;
+          quantity: number;
+          unit_amount: number;
+          total_amount: number;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          product_type: PaymentType;
+          product_id: string;
+          description_snapshot: string;
+          quantity?: number;
+          unit_amount: number;
+          total_amount: number;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          product_type?: PaymentType;
+          product_id?: string;
+          description_snapshot?: string;
+          quantity?: number;
+          unit_amount?: number;
+          total_amount?: number;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      payments: {
+        Row: {
+          id: string;
+          advertiser_id: string;
+          subscription_id: string | null;
+          order_id: string | null;
+          provider: string;
+          provider_payment_reference: string | null;
+          payment_type: PaymentType;
+          amount: number;
+          currency: string;
+          status: PaymentStatus;
+          paid_at: string | null;
+          failed_at: string | null;
+          refunded_at: string | null;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          advertiser_id: string;
+          subscription_id?: string | null;
+          order_id?: string | null;
+          provider?: string;
+          provider_payment_reference?: string | null;
+          payment_type: PaymentType;
+          amount: number;
+          currency?: string;
+          status?: PaymentStatus;
+          paid_at?: string | null;
+          failed_at?: string | null;
+          refunded_at?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          advertiser_id?: string;
+          subscription_id?: string | null;
+          order_id?: string | null;
+          provider?: string;
+          provider_payment_reference?: string | null;
+          payment_type?: PaymentType;
+          amount?: number;
+          currency?: string;
+          status?: PaymentStatus;
+          paid_at?: string | null;
+          failed_at?: string | null;
+          refunded_at?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      promotion_products: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          type: PaymentType;
+          description: string | null;
+          duration_hours: number;
+          price_amount: number;
+          currency: string;
+          status: string;
+          placement: PromotionPlacement;
+          priority: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          type?: PaymentType;
+          description?: string | null;
+          duration_hours?: number;
+          price_amount: number;
+          currency?: string;
+          status?: string;
+          placement?: PromotionPlacement;
+          priority?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          type?: PaymentType;
+          description?: string | null;
+          duration_hours?: number;
+          price_amount?: number;
+          currency?: string;
+          status?: string;
+          placement?: PromotionPlacement;
+          priority?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      advertiser_campaigns: {
+        Row: {
+          id: string;
+          advertiser_id: string;
+          product_id: string;
+          order_id: string | null;
+          status: CampaignStatus;
+          starts_at: string | null;
+          ends_at: string | null;
+          placement: PromotionPlacement;
+          impressions: number;
+          clicks: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          advertiser_id: string;
+          product_id: string;
+          order_id?: string | null;
+          status?: CampaignStatus;
+          starts_at?: string | null;
+          ends_at?: string | null;
+          placement: PromotionPlacement;
+          impressions?: number;
+          clicks?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          advertiser_id?: string;
+          product_id?: string;
+          order_id?: string | null;
+          status?: CampaignStatus;
+          starts_at?: string | null;
+          ends_at?: string | null;
+          placement?: PromotionPlacement;
+          impressions?: number;
+          clicks?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      campaign_daily_stats: {
+        Row: {
+          id: string;
+          campaign_id: string;
+          date: string;
+          impressions: number;
+          clicks: number;
+          profile_views: number;
+          contact_clicks: number;
+        };
+        Insert: {
+          id?: string;
+          campaign_id: string;
+          date?: string;
+          impressions?: number;
+          clicks?: number;
+          profile_views?: number;
+          contact_clicks?: number;
+        };
+        Update: {
+          id?: string;
+          campaign_id?: string;
+          date?: string;
+          impressions?: number;
+          clicks?: number;
+          profile_views?: number;
+          contact_clicks?: number;
+        };
+        Relationships: [];
+      };
+      coupons: {
+        Row: {
+          id: string;
+          code: string;
+          description: string | null;
+          discount_type: DiscountType;
+          discount_value: number;
+          starts_at: string | null;
+          expires_at: string | null;
+          usage_limit: number | null;
+          usage_count: number;
+          status: string;
+          applicable_product_type: PaymentType | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          description?: string | null;
+          discount_type?: DiscountType;
+          discount_value: number;
+          starts_at?: string | null;
+          expires_at?: string | null;
+          usage_limit?: number | null;
+          usage_count?: number;
+          status?: string;
+          applicable_product_type?: PaymentType | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          description?: string | null;
+          discount_type?: DiscountType;
+          discount_value?: number;
+          starts_at?: string | null;
+          expires_at?: string | null;
+          usage_limit?: number | null;
+          usage_count?: number;
+          status?: string;
+          applicable_product_type?: PaymentType | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      coupon_redemptions: {
+        Row: {
+          id: string;
+          coupon_id: string;
+          advertiser_id: string;
+          order_id: string;
+          discount_amount: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          coupon_id: string;
+          advertiser_id: string;
+          order_id: string;
+          discount_amount: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          coupon_id?: string;
+          advertiser_id?: string;
+          order_id?: string;
+          discount_amount?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_advertiser_profiles: {
@@ -964,6 +1429,56 @@ export type Database = {
       expire_stale_verifications: {
         Args: Record<PropertyKey, never>;
         Returns: number;
+      };
+      create_advertiser_checkout: {
+        Args: {
+          p_product_type: string;
+          p_product_id: string;
+          p_coupon_code?: string | null;
+        };
+        Returns: {
+          success: boolean;
+          order_id?: string;
+          order_number?: string;
+          subtotal?: number;
+          discount?: number;
+          total_amount?: number;
+          session_token?: string;
+          redirect_url?: string;
+          error?: string;
+        };
+      };
+      process_payment_webhook: {
+        Args: {
+          p_provider: string;
+          p_event_id: string;
+          p_event_type: string;
+          p_provider_reference: string;
+          p_status: string;
+          p_amount: number;
+          p_metadata?: Json;
+        };
+        Returns: { success: boolean; status?: string; message?: string; error?: string };
+      };
+      cancel_advertiser_subscription: {
+        Args: { p_subscription_id: string; p_cancel_at_period_end?: boolean };
+        Returns: { success: boolean; cancel_at_period_end: boolean };
+      };
+      refund_payment: {
+        Args: { p_payment_id: string; p_reason: string };
+        Returns: { success: boolean; status: string };
+      };
+      get_advertiser_entitlements: {
+        Args: { p_advertiser_id: string };
+        Returns: {
+          has_active_subscription: boolean;
+          plan_name: string;
+          plan_slug: string;
+          media_limit: number;
+          video_limit: number;
+          boost_allowance: number;
+          analytics_level: string;
+        };
       };
     };
     Enums: {
