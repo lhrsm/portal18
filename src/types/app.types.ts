@@ -11,6 +11,9 @@ export type Favorite = Database['public']['Tables']['favorites']['Row'];
 export type Report = Database['public']['Tables']['reports']['Row'];
 export type VerificationRequest = Database['public']['Tables']['verification_requests']['Row'];
 export type AuditLog = Database['public']['Tables']['audit_logs']['Row'];
+export type LegalDocument = Database['public']['Tables']['legal_documents']['Row'];
+export type ConsentRecord = Database['public']['Tables']['consent_records']['Row'];
+export type AdvertiserContact = Database['public']['Tables']['advertiser_contacts']['Row'];
 
 export interface UserSession {
   id: string;

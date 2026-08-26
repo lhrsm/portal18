@@ -14,6 +14,9 @@ export type MediaType = 'image' | 'video';
 export type ModerationStatus = 'pending' | 'approved' | 'rejected' | 'flagged' | 'blocked';
 export type ReportSeverity = 'low' | 'medium' | 'high' | 'critical';
 export type ReportStatus = 'open' | 'under_review' | 'resolved' | 'rejected' | 'escalated';
+export type LegalDocumentType = 'terms' | 'privacy' | 'cookies' | 'community_guidelines' | 'advertiser_terms';
+export type ConsentType = 'age_declaration' | 'terms' | 'privacy' | 'marketing_email' | 'analytics' | 'advertiser_terms';
+export type ContactType = 'whatsapp' | 'telegram' | 'phone' | 'website';
 
 export type Database = {
   public: {
@@ -176,6 +179,8 @@ export type Database = {
           verification_status: VerificationStatus;
           profile_status: ProfileStatus;
           visibility: Visibility;
+          onboarding_step: number;
+          onboarding_completed: boolean;
           last_active_at: string | null;
           created_at: string;
           updated_at: string;
@@ -197,6 +202,8 @@ export type Database = {
           verification_status?: VerificationStatus;
           profile_status?: ProfileStatus;
           visibility?: Visibility;
+          onboarding_step?: number;
+          onboarding_completed?: boolean;
           last_active_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -218,6 +225,8 @@ export type Database = {
           verification_status?: VerificationStatus;
           profile_status?: ProfileStatus;
           visibility?: Visibility;
+          onboarding_step?: number;
+          onboarding_completed?: boolean;
           last_active_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -420,6 +429,111 @@ export type Database = {
         };
         Relationships: [];
       };
+      legal_documents: {
+        Row: {
+          id: string;
+          document_type: LegalDocumentType;
+          version: string;
+          title: string;
+          content_url: string | null;
+          active: boolean;
+          published_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          document_type: LegalDocumentType;
+          version: string;
+          title: string;
+          content_url?: string | null;
+          active?: boolean;
+          published_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          document_type?: LegalDocumentType;
+          version?: string;
+          title?: string;
+          content_url?: string | null;
+          active?: boolean;
+          published_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      consent_records: {
+        Row: {
+          id: string;
+          profile_id: string;
+          consent_type: ConsentType;
+          document_id: string | null;
+          granted: boolean;
+          source: string;
+          created_at: string;
+          revoked_at: string | null;
+          metadata: Json;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          consent_type: ConsentType;
+          document_id?: string | null;
+          granted?: boolean;
+          source?: string;
+          created_at?: string;
+          revoked_at?: string | null;
+          metadata?: Json;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          consent_type?: ConsentType;
+          document_id?: string | null;
+          granted?: boolean;
+          source?: string;
+          created_at?: string;
+          revoked_at?: string | null;
+          metadata?: Json;
+        };
+        Relationships: [];
+      };
+      advertiser_contacts: {
+        Row: {
+          id: string;
+          advertiser_id: string;
+          contact_type: ContactType;
+          contact_value: string;
+          is_primary: boolean;
+          is_visible: boolean;
+          verified_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          advertiser_id: string;
+          contact_type: ContactType;
+          contact_value: string;
+          is_primary?: boolean;
+          is_visible?: boolean;
+          verified_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          advertiser_id?: string;
+          contact_type?: ContactType;
+          contact_value?: string;
+          is_primary?: boolean;
+          is_visible?: boolean;
+          verified_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -445,6 +559,14 @@ export type Database = {
         Args: { target_advertiser_id: string };
         Returns: boolean;
       };
+      generate_available_advertiser_slug: {
+        Args: { p_base_name: string };
+        Returns: string;
+      };
+      become_advertiser: {
+        Args: { p_terms_accepted: boolean; p_is_adult: boolean };
+        Returns: { success: boolean; advertiser_id: string; already_existed: boolean };
+      };
     };
     Enums: {
       account_type: AccountType;
@@ -455,6 +577,9 @@ export type Database = {
       moderation_status: ModerationStatus;
       report_severity: ReportSeverity;
       report_status: ReportStatus;
+      legal_document_type: LegalDocumentType;
+      consent_type: ConsentType;
+      contact_type: ContactType;
     };
     CompositeTypes: {
       [_ in never]: never;

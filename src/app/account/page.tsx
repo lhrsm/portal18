@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { User, Shield, Megaphone, Key, Settings, AlertCircle } from 'lucide-react';
+import { User, Shield, Megaphone, Key, Heart, FileText, ArrowRight } from 'lucide-react';
 
 export default function AccountPage() {
   const { user, profile, roles, isLoading, isAdvertiser } = useAuth();
@@ -17,44 +17,47 @@ export default function AccountPage() {
     return (
       <div className="container" style={{ padding: '3rem 1rem' }}>
         <Skeleton height="3rem" width="300px" style={{ marginBottom: '1.5rem' }} />
-        <Skeleton height="150px" style={{ marginBottom: '1.5rem' }} />
-        <Skeleton height="200px" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+          <Skeleton height="200px" />
+          <Skeleton height="200px" />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="container" style={{ padding: '3rem 1rem' }}>
+      {/* Top Header */}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>Painel do Usuário</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Gerencie seus dados de acesso, perfil e anúncios</p>
+          <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.4rem' }}>
+            <Badge variant="gold">ÁREA DO USUÁRIO</Badge>
+            <Badge variant="neutral">{profile?.account_type || 'user'}</Badge>
+          </div>
+          <h1 style={{ fontSize: '2.2rem' }}>Minha Conta</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Gerencie suas preferências, dados pessoais e perfil profissional</p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <Link href="/account/profile">
-            <Button variant="secondary" leftIcon={<User size={16} />}>
-              Editar Perfil
+
+        {!isAdvertiser && (
+          <Link href="/advertiser/start">
+            <Button variant="ruby" leftIcon={<Megaphone size={16} />}>
+              Quero Anunciar
             </Button>
           </Link>
-          <Link href="/account/security">
-            <Button variant="secondary" leftIcon={<Key size={16} />}>
-              Segurança
-            </Button>
-          </Link>
-        </div>
+        )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
-        {/* User Identity Card */}
-        <Card variant="glass" padding="lg">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '1.5rem' }}>
-            <Avatar fallback={profile?.display_name || user?.email || 'U'} size="lg" />
+      {/* Main Profile Summary Card */}
+      <Card variant="glass" padding="lg" style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            <Avatar src={profile?.avatar_path} fallback={profile?.display_name || user?.email || 'U'} size="xl" />
             <div>
-              <h2 style={{ fontSize: '1.35rem', marginBottom: '0.2rem' }}>
+              <h2 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>
                 {profile?.display_name || 'Usuário do Portal'}
               </h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{user?.email}</p>
-              <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.5rem' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{user?.email}</p>
+              <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.6rem' }}>
                 {roles.length > 0 ? (
                   roles.map((r, i) => (
                     <Badge key={i} variant={r === 'admin' || r === 'super_admin' ? 'ruby' : r === 'advertiser' ? 'gold' : 'neutral'}>
@@ -64,50 +67,118 @@ export default function AccountPage() {
                 ) : (
                   <Badge variant="neutral">user</Badge>
                 )}
+                <Badge variant={profile?.status === 'active' ? 'success' : 'warning'}>
+                  {profile?.status || 'Ativo'}
+                </Badge>
               </div>
             </div>
           </div>
 
-          <hr style={{ borderColor: 'var(--border-subtle)', margin: '1rem 0' }} />
+          <Link href="/account/profile">
+            <Button variant="secondary" size="sm">
+              Alterar Foto & Perfil
+            </Button>
+          </Link>
+        </div>
+      </Card>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>ID do Perfil:</span>
-              <code style={{ color: 'var(--accent-gold)' }}>{profile?.id ? `${profile.id.slice(0, 8)}...` : 'N/A'}</code>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>Status da Conta:</span>
-              <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>{profile?.status || 'Ativo'}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>Data de Cadastro:</span>
-              <span>{profile?.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'Hoje'}</span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Advertiser Promotion Card */}
+      {/* Section Cards: Meu Perfil, Segurança, Favoritos, Tornar-me Anunciante */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
+        {/* Card 1: Meu Perfil */}
         <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
-              <Megaphone size={22} color="var(--accent-gold)" />
-              <h3 style={{ fontSize: '1.25rem' }}>Deseja Publicar Anúncios?</h3>
+              <User size={22} color="var(--accent-gold)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Meu perfil</h3>
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.25rem' }}>
-              Profissionais adultos independentes podem criar seu perfil de anunciante com fotos, vídeos, localização e horários de atendimento.
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              Atualize seu nome de exibição, username público (@) e avatar.
             </p>
           </div>
+          <Link href="/account/profile">
+            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
+              Gerenciar Perfil
+            </Button>
+          </Link>
+        </Card>
 
+        {/* Card 2: Segurança */}
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <Key size={22} color="var(--color-info)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Segurança</h3>
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              Altere sua senha de acesso, veja o status da sessão e criptografia.
+            </p>
+          </div>
+          <Link href="/account/security">
+            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
+              Configurar Segurança
+            </Button>
+          </Link>
+        </Card>
+
+        {/* Card 3: Favoritos */}
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <Heart size={22} color="var(--accent-ruby)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Favoritos</h3>
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              Acesse sua lista privada de anúncios e perfis salvos no portal.
+            </p>
+          </div>
+          <Link href="/account/favorites">
+            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
+              Ver Favoritos
+            </Button>
+          </Link>
+        </Card>
+
+        {/* Card 4: Privacidade & Termos */}
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <FileText size={22} color="var(--color-success)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Privacidade</h3>
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              Gerencie seus consentimentos de analytics, marketing e termos aceitos.
+            </p>
+          </div>
+          <Link href="/account/privacy">
+            <Button variant="secondary" fullWidth size="sm" rightIcon={<ArrowRight size={14} />}>
+              Opções de Privacidade
+            </Button>
+          </Link>
+        </Card>
+
+        {/* Card 5: Tornar-me Anunciante */}
+        <Card variant="elevated" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid var(--accent-gold)' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <Megaphone size={22} color="var(--accent-gold)" />
+              <h3 style={{ fontSize: '1.2rem' }}>Tornar-me anunciante</h3>
+            </div>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              {isAdvertiser
+                ? 'Você já possui conta de anunciante ativa. Acesse seu painel de controle.'
+                : 'Crie seu perfil profissional independente com fotos, localização e contatos.'}
+            </p>
+          </div>
           {isAdvertiser ? (
             <Link href="/advertiser">
-              <Button variant="ruby" fullWidth>
+              <Button variant="primary" fullWidth size="sm">
                 Acessar Painel do Anunciante
               </Button>
             </Link>
           ) : (
-            <Link href="/advertiser/profile">
-              <Button variant="primary" fullWidth>
-                Criar Perfil de Anunciante
+            <Link href="/advertiser/start">
+              <Button variant="ruby" fullWidth size="sm">
+                Quero Anunciar
               </Button>
             </Link>
           )}

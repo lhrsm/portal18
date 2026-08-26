@@ -40,6 +40,82 @@ export const advertisersService = {
     return data as AdvertiserProfile | null;
   },
 
+  async becomeAdvertiser(
+    termsAccepted: boolean,
+    isAdult: boolean
+  ): Promise<{ success: boolean; advertiser_id?: string; already_existed?: boolean; error?: string }> {
+    const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.rpc as any)('become_advertiser', {
+      p_terms_accepted: termsAccepted,
+      p_is_adult: isAdult,
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return data as { success: boolean; advertiser_id: string; already_existed: boolean };
+  },
+
+  async generateAvailableSlug(baseName: string): Promise<string> {
+    const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.rpc as any)('generate_available_advertiser_slug', {
+      p_base_name: baseName,
+    });
+
+    if (error || !data) {
+      return baseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'anunciante';
+    }
+    return data as string;
+  },
+
+  async saveOnboardingProgress(
+    advertiserId: string,
+    step: number,
+    partialData: Partial<AdvertiserProfile>
+  ): Promise<{ success: boolean; data?: AdvertiserProfile; error?: string }> {
+    const supabase = createClient();
+    // Strip restricted columns
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { profile_status, verification_status, profile_id, ...safeUpdates } = partialData;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from('advertiser_profiles') as any)
+      .update({
+        ...safeUpdates,
+        onboarding_step: step,
+      } as AdvertiserUpdate)
+      .eq('id', advertiserId)
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true, data: data as AdvertiserProfile };
+  },
+
+  async completeOnboarding(
+    advertiserId: string
+  ): Promise<{ success: boolean; data?: AdvertiserProfile; error?: string }> {
+    const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from('advertiser_profiles') as any)
+      .update({
+        onboarding_completed: true,
+        profile_status: 'pending_review',
+      } as AdvertiserUpdate)
+      .eq('id', advertiserId)
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true, data: data as AdvertiserProfile };
+  },
+
   async createAdvertiserProfile(profileData: {
     profile_id: string;
     stage_name: string;
@@ -69,6 +145,8 @@ export const advertisersService = {
       profile_status: 'draft',
       verification_status: 'not_started',
       visibility: 'hidden',
+      onboarding_step: 1,
+      onboarding_completed: false,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

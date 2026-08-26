@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { RegisterSchema } from '@/lib/validation/auth';
+import { consentService } from '@/services/consentService';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
+import { PasswordStrength } from '@/components/ui/PasswordStrength';
 import { useToast } from '@/hooks/useToast';
 import { Mail, Lock, User, Sparkles } from 'lucide-react';
 
@@ -26,8 +28,13 @@ export function RegisterForm() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Synchronous lock to prevent double-submit clicks
+  const isSubmittingRef = useRef(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmittingRef.current || isLoading) return;
+
     setServerError(null);
     setSuccessMessage(null);
     setErrors({});
@@ -52,7 +59,9 @@ export function RegisterForm() {
       return;
     }
 
+    isSubmittingRef.current = true;
     setIsLoading(true);
+
     try {
       const supabase = createClient();
       const { data, error } = await supabase.auth.signUp({
@@ -72,22 +81,39 @@ export function RegisterForm() {
       }
 
       if (data.user) {
+        // Retrieve newly created profile to record formal consent in database
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('auth_user_id', data.user.id)
+          .maybeSingle();
+
+        if (profile) {
+          // Persist legal consents in consent_records
+          await Promise.allSettled([
+            consentService.recordConsent((profile as { id: string }).id, 'age_declaration', null, true, 'registration'),
+            consentService.recordConsent((profile as { id: string }).id, 'terms', null, true, 'registration'),
+            consentService.recordConsent((profile as { id: string }).id, 'privacy', null, true, 'registration'),
+          ]);
+        }
+
         showToast({
           type: 'success',
-          title: 'Cadastro realizado com sucesso!',
-          message: 'Sua conta foi criada. Verifique seu e-mail para confirmação se necessário.',
+          title: 'Cadastro realizado!',
+          message: 'Sua conta foi criada com sucesso.',
         });
 
-        setSuccessMessage('Conta criada com sucesso! Redirecionando para o painel...');
+        setSuccessMessage('Conta criada com sucesso! Redirecionando para sua conta...');
         setTimeout(() => {
           router.push('/account');
           router.refresh();
-        }, 1200);
+        }, 1000);
       }
     } catch (err) {
-      setServerError('Ocorreu um erro inesperado durante o cadastro.');
+      setServerError('Ocorreu um erro inesperado durante o cadastro. Tente novamente.');
       console.error(err);
     } finally {
+      isSubmittingRef.current = false;
       setIsLoading(false);
     }
   };
@@ -114,6 +140,7 @@ export function RegisterForm() {
           onChange={(e) => setDisplayName(e.target.value)}
           error={!!errors.displayName}
           leftIcon={<User size={18} />}
+          disabled={isLoading}
           required
         />
       </FormField>
@@ -127,11 +154,12 @@ export function RegisterForm() {
           error={!!errors.email}
           leftIcon={<Mail size={18} />}
           autoComplete="email"
+          disabled={isLoading}
           required
         />
       </FormField>
 
-      <FormField label="Senha" required error={errors.password} hint="Mínimo 8 caracteres, 1 maiúscula e 1 número.">
+      <FormField label="Senha" required error={errors.password}>
         <Input
           type="password"
           placeholder="••••••••"
@@ -140,8 +168,10 @@ export function RegisterForm() {
           error={!!errors.password}
           leftIcon={<Lock size={18} />}
           autoComplete="new-password"
+          disabled={isLoading}
           required
         />
+        <PasswordStrength password={password} />
       </FormField>
 
       <FormField label="Confirmar Senha" required error={errors.confirmPassword}>
@@ -153,11 +183,12 @@ export function RegisterForm() {
           error={!!errors.confirmPassword}
           leftIcon={<Lock size={18} />}
           autoComplete="new-password"
+          disabled={isLoading}
           required
         />
       </FormField>
 
-      {/* Mandatory 18+ and Terms Checkboxes */}
+      {/* Mandatory Checkboxes */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', margin: '1.25rem 0' }}>
         <label className="checkbox-field">
           <input
@@ -165,9 +196,10 @@ export function RegisterForm() {
             className="checkbox-input"
             checked={isAdult}
             onChange={(e) => setIsAdult(e.target.checked)}
+            disabled={isLoading}
           />
           <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            <strong style={{ color: 'var(--accent-ruby)' }}>[OBRIGATÓRIO]</strong> Declaro e confirmo que tenho <strong>18 anos de idade ou mais</strong> e plena capacidade civil.
+            Confirmo que tenho <strong>18 anos ou mais</strong>.
           </span>
         </label>
         {errors.isAdult && <span className="form-error">⚠️ {errors.isAdult}</span>}
@@ -178,22 +210,31 @@ export function RegisterForm() {
             className="checkbox-input"
             checked={acceptTerms}
             onChange={(e) => setAcceptTerms(e.target.checked)}
+            disabled={isLoading}
           />
           <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Li e aceito os Termos de Serviço e a Política de Privacidade do portal.
+            Li e aceito os <strong>Termos de Uso</strong> e a <strong>Política de Privacidade</strong>.
           </span>
         </label>
         {errors.acceptTerms && <span className="form-error">⚠️ {errors.acceptTerms}</span>}
       </div>
 
-      <Button type="submit" variant="primary" fullWidth size="lg" isLoading={isLoading} leftIcon={<Sparkles size={18} />}>
-        Criar Conta 18+
+      <Button
+        type="submit"
+        variant="primary"
+        fullWidth
+        size="lg"
+        isLoading={isLoading}
+        disabled={isLoading}
+        leftIcon={<Sparkles size={18} />}
+      >
+        Criar conta
       </Button>
 
       <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
         Já possui uma conta?{' '}
         <Link href="/login" style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>
-          Faça Login
+          Entrar
         </Link>
       </div>
     </form>

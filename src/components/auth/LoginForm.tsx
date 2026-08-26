@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -22,8 +22,13 @@ export function LoginForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Synchronous lock against double submit
+  const isSubmittingRef = useRef(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmittingRef.current || isLoading) return;
+
     setServerError(null);
     setErrors({});
 
@@ -39,7 +44,9 @@ export function LoginForm() {
       return;
     }
 
+    isSubmittingRef.current = true;
     setIsLoading(true);
+
     try {
       const supabase = createClient();
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -48,7 +55,8 @@ export function LoginForm() {
       });
 
       if (error) {
-        setServerError(error.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : error.message);
+        // Generic error message preventing account enumeration (Section 13)
+        setServerError('E-mail ou senha inválidos.');
         return;
       }
 
@@ -56,7 +64,7 @@ export function LoginForm() {
         showToast({
           type: 'success',
           title: 'Autenticado com sucesso!',
-          message: `Bem-vindo de volta, ${data.user.email}`,
+          message: 'Sessão iniciada com segurança.',
         });
 
         const redirectTo = searchParams.get('redirect_to') || '/account';
@@ -64,9 +72,10 @@ export function LoginForm() {
         router.refresh();
       }
     } catch (err) {
-      setServerError('Ocorreu um erro inesperado ao realizar o login.');
+      setServerError('Ocorreu um erro ao realizar o login. Tente novamente.');
       console.error(err);
     } finally {
+      isSubmittingRef.current = false;
       setIsLoading(false);
     }
   };
@@ -74,7 +83,7 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} style={{ width: '100%' }}>
       {serverError && (
-        <Alert type="error" title="Erro no acesso">
+        <Alert type="error" title="Acesso negado">
           {serverError}
         </Alert>
       )}
@@ -88,6 +97,7 @@ export function LoginForm() {
           error={!!errors.email}
           leftIcon={<Mail size={18} />}
           autoComplete="email"
+          disabled={isLoading}
           required
         />
       </FormField>
@@ -101,24 +111,33 @@ export function LoginForm() {
           error={!!errors.password}
           leftIcon={<Lock size={18} />}
           autoComplete="current-password"
+          disabled={isLoading}
           required
         />
       </FormField>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.25rem' }}>
         <Link href="/forgot-password" style={{ fontSize: '0.85rem', color: 'var(--accent-gold)' }}>
-          Esqueceu a senha?
+          Esqueci minha senha
         </Link>
       </div>
 
-      <Button type="submit" variant="primary" fullWidth size="lg" isLoading={isLoading} leftIcon={<LogIn size={18} />}>
-        Acessar Conta
+      <Button
+        type="submit"
+        variant="primary"
+        fullWidth
+        size="lg"
+        isLoading={isLoading}
+        disabled={isLoading}
+        leftIcon={<LogIn size={18} />}
+      >
+        Entrar
       </Button>
 
       <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
         Ainda não tem conta?{' '}
         <Link href="/register" style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>
-          Cadastre-se gratuitamente
+          Criar conta
         </Link>
       </div>
     </form>
