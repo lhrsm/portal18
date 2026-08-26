@@ -2,15 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { notFound, useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { publicProfilesService } from '@/services/publicProfilesService';
 import { mediaService } from '@/services/mediaService';
 import { contactsService } from '@/services/contactsService';
 import { favoritesService } from '@/services/favoritesService';
-import { PublicAdvertiser, AdvertiserMedia, AdvertiserContact } from '@/types/app.types';
+import { recommendationService } from '@/services/discovery/recommendationService';
+import { PublicAdvertiser, AdvertiserMedia, AdvertiserContact, DiscoveryProfileCard } from '@/types/app.types';
 import { useAuth } from '@/hooks/useAuth';
 import { GalleryLightbox } from '@/components/public/GalleryLightbox';
 import { ReportModal } from '@/components/public/ReportModal';
+import { AdvertiserCard } from '@/components/public/AdvertiserCard';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -29,8 +31,7 @@ import {
   MessageCircle, 
   Sparkles, 
   Camera, 
-  ChevronRight,
-  User
+  Users 
 } from 'lucide-react';
 
 export default function PublicProfilePage() {
@@ -46,6 +47,7 @@ export default function PublicProfilePage() {
   const [advertiser, setAdvertiser] = useState<PublicAdvertiser | null>(null);
   const [mediaList, setMediaList] = useState<AdvertiserMedia[]>([]);
   const [contacts, setContacts] = useState<AdvertiserContact[]>([]);
+  const [similarProfiles, setSimilarProfiles] = useState<DiscoveryProfileCard[]>([]);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -65,17 +67,18 @@ export default function PublicProfilePage() {
 
         setAdvertiser(adv);
 
-        // Fetch approved public media and visible contacts in parallel
-        const [approvedMedia, advContacts] = await Promise.all([
+        // Fetch media, contacts, and similar profiles in parallel (Section 49, 50, 111)
+        const [approvedMedia, advContacts, similar] = await Promise.all([
           mediaService.getApprovedPublicMedia(adv.advertiser_id),
           contactsService.getContactsByAdvertiser(adv.advertiser_id),
+          recommendationService.getSimilarProfiles(adv.advertiser_id, 4),
         ]);
 
         setMediaList(approvedMedia);
-        // Only visible contacts for public consumption (Section 49 & 50)
         setContacts(advContacts.filter((c) => c.is_visible));
+        setSimilarProfiles(similar);
 
-        // Non-blocking profile view increment (Section 56 & 57)
+        // Non-blocking profile view increment
         publicProfilesService.incrementProfileView(adv.advertiser_id);
       } catch (err) {
         console.error('Error loading public profile:', err);
@@ -91,7 +94,6 @@ export default function PublicProfilePage() {
 
   const handleContactClick = (contact: AdvertiserContact) => {
     if (!advertiser) return;
-    // Non-blocking contact click tracking
     publicProfilesService.incrementContactClick(advertiser.advertiser_id, contact.contact_type);
 
     if (contact.contact_type === 'whatsapp') {
@@ -120,7 +122,7 @@ export default function PublicProfilePage() {
       try {
         await navigator.share(shareData);
       } catch {
-        // Fallback to clipboard
+        // Fallback
       }
     } else {
       await navigator.clipboard.writeText(window.location.href);
@@ -208,7 +210,6 @@ export default function PublicProfilePage() {
       <div className="profile-layout-grid">
         {/* Left Column: Gallery */}
         <div className="profile-gallery-column">
-          {/* Main Large Photo */}
           <div
             className="profile-main-photo-container"
             onClick={() => mediaList.length > 0 && setIsLightboxOpen(true)}
@@ -252,7 +253,6 @@ export default function PublicProfilePage() {
 
         {/* Right Column: Profile Info & Direct Contacts */}
         <div className="profile-info-column">
-          {/* Top Title & Header */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.5rem' }}>
               <div>
@@ -300,7 +300,7 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
-          {/* Direct Contacts Section (Requirement 49 & 51) */}
+          {/* Direct Contacts Section */}
           <Card variant="glass" padding="md" style={{ border: '1px solid var(--accent-gold)' }}>
             <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
               Canais de Contato Direto
@@ -386,6 +386,40 @@ export default function PublicProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Section 49 & 50: Perfis Semelhantes na Região */}
+      {similarProfiles.length > 0 && (
+        <section style={{ marginTop: '4.5rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '2.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+            <Users size={22} color="var(--accent-gold)" />
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>Perfis Semelhantes em {advertiser.city_name}</h2>
+          </div>
+          <div className="advertiser-grid">
+            {similarProfiles.map((adv) => (
+              <AdvertiserCard
+                key={adv.advertiser_id}
+                advertiser={{
+                  advertiser_id: adv.advertiser_id,
+                  slug: adv.slug,
+                  stage_name: adv.stage_name,
+                  age: adv.age,
+                  city_name: adv.city_name,
+                  state_code: adv.state_code,
+                  headline: adv.headline,
+                  primary_media_url: adv.thumbnail_url,
+                  verification_status: adv.verification_status as any,
+                  profile_status: 'active',
+                  visibility: 'public',
+                  category_names: [],
+                  distance_label: adv.distance_label,
+                  activity_label: adv.activity_label,
+                  is_sponsored: adv.is_sponsored,
+                } as any}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Lightbox Component */}
       <GalleryLightbox

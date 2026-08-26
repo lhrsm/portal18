@@ -40,6 +40,51 @@ export type BlockedMediaHash = Database['public']['Tables']['blocked_media_hashe
 export type AutomatedModerationResult = Database['public']['Tables']['automated_moderation_results']['Row'];
 export type MediaUploadReservation = Database['public']['Tables']['media_upload_reservations']['Row'];
 
+// Phase 8 Ranking & Discovery Types
+export type AdvertiserRankingScore = Database['public']['Tables']['advertiser_ranking_scores']['Row'];
+export type RankingWeights = Database['public']['Tables']['ranking_weights']['Row'];
+
+export interface DiscoveryProfileCard {
+  advertiser_id: string;
+  slug: string;
+  stage_name: string;
+  age: number;
+  city_name: string;
+  city_slug: string;
+  state_code: string;
+  headline: string | null;
+  thumbnail_url: string | null;
+  verification_status: string;
+  activity_label: string;
+  distance_label: string;
+  is_sponsored: boolean;
+  organic_score: number;
+}
+
+export interface NearbyCity {
+  city_id: string;
+  city_name: string;
+  city_slug: string;
+  state_code: string;
+  distance_km: number;
+  distance_label: string;
+  active_advertisers_count: number;
+}
+
+export interface DiscoveryFilters {
+  query?: string;
+  stateCode?: string;
+  citySlug?: string;
+  originCityId?: string;
+  radiusKm?: number;
+  categorySlug?: string;
+  verifiedOnly?: boolean;
+  withVideo?: boolean;
+  activityFilter?: string;
+  page?: number;
+  limit?: number;
+}
+
 export interface MediaVariants {
   thumbnailUrl: string;
   cardUrl: string;

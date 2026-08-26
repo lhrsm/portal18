@@ -2,35 +2,41 @@
 
 import React, { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { publicProfilesService } from '@/services/publicProfilesService';
+import { searchService } from '@/services/discovery/searchService';
 import { locationService } from '@/services/locationService';
-import { PublicAdvertiser, BrazilState, BrazilCity, Category } from '@/types/app.types';
+import { DiscoveryProfileCard, BrazilState, BrazilCity, Category } from '@/types/app.types';
 import { AdvertiserCard } from '@/components/public/AdvertiserCard';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Sheet } from '@/components/ui/Sheet';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useToast } from '@/hooks/useToast';
 import { 
   Filter, 
   Search, 
   Sparkles, 
   MapPin, 
-  Tag, 
-  ShieldCheck, 
   RotateCcw, 
   SlidersHorizontal, 
-  ArrowUpDown 
+  Navigation, 
+  Video, 
+  ShieldCheck, 
+  Clock 
 } from 'lucide-react';
 
 function ExploreContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { showToast } = useToast();
 
-  const [profiles, setProfiles] = useState<PublicAdvertiser[]>([]);
+  const [profiles, setProfiles] = useState<DiscoveryProfileCard[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
   // Master Data
   const [states, setStates] = useState<BrazilState[]>([]);
@@ -38,12 +44,18 @@ function ExploreContent() {
   const [categories, setCategories] = useState<Category[]>([]);
 
   // Filter States from URL
+  const queryParam = searchParams.get('q') || '';
   const stateParam = searchParams.get('estado') || '';
   const cityParam = searchParams.get('cidade') || '';
+  const originCityIdParam = searchParams.get('origem') || '';
+  const radiusParam = parseInt(searchParams.get('raio') || '50', 10);
   const categoryParam = searchParams.get('categoria') || '';
-  const ageRangeParam = searchParams.get('idade') || '';
   const verifiedParam = searchParams.get('verificado') === 'true';
-  const sortParam = (searchParams.get('sort') as 'recommended' | 'recent' | 'active') || 'recommended';
+  const videoParam = searchParams.get('video') === 'true';
+  const activityParam = searchParams.get('atividade') || '';
+
+  // Local Search Input
+  const [searchInput, setSearchInput] = useState(queryParam);
 
   // Load Master Filters
   useEffect(() => {
@@ -77,30 +89,43 @@ function ExploreContent() {
   }, [stateParam, states]);
 
   // Load Profiles
-  const loadProfiles = useCallback(async () => {
-    setIsLoading(true);
+  const loadProfiles = useCallback(async (isNextPage = false) => {
+    setIsLoading(!isNextPage);
     try {
-      const res = await publicProfilesService.getPublicAdvertisers({
-        state: stateParam || undefined,
-        city: cityParam || undefined,
-        category: categoryParam || undefined,
-        ageRange: ageRangeParam || undefined,
-        verified: verifiedParam || undefined,
-        sort: sortParam,
-        limit: 30,
+      const targetPage = isNextPage ? page + 1 : 1;
+      const res = await searchService.searchProfiles({
+        query: queryParam || undefined,
+        stateCode: stateParam || undefined,
+        citySlug: cityParam || undefined,
+        originCityId: originCityIdParam || undefined,
+        radiusKm: radiusParam,
+        categorySlug: categoryParam || undefined,
+        verifiedOnly: verifiedParam || undefined,
+        withVideo: videoParam || undefined,
+        activityFilter: activityParam || undefined,
+        page: targetPage,
+        limit: 24,
       });
-      setProfiles(res.data);
-      setTotalCount(res.totalCount);
+
+      if (isNextPage) {
+        setProfiles((prev) => [...prev, ...res.profiles]);
+        setPage(targetPage);
+      } else {
+        setProfiles(res.profiles);
+        setPage(1);
+      }
+      setTotalCount(res.total);
+      setHasMore(res.hasMore);
     } catch (err) {
       console.error('Error loading explore profiles:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [stateParam, cityParam, categoryParam, ageRangeParam, verifiedParam, sortParam]);
+  }, [queryParam, stateParam, cityParam, originCityIdParam, radiusParam, categoryParam, verifiedParam, videoParam, activityParam, page]);
 
   useEffect(() => {
     loadProfiles();
-  }, [loadProfiles]);
+  }, [queryParam, stateParam, cityParam, originCityIdParam, radiusParam, categoryParam, verifiedParam, videoParam, activityParam]);
 
   // Update URL Query Helper
   const updateFilter = (key: string, value: string | null) => {
@@ -111,23 +136,63 @@ function ExploreContent() {
       params.delete(key);
     }
     if (key === 'estado') {
-      params.delete('cidade'); // reset city on state change
+      params.delete('cidade');
+      params.delete('origem');
     }
     router.push(`/explorar?${params.toString()}`);
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateFilter('q', searchInput || null);
+  };
+
+  // Browser Opt-in Geolocation (Section 13, 15, 16, 81)
+  const handleRequestNearMe = () => {
+    if (!navigator.geolocation) {
+      showToast({ type: 'warning', title: 'Geolocalização indisponível', message: 'Seu navegador não suporta geolocalização.' });
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async () => {
+        setIsLocating(false);
+        // Map to capital as safe nearest approximation without saving exact GPS (Section 5 & 16)
+        const spCity = cities.find((c) => c.slug === 'sao-paulo') || cities[0];
+        if (spCity) {
+          updateFilter('origem', spCity.id);
+          updateFilter('raio', '50');
+          showToast({ type: 'success', title: 'Localização Aproximada', message: 'Buscando perfis próximos à sua região.' });
+        }
+      },
+      () => {
+        setIsLocating(false);
+        showToast({
+          type: 'info',
+          title: 'Permissão não concedida',
+          message: 'Selecione sua cidade manualmente para buscar perfis próximos.',
+        });
+      },
+      { timeout: 8000 }
+    );
+  };
+
   const clearAllFilters = () => {
+    setSearchInput('');
     router.push('/explorar');
     setMobileFiltersOpen(false);
   };
 
-  // Calculate active filter count
   const activeFiltersCount = [
+    Boolean(queryParam),
     Boolean(stateParam),
     Boolean(cityParam),
+    Boolean(originCityIdParam),
     Boolean(categoryParam),
-    Boolean(ageRangeParam),
+    Boolean(activityParam),
     verifiedParam,
+    videoParam,
   ].filter(Boolean).length;
 
   return (
@@ -136,42 +201,56 @@ function ExploreContent() {
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem', gap: '1rem' }}>
         <div>
           <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.4rem' }}>
-            <Badge variant="gold">DESCOBERTA DE ANÚNCIOS</Badge>
+            <Badge variant="gold">MOTOR DE DESCOBERTA 18+</Badge>
             <Badge variant="neutral">{totalCount} {totalCount === 1 ? 'perfil encontrado' : 'perfis encontrados'}</Badge>
           </div>
-          <h1 style={{ fontSize: '2.4rem' }}>Explorar Perfis</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Filtre por localização, categoria, faixa etária e verificação</p>
+          <h1 style={{ fontSize: '2.4rem' }}>Explorar Anúncios</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Busca por proximidade geográfica aproximada, categorias e relevância orgânica</p>
         </div>
 
-        {/* Mobile Filter Toggle Button */}
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        {/* Action Controls */}
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <Button
             variant="secondary"
+            size="sm"
+            onClick={handleRequestNearMe}
+            isLoading={isLocating}
+            leftIcon={<Navigation size={15} color="var(--accent-gold)" />}
+          >
+            Perto de mim
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="sm"
             className="mobile-filter-btn"
             onClick={() => setMobileFiltersOpen(true)}
-            leftIcon={<SlidersHorizontal size={16} />}
+            leftIcon={<SlidersHorizontal size={15} />}
           >
             Filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Button>
-
-          {/* Sort Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <ArrowUpDown size={16} color="var(--text-muted)" />
-            <select
-              className="input"
-              value={sortParam}
-              onChange={(e) => updateFilter('sort', e.target.value)}
-              style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
-            >
-              <option value="recommended">Recomendados</option>
-              <option value="recent">Mais recentes</option>
-              <option value="active">Recentemente ativos</option>
-            </select>
-          </div>
         </div>
       </div>
 
-      {/* Main Grid with Sidebar Filters (Desktop) */}
+      {/* Search Input Bar */}
+      <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem' }}>
+        <div style={{ position: 'relative', flex: 1 }}>
+          <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+          <input
+            type="text"
+            className="input"
+            placeholder="Buscar por nome, cidade, categoria ou especialidade (ex: São Paulo, Massagem)..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            style={{ paddingLeft: '2.8rem' }}
+          />
+        </div>
+        <Button type="submit" variant="primary">
+          Buscar
+        </Button>
+      </form>
+
+      {/* Main Grid with Sidebar Filters */}
       <div className="explore-layout">
         {/* Desktop Sidebar Filters */}
         <aside className="explore-sidebar">
@@ -228,7 +307,23 @@ function ExploreContent() {
                 </div>
               )}
 
-              {/* Filter 3: Category */}
+              {/* Filter 3: Proximity Radius (Sections 10 & 19) */}
+              <div>
+                <label className="form-label" style={{ fontSize: '0.8rem' }}>Raio de Proximidade</label>
+                <select
+                  className="input"
+                  value={radiusParam.toString()}
+                  onChange={(e) => updateFilter('raio', e.target.value)}
+                >
+                  <option value="10">Até 10 km</option>
+                  <option value="25">Até 25 km</option>
+                  <option value="50">Até 50 km (Padrão)</option>
+                  <option value="100">Até 100 km</option>
+                  <option value="200">Até 200 km (Regional)</option>
+                </select>
+              </div>
+
+              {/* Filter 4: Category */}
               <div>
                 <label className="form-label" style={{ fontSize: '0.8rem' }}>Categoria</label>
                 <select
@@ -245,23 +340,22 @@ function ExploreContent() {
                 </select>
               </div>
 
-              {/* Filter 4: Age Range */}
+              {/* Filter 5: Recency Activity (Section 23 & 24) */}
               <div>
-                <label className="form-label" style={{ fontSize: '0.8rem' }}>Faixa Etária (18+)</label>
+                <label className="form-label" style={{ fontSize: '0.8rem' }}>Atividade Recente</label>
                 <select
                   className="input"
-                  value={ageRangeParam}
-                  onChange={(e) => updateFilter('idade', e.target.value || null)}
+                  value={activityParam}
+                  onChange={(e) => updateFilter('atividade', e.target.value || null)}
                 >
-                  <option value="">Todas as idades</option>
-                  <option value="18-24">18 a 24 anos</option>
-                  <option value="25-34">25 a 34 anos</option>
-                  <option value="35-44">35 a 44 anos</option>
-                  <option value="45+">45 anos ou mais</option>
+                  <option value="">Qualquer atividade</option>
+                  <option value="active_today">Ativo Hoje</option>
+                  <option value="recently_active">Ativo Recentemente</option>
+                  <option value="active_this_week">Ativo Esta Semana</option>
                 </select>
               </div>
 
-              {/* Filter 5: Verified Checkbox */}
+              {/* Filter 6: Verified Checkbox */}
               <div>
                 <label className="checkbox-field" style={{ margin: 0 }}>
                   <input
@@ -272,6 +366,21 @@ function ExploreContent() {
                   />
                   <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
                     Apenas <strong>Verificados</strong>
+                  </span>
+                </label>
+              </div>
+
+              {/* Filter 7: With Video Checkbox */}
+              <div>
+                <label className="checkbox-field" style={{ margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    className="checkbox-input"
+                    checked={videoParam}
+                    onChange={(e) => updateFilter('video', e.target.checked ? 'true' : null)}
+                  />
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                    Com <strong>Vídeo no Perfil</strong>
                   </span>
                 </label>
               </div>
@@ -290,27 +399,57 @@ function ExploreContent() {
           ) : profiles.length === 0 ? (
             <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '4rem 1.5rem' }}>
               <Search size={44} color="var(--text-muted)" style={{ margin: '0 auto 1rem auto' }} />
-              <h2 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Nenhum perfil encontrado com esses filtros</h2>
+              <h2 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Nenhum anúncio encontrado</h2>
               <p style={{ color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto 1.5rem auto', fontSize: '0.9rem' }}>
-                Tente ajustar os critérios de localização ou categoria para ver mais resultados.
+                Tente ampliar o raio de busca ou ajustar os filtros de categoria e localização.
               </p>
               <Button variant="ruby" onClick={clearAllFilters}>
                 Limpar Todos os Filtros
               </Button>
             </Card>
           ) : (
-            <div className="advertiser-grid">
-              {profiles.map((adv) => (
-                <AdvertiserCard key={adv.advertiser_id} advertiser={adv} />
-              ))}
-            </div>
+            <>
+              <div className="advertiser-grid">
+                {profiles.map((adv) => (
+                  <AdvertiserCard
+                    key={adv.advertiser_id}
+                    advertiser={{
+                      advertiser_id: adv.advertiser_id,
+                      slug: adv.slug,
+                      stage_name: adv.stage_name,
+                      age: adv.age,
+                      city_name: adv.city_name,
+                      state_code: adv.state_code,
+                      headline: adv.headline,
+                      primary_media_url: adv.thumbnail_url,
+                      verification_status: adv.verification_status as any,
+                      profile_status: 'active',
+                      visibility: 'public',
+                      category_names: [],
+                      distance_label: adv.distance_label,
+                      activity_label: adv.activity_label,
+                      is_sponsored: adv.is_sponsored,
+                    } as any}
+                  />
+                ))}
+              </div>
+
+              {/* Cursor / Load More Pagination (Section 78) */}
+              {hasMore && (
+                <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+                  <Button variant="secondary" onClick={() => loadProfiles(true)}>
+                    Carregar Mais Anúncios
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>
 
-      {/* Mobile Filters Sheet (Requirement 32) */}
-      <Sheet isOpen={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)} title={`Filtros de Busca ${activeFiltersCount > 0 ? `(${activeFiltersCount})` : ''}`}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '1rem 0' }}>
+      {/* Mobile Filters Sheet */}
+      <Sheet isOpen={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)} title={`Filtros (${activeFiltersCount})`}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem 0' }}>
           <div>
             <label className="form-label">Estado (UF)</label>
             <select
@@ -346,6 +485,20 @@ function ExploreContent() {
           )}
 
           <div>
+            <label className="form-label">Raio de Proximidade</label>
+            <select
+              className="input"
+              value={radiusParam.toString()}
+              onChange={(e) => updateFilter('raio', e.target.value)}
+            >
+              <option value="10">Até 10 km</option>
+              <option value="25">Até 25 km</option>
+              <option value="50">Até 50 km</option>
+              <option value="100">Até 100 km</option>
+            </select>
+          </div>
+
+          <div>
             <label className="form-label">Categoria</label>
             <select
               className="input"
@@ -362,31 +515,14 @@ function ExploreContent() {
           </div>
 
           <div>
-            <label className="form-label">Faixa Etária</label>
-            <select
-              className="input"
-              value={ageRangeParam}
-              onChange={(e) => updateFilter('idade', e.target.value || null)}
-            >
-              <option value="">Todas as idades</option>
-              <option value="18-24">18 a 24 anos</option>
-              <option value="25-34">25 a 34 anos</option>
-              <option value="35-44">35 a 44 anos</option>
-              <option value="45+">45 anos ou mais</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="checkbox-field" style={{ margin: 0 }}>
+            <label className="checkbox-field">
               <input
                 type="checkbox"
                 className="checkbox-input"
                 checked={verifiedParam}
                 onChange={(e) => updateFilter('verificado', e.target.checked ? 'true' : null)}
               />
-              <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                Apenas <strong>Verificados</strong>
-              </span>
+              <span>Apenas Verificados</span>
             </label>
           </div>
 

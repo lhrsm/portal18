@@ -93,6 +93,11 @@ export function AdvertiserCard({ advertiser, initialFavorite = false }: Advertis
 
           {/* Badges Overlay */}
           <div className="advertiser-card-badges-top">
+            {(advertiser as any).is_sponsored && (
+              <span className="badge-verified" style={{ background: 'var(--gradient-gold)', color: '#000', fontWeight: 800 }}>
+                Patrocinado
+              </span>
+            )}
             {advertiser.verification_status === 'verified' && (
               <span className="badge-verified">
                 <ShieldCheck size={13} /> Verificado
@@ -129,7 +134,7 @@ export function AdvertiserCard({ advertiser, initialFavorite = false }: Advertis
             <MapPin size={14} color="var(--accent-gold)" />
             <span>
               {advertiser.city_name ? `${advertiser.city_name}, ${advertiser.state_code}` : 'Brasil'}
-              {advertiser.neighborhood ? ` • ${advertiser.neighborhood}` : ''}
+              {(advertiser as any).distance_label ? ` • ${(advertiser as any).distance_label}` : (advertiser.neighborhood ? ` • ${advertiser.neighborhood}` : '')}
             </span>
           </div>
 
@@ -140,7 +145,7 @@ export function AdvertiserCard({ advertiser, initialFavorite = false }: Advertis
           <div className="advertiser-card-footer">
             <div className="advertiser-card-activity">
               <Clock size={12} />
-              <span>Ativo recentemente</span>
+              <span>{(advertiser as any).activity_label || 'Ativo recentemente'}</span>
             </div>
             <span className="advertiser-card-cta">
               Ver perfil <Eye size={13} />

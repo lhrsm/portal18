@@ -24,6 +24,7 @@ import {
   Crown,
   CreditCard,
   Sparkles,
+  Compass,
   ArrowLeft 
 } from 'lucide-react';
 
@@ -50,6 +51,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/payments', label: 'Faturamento', icon: <CreditCard size={18} />, allowed: isAdmin },
     { href: '/admin/subscriptions', label: 'Assinaturas', icon: <FileCheck2 size={18} />, allowed: isAdmin },
     { href: '/admin/media-processing', label: 'Pipeline de Mídia', icon: <Sparkles size={18} />, allowed: isAdmin },
+    { href: '/admin/discovery', label: 'Ranking & Descoberta', icon: <Compass size={18} />, allowed: isSuperAdmin },
     { href: '/admin/users', label: 'Usuários & Cargos', icon: <Users size={18} />, allowed: isSuperAdmin },
     { href: '/admin/audit', label: 'Logs de Auditoria', icon: <FileSpreadsheet size={18} />, allowed: isAdmin },
     { href: '/admin/categories', label: 'Categorias', icon: <Tag size={18} />, allowed: isAdmin },

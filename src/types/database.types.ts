@@ -31,6 +31,9 @@ export type ProcessingStatus = 'uploaded' | 'queued' | 'processing' | 'processed
 export type ModerationRiskLevel = 'safe' | 'low' | 'medium' | 'high' | 'critical';
 export type ModerationCategory = 'suspected_minor' | 'non_consensual' | 'violence' | 'illegal_content' | 'impersonation' | 'privacy_exposure' | 'policy_violation' | 'uncertain';
 
+export type LocationPrecision = 'city' | 'district' | 'approximate';
+export type ActivityBucket = 'active_now' | 'recently_active' | 'active_today' | 'active_this_week' | 'inactive';
+
 export type Database = {
   public: {
     Tables: {
@@ -125,6 +128,11 @@ export type Database = {
           ibge_code: string | null;
           name: string;
           slug: string;
+          latitude: number | null;
+          longitude: number | null;
+          population: number | null;
+          capital: boolean;
+          region: string | null;
         };
         Insert: {
           id?: string;
@@ -132,6 +140,11 @@ export type Database = {
           ibge_code?: string | null;
           name: string;
           slug: string;
+          latitude?: number | null;
+          longitude?: number | null;
+          population?: number | null;
+          capital?: boolean;
+          region?: string | null;
         };
         Update: {
           id?: string;
@@ -139,6 +152,11 @@ export type Database = {
           ibge_code?: string | null;
           name?: string;
           slug?: string;
+          latitude?: number | null;
+          longitude?: number | null;
+          population?: number | null;
+          capital?: boolean;
+          region?: string | null;
         };
         Relationships: [];
       };
@@ -202,6 +220,10 @@ export type Database = {
           reviewed_at: string | null;
           published_at: string | null;
           last_active_at: string | null;
+          location_precision: LocationPrecision;
+          approx_latitude: number | null;
+          approx_longitude: number | null;
+          location_updated_at: string | null;
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
@@ -232,6 +254,10 @@ export type Database = {
           reviewed_at?: string | null;
           published_at?: string | null;
           last_active_at?: string | null;
+          location_precision?: LocationPrecision;
+          approx_latitude?: number | null;
+          approx_longitude?: number | null;
+          location_updated_at?: string | null;
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
@@ -262,6 +288,10 @@ export type Database = {
           reviewed_at?: string | null;
           published_at?: string | null;
           last_active_at?: string | null;
+          location_precision?: LocationPrecision;
+          approx_latitude?: number | null;
+          approx_longitude?: number | null;
+          location_updated_at?: string | null;
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
@@ -1462,6 +1492,87 @@ export type Database = {
         };
         Relationships: [];
       };
+      advertiser_ranking_scores: {
+        Row: {
+          advertiser_id: string;
+          organic_score: number;
+          completeness_score: number;
+          verification_score: number;
+          activity_score: number;
+          freshness_score: number;
+          quality_score: number;
+          engagement_score: number;
+          trust_score: number;
+          calculated_at: string;
+        };
+        Insert: {
+          advertiser_id: string;
+          organic_score?: number;
+          completeness_score?: number;
+          verification_score?: number;
+          activity_score?: number;
+          freshness_score?: number;
+          quality_score?: number;
+          engagement_score?: number;
+          trust_score?: number;
+          calculated_at?: string;
+        };
+        Update: {
+          advertiser_id?: string;
+          organic_score?: number;
+          completeness_score?: number;
+          verification_score?: number;
+          activity_score?: number;
+          freshness_score?: number;
+          quality_score?: number;
+          engagement_score?: number;
+          trust_score?: number;
+          calculated_at?: string;
+        };
+        Relationships: [];
+      };
+      ranking_weights: {
+        Row: {
+          id: string;
+          completeness_weight: number;
+          verification_weight: number;
+          activity_weight: number;
+          freshness_weight: number;
+          quality_weight: number;
+          engagement_weight: number;
+          trust_weight: number;
+          exploration_factor: number;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          completeness_weight?: number;
+          verification_weight?: number;
+          activity_weight?: number;
+          freshness_weight?: number;
+          quality_weight?: number;
+          engagement_weight?: number;
+          trust_weight?: number;
+          exploration_factor?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          completeness_weight?: number;
+          verification_weight?: number;
+          activity_weight?: number;
+          freshness_weight?: number;
+          quality_weight?: number;
+          engagement_weight?: number;
+          trust_weight?: number;
+          exploration_factor?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_advertiser_profiles: {
@@ -1712,6 +1823,73 @@ export type Database = {
       reprocess_failed_media: {
         Args: { p_media_id: string };
         Returns: { success: boolean; job_id?: string; error?: string };
+      };
+      calculate_distance_km: {
+        Args: { p_lat1: number; p_lon1: number; p_lat2: number; p_lon2: number };
+        Returns: number | null;
+      };
+      recalculate_advertiser_rankings: {
+        Args: { p_advertiser_id?: string | null };
+        Returns: Json;
+      };
+      get_nearby_cities: {
+        Args: { p_city_id: string; p_radius_km?: number };
+        Returns: {
+          city_id: string;
+          city_name: string;
+          city_slug: string;
+          state_code: string;
+          distance_km: number;
+          distance_label: string;
+          active_advertisers_count: number;
+        }[];
+      };
+      get_similar_profiles: {
+        Args: { p_advertiser_id: string; p_limit?: number };
+        Returns: {
+          advertiser_id: string;
+          slug: string;
+          stage_name: string;
+          age: number;
+          city_name: string;
+          state_code: string;
+          headline: string | null;
+          thumbnail_url: string | null;
+          verification_status: string;
+          activity_label: string;
+          is_sponsored: boolean;
+        }[];
+      };
+      search_profiles_discovery: {
+        Args: {
+          p_query?: string | null;
+          p_state_code?: string | null;
+          p_city_slug?: string | null;
+          p_origin_city_id?: string | null;
+          p_radius_km?: number;
+          p_category_slug?: string | null;
+          p_verified_only?: boolean;
+          p_with_video?: boolean;
+          p_activity_filter?: string | null;
+          p_limit?: number;
+          p_offset?: number;
+        };
+        Returns: {
+          advertiser_id: string;
+          slug: string;
+          stage_name: string;
+          age: number;
+          city_name: string;
+          city_slug: string;
+          state_code: string;
+          headline: string | null;
+          thumbnail_url: string | null;
+          verification_status: string;
+          activity_label: string;
+          distance_label: string;
+          is_sponsored: boolean;
+          organic_score: number;
+        }[];
       };
     };
     Enums: {

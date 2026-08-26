@@ -4,11 +4,12 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { publicProfilesService } from '@/services/publicProfilesService';
 import { locationService } from '@/services/locationService';
+import { searchService } from '@/services/discovery/searchService';
 import { AdvertiserCard } from '@/components/public/AdvertiserCard';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { MapPin, Sparkles, Tag } from 'lucide-react';
+import { MapPin, Sparkles, Navigation } from 'lucide-react';
 
 interface CityPageProps {
   params: {
@@ -44,17 +45,22 @@ export default async function CityDirectoryPage({ params }: CityPageProps) {
     notFound();
   }
 
-  const [profilesRes, categories] = await Promise.all([
+  const cities = await locationService.getCitiesByState(state.id);
+  const currentCity = cities.find((c) => c.slug === params.cidade.toLowerCase());
+
+  const [profilesRes, categories, nearbyCities] = await Promise.all([
     publicProfilesService.getPublicAdvertisers({
       state: state.slug,
       city: params.cidade,
       limit: 30,
     }),
     locationService.getCategories(),
+    currentCity ? searchService.getNearbyCities(currentCity.id, 60) : Promise.resolve([]),
   ]);
 
   const profiles = profilesRes.data;
-  const cityName = profiles[0]?.city_name || params.cidade.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const cityName = currentCity?.name || params.cidade.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const otherNearby = nearbyCities.filter((nc) => nc.city_slug !== params.cidade.toLowerCase() && nc.active_advertisers_count > 0);
 
   return (
     <div className="container" style={{ padding: '3rem 1rem 5rem 1rem' }}>
@@ -71,7 +77,7 @@ export default async function CityDirectoryPage({ params }: CityPageProps) {
       <div style={{ marginBottom: '2.5rem' }}>
         <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.5rem' }}>
           <Badge variant="gold">{cityName.toUpperCase()}, {state.code}</Badge>
-          <Badge variant="neutral">{profiles.length} {profiles.length === 1 ? 'perfil' : 'perfis'}</Badge>
+          <Badge variant="neutral">{profiles.length} {profiles.length === 1 ? 'anúncio' : 'anúncios'}</Badge>
         </div>
         <h1 style={{ fontSize: '2.4rem', marginBottom: '0.5rem' }}>Acompanhantes em {cityName}, {state.code}</h1>
         <p style={{ color: 'var(--text-secondary)', maxWidth: '640px' }}>
@@ -104,7 +110,7 @@ export default async function CityDirectoryPage({ params }: CityPageProps) {
       </div>
 
       {/* Profiles Grid */}
-      <div>
+      <div style={{ marginBottom: '4rem' }}>
         {profiles.length === 0 ? (
           <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
             <Sparkles size={40} color="var(--accent-gold)" style={{ margin: '0 auto 1rem auto' }} />
@@ -124,6 +130,35 @@ export default async function CityDirectoryPage({ params }: CityPageProps) {
           </div>
         )}
       </div>
+
+      {/* Section 21: Também perto de você (Nearby Cities with Real Content) */}
+      {otherNearby.length > 0 && (
+        <section style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '2.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+            <Navigation size={20} color="var(--accent-gold)" />
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Também perto de você</h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+            {otherNearby.map((city) => (
+              <Link
+                key={city.city_id}
+                href={`/acompanhantes/${state.slug}/${city.city_slug}`}
+                style={{ textDecoration: 'none' }}
+              >
+                <Card variant="glass" padding="sm" style={{ transition: 'transform 0.2s', cursor: 'pointer' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{city.city_name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{city.distance_label}</div>
+                    </div>
+                    <Badge variant="neutral">{city.active_advertisers_count}</Badge>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -215,6 +215,11 @@ export const publicProfilesService = {
       slug: item.slug,
       state_id: item.state_id,
       ibge_code: null,
+      latitude: null,
+      longitude: null,
+      population: null,
+      capital: false,
+      region: null,
       state_code: item.brazil_states?.code || '',
       state_slug: item.brazil_states?.slug || '',
     }));
