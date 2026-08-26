@@ -34,6 +34,27 @@ export type CampaignDailyStat = Database['public']['Tables']['campaign_daily_sta
 export type Coupon = Database['public']['Tables']['coupons']['Row'];
 export type CouponRedemption = Database['public']['Tables']['coupon_redemptions']['Row'];
 
+// Phase 7 Media & Processing Types
+export type MediaProcessingJob = Database['public']['Tables']['media_processing_jobs']['Row'];
+export type BlockedMediaHash = Database['public']['Tables']['blocked_media_hashes']['Row'];
+export type AutomatedModerationResult = Database['public']['Tables']['automated_moderation_results']['Row'];
+export type MediaUploadReservation = Database['public']['Tables']['media_upload_reservations']['Row'];
+
+export interface MediaVariants {
+  thumbnailUrl: string;
+  cardUrl: string;
+  profileUrl: string;
+  fullUrl: string;
+}
+
+export interface MediaQuota {
+  currentImages: number;
+  maxImages: number;
+  currentVideos: number;
+  maxVideos: number;
+  canUploadVideo: boolean;
+}
+
 // View Type
 export type PublicAdvertiser = Database['public']['Views']['public_advertiser_profiles']['Row'];
 

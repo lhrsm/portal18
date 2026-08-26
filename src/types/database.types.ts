@@ -27,6 +27,10 @@ export type CampaignStatus = 'pending_payment' | 'scheduled' | 'active' | 'compl
 export type PromotionPlacement = 'homepage_featured' | 'city_top' | 'category_top' | 'search_sponsored' | 'profile_recommendation';
 export type DiscountType = 'percentage' | 'fixed';
 
+export type ProcessingStatus = 'uploaded' | 'queued' | 'processing' | 'processed' | 'failed';
+export type ModerationRiskLevel = 'safe' | 'low' | 'medium' | 'high' | 'critical';
+export type ModerationCategory = 'suspected_minor' | 'non_consensual' | 'violence' | 'illegal_content' | 'impersonation' | 'privacy_exposure' | 'policy_violation' | 'uncertain';
+
 export type Database = {
   public: {
     Tables: {
@@ -288,11 +292,26 @@ export type Database = {
           advertiser_id: string;
           media_type: MediaType;
           storage_path: string;
+          storage_path_original: string | null;
           thumbnail_path: string | null;
+          card_path: string | null;
+          profile_path: string | null;
+          full_path: string | null;
+          video_thumbnail_path: string | null;
           position: number;
+          is_primary: boolean;
           visibility: Visibility;
+          processing_status: ProcessingStatus;
+          processing_error: string | null;
           moderation_status: ModerationStatus;
           moderation_reason: string | null;
+          content_hash: string | null;
+          width: number | null;
+          height: number | null;
+          duration_seconds: number | null;
+          file_size: number | null;
+          mime_type: string | null;
+          watermark_applied: boolean;
           reviewed_by: string | null;
           reviewed_at: string | null;
           created_at: string;
@@ -304,11 +323,26 @@ export type Database = {
           advertiser_id: string;
           media_type: MediaType;
           storage_path: string;
+          storage_path_original?: string | null;
           thumbnail_path?: string | null;
+          card_path?: string | null;
+          profile_path?: string | null;
+          full_path?: string | null;
+          video_thumbnail_path?: string | null;
           position?: number;
+          is_primary?: boolean;
           visibility?: Visibility;
+          processing_status?: ProcessingStatus;
+          processing_error?: string | null;
           moderation_status?: ModerationStatus;
           moderation_reason?: string | null;
+          content_hash?: string | null;
+          width?: number | null;
+          height?: number | null;
+          duration_seconds?: number | null;
+          file_size?: number | null;
+          mime_type?: string | null;
+          watermark_applied?: boolean;
           reviewed_by?: string | null;
           reviewed_at?: string | null;
           created_at?: string;
@@ -320,11 +354,26 @@ export type Database = {
           advertiser_id?: string;
           media_type?: MediaType;
           storage_path?: string;
+          storage_path_original?: string | null;
           thumbnail_path?: string | null;
+          card_path?: string | null;
+          profile_path?: string | null;
+          full_path?: string | null;
+          video_thumbnail_path?: string | null;
           position?: number;
+          is_primary?: boolean;
           visibility?: Visibility;
+          processing_status?: ProcessingStatus;
+          processing_error?: string | null;
           moderation_status?: ModerationStatus;
           moderation_reason?: string | null;
+          content_hash?: string | null;
+          width?: number | null;
+          height?: number | null;
+          duration_seconds?: number | null;
+          file_size?: number | null;
+          mime_type?: string | null;
+          watermark_applied?: boolean;
           reviewed_by?: string | null;
           reviewed_at?: string | null;
           created_at?: string;
@@ -1269,6 +1318,150 @@ export type Database = {
         };
         Relationships: [];
       };
+      media_processing_jobs: {
+        Row: {
+          id: string;
+          media_id: string;
+          job_type: string;
+          status: 'queued' | 'processing' | 'completed' | 'failed' | 'failed_permanent';
+          attempts: number;
+          max_attempts: number;
+          started_at: string | null;
+          finished_at: string | null;
+          error_code: string | null;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          media_id: string;
+          job_type: string;
+          status?: 'queued' | 'processing' | 'completed' | 'failed' | 'failed_permanent';
+          attempts?: number;
+          max_attempts?: number;
+          started_at?: string | null;
+          finished_at?: string | null;
+          error_code?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          media_id?: string;
+          job_type?: string;
+          status?: 'queued' | 'processing' | 'completed' | 'failed' | 'failed_permanent';
+          attempts?: number;
+          max_attempts?: number;
+          started_at?: string | null;
+          finished_at?: string | null;
+          error_code?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      blocked_media_hashes: {
+        Row: {
+          id: string;
+          hash_type: string;
+          hash_value: string;
+          reason: string;
+          source_media_id: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          hash_type?: string;
+          hash_value: string;
+          reason: string;
+          source_media_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          hash_type?: string;
+          hash_value?: string;
+          reason?: string;
+          source_media_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      automated_moderation_results: {
+        Row: {
+          id: string;
+          media_id: string;
+          provider: string;
+          provider_reference: string | null;
+          status: string;
+          risk_level: ModerationRiskLevel;
+          categories: Json;
+          result_summary: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          media_id: string;
+          provider?: string;
+          provider_reference?: string | null;
+          status?: string;
+          risk_level?: ModerationRiskLevel;
+          categories?: Json;
+          result_summary?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          media_id?: string;
+          provider?: string;
+          provider_reference?: string | null;
+          status?: string;
+          risk_level?: ModerationRiskLevel;
+          categories?: Json;
+          result_summary?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      media_upload_reservations: {
+        Row: {
+          id: string;
+          advertiser_id: string;
+          media_type: MediaType;
+          reserved_bytes: number;
+          status: 'active' | 'consumed' | 'cancelled' | 'expired';
+          expires_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          advertiser_id: string;
+          media_type: MediaType;
+          reserved_bytes?: number;
+          status?: 'active' | 'consumed' | 'cancelled' | 'expired';
+          expires_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          advertiser_id?: string;
+          media_type?: MediaType;
+          reserved_bytes?: number;
+          status?: 'active' | 'consumed' | 'cancelled' | 'expired';
+          expires_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_advertiser_profiles: {
@@ -1479,6 +1672,46 @@ export type Database = {
           boost_allowance: number;
           analytics_level: string;
         };
+      };
+      reserve_media_upload: {
+        Args: { p_media_type: string; p_file_size?: number };
+        Returns: {
+          success: boolean;
+          reservation_id?: string;
+          target_path?: string;
+          bucket?: string;
+          expires_at?: string;
+          error?: string;
+        };
+      };
+      finalize_media_upload: {
+        Args: {
+          p_reservation_id: string;
+          p_storage_path: string;
+          p_mime_type: string;
+          p_file_size: number;
+          p_content_hash: string;
+          p_width?: number | null;
+          p_height?: number | null;
+          p_duration?: number | null;
+        };
+        Returns: {
+          success: boolean;
+          media_id?: string;
+          processing_status?: ProcessingStatus;
+          moderation_status?: ModerationStatus;
+          is_blocked?: boolean;
+          job_id?: string;
+          error?: string;
+        };
+      };
+      publish_approved_media: {
+        Args: { p_media_id: string };
+        Returns: { success: boolean; status: string; error?: string };
+      };
+      reprocess_failed_media: {
+        Args: { p_media_id: string };
+        Returns: { success: boolean; job_id?: string; error?: string };
       };
     };
     Enums: {
