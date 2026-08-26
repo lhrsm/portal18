@@ -400,9 +400,19 @@ export type Database = {
           provider: string;
           provider_reference: string | null;
           status: VerificationStatus;
+          verification_type: string;
+          age_verified: boolean;
+          identity_verified: boolean;
+          result_code: string | null;
+          idempotency_key: string | null;
+          retry_count: number;
+          retry_available_at: string | null;
+          started_at: string | null;
           submitted_at: string | null;
           reviewed_at: string | null;
+          completed_at: string | null;
           expires_at: string | null;
+          metadata: Json;
           created_at: string;
           updated_at: string;
         };
@@ -412,9 +422,19 @@ export type Database = {
           provider?: string;
           provider_reference?: string | null;
           status?: VerificationStatus;
+          verification_type?: string;
+          age_verified?: boolean;
+          identity_verified?: boolean;
+          result_code?: string | null;
+          idempotency_key?: string | null;
+          retry_count?: number;
+          retry_available_at?: string | null;
+          started_at?: string | null;
           submitted_at?: string | null;
           reviewed_at?: string | null;
+          completed_at?: string | null;
           expires_at?: string | null;
+          metadata?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -424,11 +444,54 @@ export type Database = {
           provider?: string;
           provider_reference?: string | null;
           status?: VerificationStatus;
+          verification_type?: string;
+          age_verified?: boolean;
+          identity_verified?: boolean;
+          result_code?: string | null;
+          idempotency_key?: string | null;
+          retry_count?: number;
+          retry_available_at?: string | null;
+          started_at?: string | null;
           submitted_at?: string | null;
           reviewed_at?: string | null;
+          completed_at?: string | null;
           expires_at?: string | null;
+          metadata?: Json;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      webhook_events: {
+        Row: {
+          id: string;
+          provider: string;
+          event_id: string;
+          event_type: string;
+          payload_hash: string;
+          status: string;
+          received_at: string;
+          processed_at: string;
+        };
+        Insert: {
+          id?: string;
+          provider: string;
+          event_id: string;
+          event_type: string;
+          payload_hash: string;
+          status?: string;
+          received_at?: string;
+          processed_at?: string;
+        };
+        Update: {
+          id?: string;
+          provider?: string;
+          event_id?: string;
+          event_type?: string;
+          payload_hash?: string;
+          status?: string;
+          received_at?: string;
+          processed_at?: string;
         };
         Relationships: [];
       };
@@ -875,6 +938,32 @@ export type Database = {
       revoke_role: {
         Args: { p_target_profile_id: string; p_role: string };
         Returns: { success: boolean; revoked_role: string };
+      };
+      create_identity_verification_session: {
+        Args: { p_verification_type?: string };
+        Returns: { success: boolean; verification_id?: string; status?: string; session_token?: string; redirect_url?: string; message?: string };
+      };
+      process_verification_webhook: {
+        Args: {
+          p_provider: string;
+          p_event_id: string;
+          p_event_type: string;
+          p_provider_reference: string;
+          p_status: string;
+          p_age_verified: boolean;
+          p_identity_verified: boolean;
+          p_result_code: string;
+          p_payload_hash: string;
+        };
+        Returns: { success: boolean; status?: string; message?: string; error?: string };
+      };
+      override_verification_status: {
+        Args: { p_verification_id: string; p_new_status: string; p_reason: string };
+        Returns: { success: boolean; status: string };
+      };
+      expire_stale_verifications: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
       };
     };
     Enums: {

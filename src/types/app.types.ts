@@ -10,6 +10,7 @@ export type AdvertiserMedia = Database['public']['Tables']['advertiser_media']['
 export type Favorite = Database['public']['Tables']['favorites']['Row'];
 export type Report = Database['public']['Tables']['reports']['Row'];
 export type VerificationRequest = Database['public']['Tables']['verification_requests']['Row'];
+export type WebhookEvent = Database['public']['Tables']['webhook_events']['Row'];
 export type AuditLog = Database['public']['Tables']['audit_logs']['Row'];
 export type LegalDocument = Database['public']['Tables']['legal_documents']['Row'];
 export type ConsentRecord = Database['public']['Tables']['consent_records']['Row'];
@@ -80,4 +81,16 @@ export interface AdminDashboardMetrics {
   criticalReports: number;
   pendingVerifications: number;
   suspendedProfiles: number;
+}
+
+export type VerificationType = 'identity_and_age' | 'age_only' | 'identity_only';
+
+export interface VerificationSessionResponse {
+  success: boolean;
+  verificationId?: string;
+  status?: string;
+  sessionToken?: string;
+  redirectUrl?: string;
+  message?: string;
+  error?: string;
 }
