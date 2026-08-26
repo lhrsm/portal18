@@ -2311,6 +2311,345 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_mfa_factors: {
+        Row: {
+          id: string;
+          profile_id: string;
+          factor_type: 'totp' | 'phone' | 'recovery_code';
+          status: 'unverified' | 'verified' | 'disabled';
+          secret_hash: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          factor_type: 'totp' | 'phone' | 'recovery_code';
+          status?: 'unverified' | 'verified' | 'disabled';
+          secret_hash: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          factor_type?: 'totp' | 'phone' | 'recovery_code';
+          status?: 'unverified' | 'verified' | 'disabled';
+          secret_hash?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_recovery_codes: {
+        Row: {
+          id: string;
+          profile_id: string;
+          code_hash: string;
+          used_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          code_hash: string;
+          used_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          code_hash?: string;
+          used_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      user_sessions: {
+        Row: {
+          id: string;
+          profile_id: string;
+          session_reference_hash: string;
+          device_id: string;
+          user_agent_summary: string;
+          ip_hash: string;
+          country: string | null;
+          region: string | null;
+          created_at: string;
+          last_seen_at: string;
+          revoked_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          session_reference_hash: string;
+          device_id: string;
+          user_agent_summary: string;
+          ip_hash: string;
+          country?: string | null;
+          region?: string | null;
+          created_at?: string;
+          last_seen_at?: string;
+          revoked_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          session_reference_hash?: string;
+          device_id?: string;
+          user_agent_summary?: string;
+          ip_hash?: string;
+          country?: string | null;
+          region?: string | null;
+          created_at?: string;
+          last_seen_at?: string;
+          revoked_at?: string | null;
+        };
+        Relationships: [];
+      };
+      trusted_devices: {
+        Row: {
+          id: string;
+          profile_id: string;
+          device_token_hash: string;
+          device_name: string;
+          first_seen_at: string;
+          last_seen_at: string;
+          trusted_at: string;
+          revoked_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          device_token_hash: string;
+          device_name: string;
+          first_seen_at?: string;
+          last_seen_at?: string;
+          trusted_at?: string;
+          revoked_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          device_token_hash?: string;
+          device_name?: string;
+          first_seen_at?: string;
+          last_seen_at?: string;
+          trusted_at?: string;
+          revoked_at?: string | null;
+        };
+        Relationships: [];
+      };
+      security_events: {
+        Row: {
+          id: string;
+          profile_id: string | null;
+          event_type: string;
+          severity: 'info' | 'low' | 'medium' | 'high' | 'critical';
+          risk_score: number;
+          ip_hash: string;
+          device_id: string | null;
+          metadata: Json;
+          created_at: string;
+          resolved_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          profile_id?: string | null;
+          event_type: string;
+          severity: 'info' | 'low' | 'medium' | 'high' | 'critical';
+          risk_score?: number;
+          ip_hash: string;
+          device_id?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          resolved_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string | null;
+          event_type?: string;
+          severity?: 'info' | 'low' | 'medium' | 'high' | 'critical';
+          risk_score?: number;
+          ip_hash?: string;
+          device_id?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          resolved_at?: string | null;
+        };
+        Relationships: [];
+      };
+      risk_events: {
+        Row: {
+          id: string;
+          profile_id: string | null;
+          advertiser_id: string | null;
+          risk_type: string;
+          severity: 'info' | 'low' | 'medium' | 'high' | 'critical';
+          score_delta: number;
+          source: string;
+          status: 'open' | 'resolved' | 'false_positive' | 'confirmed';
+          metadata: Json;
+          created_at: string;
+          resolved_at: string | null;
+          resolved_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          profile_id?: string | null;
+          advertiser_id?: string | null;
+          risk_type: string;
+          severity: 'info' | 'low' | 'medium' | 'high' | 'critical';
+          score_delta?: number;
+          source?: string;
+          status?: 'open' | 'resolved' | 'false_positive' | 'confirmed';
+          metadata?: Json;
+          created_at?: string;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string | null;
+          advertiser_id?: string | null;
+          risk_type?: string;
+          severity?: 'info' | 'low' | 'medium' | 'high' | 'critical';
+          score_delta?: number;
+          source?: string;
+          status?: 'open' | 'resolved' | 'false_positive' | 'confirmed';
+          metadata?: Json;
+          created_at?: string;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+        };
+        Relationships: [];
+      };
+      account_risk_scores: {
+        Row: {
+          profile_id: string;
+          score: number;
+          risk_level: 'low' | 'medium' | 'high' | 'critical';
+          last_calculated_at: string;
+        };
+        Insert: {
+          profile_id: string;
+          score?: number;
+          risk_level?: 'low' | 'medium' | 'high' | 'critical';
+          last_calculated_at?: string;
+        };
+        Update: {
+          profile_id?: string;
+          score?: number;
+          risk_level?: 'low' | 'medium' | 'high' | 'critical';
+          last_calculated_at?: string;
+        };
+        Relationships: [];
+      };
+      risk_rules: {
+        Row: {
+          id: string;
+          code: string;
+          event_type: string;
+          score_delta: number;
+          threshold: number;
+          action: 'log' | 'notify' | 'challenge' | 'rate_limit' | 'manual_review' | 'temporary_block' | 'suspend';
+          enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          event_type: string;
+          score_delta: number;
+          threshold?: number;
+          action: 'log' | 'notify' | 'challenge' | 'rate_limit' | 'manual_review' | 'temporary_block' | 'suspend';
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          event_type?: string;
+          score_delta?: number;
+          threshold?: number;
+          action?: 'log' | 'notify' | 'challenge' | 'rate_limit' | 'manual_review' | 'temporary_block' | 'suspend';
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      incidents: {
+        Row: {
+          id: string;
+          title: string;
+          severity: 'minor' | 'major' | 'critical';
+          status: 'investigating' | 'identified' | 'monitoring' | 'resolved';
+          started_at: string;
+          resolved_at: string | null;
+          public_message: string;
+          internal_summary: string;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          severity: 'minor' | 'major' | 'critical';
+          status?: 'investigating' | 'identified' | 'monitoring' | 'resolved';
+          started_at?: string;
+          resolved_at?: string | null;
+          public_message: string;
+          internal_summary: string;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          severity?: 'minor' | 'major' | 'critical';
+          status?: 'investigating' | 'identified' | 'monitoring' | 'resolved';
+          started_at?: string;
+          resolved_at?: string | null;
+          public_message?: string;
+          internal_summary?: string;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      platform_kill_switches: {
+        Row: {
+          id: string;
+          switch_key: string;
+          enabled: boolean;
+          reason: string | null;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          switch_key: string;
+          enabled?: boolean;
+          reason?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          switch_key?: string;
+          enabled?: boolean;
+          reason?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_advertiser_profiles: {
@@ -2673,6 +3012,32 @@ export type Database = {
       cancel_account_deletion: {
         Args: Record<string, never>;
         Returns: { success: boolean; message: string };
+      };
+      revoke_user_session: {
+        Args: { p_session_id: string };
+        Returns: { success: boolean; message: string };
+      };
+      revoke_all_other_sessions: {
+        Args: { p_current_session_id?: string };
+        Returns: { success: boolean; message: string };
+      };
+      record_security_event: {
+        Args: {
+          p_event_type: string;
+          p_severity: string;
+          p_risk_score?: number;
+          p_ip_hash?: string;
+          p_metadata?: Json;
+        };
+        Returns: { success: boolean; event_id: string };
+      };
+      update_kill_switch: {
+        Args: {
+          p_switch_key: string;
+          p_enabled: boolean;
+          p_reason?: string;
+        };
+        Returns: { success: boolean; switch_key: string; enabled: boolean };
       };
     };
     Enums: {

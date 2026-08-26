@@ -406,3 +406,144 @@ export interface DataRetentionPolicy {
   updated_at: string;
 }
 
+// ============================================================================
+// Phase 11 Models — Advanced Security, MFA, Sessions, Risk Engine & Incidents
+// ============================================================================
+
+export type SecurityEventType = 
+  | 'login_success'
+  | 'login_failed'
+  | 'password_reset_requested'
+  | 'password_changed'
+  | 'mfa_enabled'
+  | 'mfa_disabled'
+  | 'mfa_failed'
+  | 'new_device'
+  | 'session_revoked'
+  | 'suspicious_login'
+  | 'rate_limit_triggered'
+  | 'credential_stuffing_suspected'
+  | 'account_takeover_suspected'
+  | 'privilege_escalation_attempt'
+  | 'cross_user_access_attempt'
+  | 'webhook_signature_failure'
+  | 'storage_violation';
+
+export type SecuritySeverity = 'info' | 'low' | 'medium' | 'high' | 'critical';
+
+export type RiskType = 
+  | 'account_abuse'
+  | 'fake_profile'
+  | 'impersonation'
+  | 'media_abuse'
+  | 'payment_abuse'
+  | 'report_abuse'
+  | 'promotion_abuse'
+  | 'login_abuse'
+  | 'spam'
+  | 'automation_abuse'
+  | 'identity_risk';
+
+export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
+export type RiskAction = 'log' | 'notify' | 'challenge' | 'rate_limit' | 'manual_review' | 'temporary_block' | 'suspend';
+
+export type IncidentStatus = 'investigating' | 'identified' | 'monitoring' | 'resolved';
+export type IncidentSeverity = 'minor' | 'major' | 'critical';
+
+export interface UserSessionRecord {
+  id: string;
+  profile_id: string;
+  session_reference_hash: string;
+  device_id: string;
+  user_agent_summary: string;
+  ip_hash: string;
+  country?: string | null;
+  region?: string | null;
+  created_at: string;
+  last_seen_at: string;
+  revoked_at?: string | null;
+  is_current?: boolean;
+}
+
+export interface TrustedDevice {
+  id: string;
+  profile_id: string;
+  device_token_hash: string;
+  device_name: string;
+  first_seen_at: string;
+  last_seen_at: string;
+  trusted_at: string;
+  revoked_at?: string | null;
+}
+
+export interface SecurityEvent {
+  id: string;
+  profile_id: string | null;
+  event_type: SecurityEventType | string;
+  severity: SecuritySeverity;
+  risk_score: number;
+  ip_hash: string;
+  device_id?: string | null;
+  metadata: Record<string, any>;
+  created_at: string;
+  resolved_at?: string | null;
+}
+
+export interface RiskEvent {
+  id: string;
+  profile_id: string | null;
+  advertiser_id?: string | null;
+  risk_type: RiskType | string;
+  severity: SecuritySeverity;
+  score_delta: number;
+  source: string;
+  status: 'open' | 'resolved' | 'false_positive' | 'confirmed';
+  metadata: Record<string, any>;
+  created_at: string;
+  resolved_at?: string | null;
+  resolved_by?: string | null;
+}
+
+export interface AccountRiskScore {
+  profile_id: string;
+  score: number;
+  risk_level: RiskLevel;
+  last_calculated_at: string;
+}
+
+export interface RiskRule {
+  id: string;
+  code: string;
+  event_type: string;
+  score_delta: number;
+  threshold: number;
+  action: RiskAction;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Incident {
+  id: string;
+  title: string;
+  severity: IncidentSeverity;
+  status: IncidentStatus;
+  started_at: string;
+  resolved_at?: string | null;
+  public_message: string;
+  internal_summary: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PlatformKillSwitch {
+  id: string;
+  switch_key: string;
+  enabled: boolean;
+  reason?: string | null;
+  updated_by?: string | null;
+  updated_at: string;
+}
+
+
