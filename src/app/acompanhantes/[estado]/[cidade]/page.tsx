@@ -240,7 +240,7 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
                 <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
                   {nc.city_name}
                 </div>
-                <Badge variant="neutral" size="sm">
+                <Badge variant="neutral">
                   {nc.active_advertisers_count} perfis
                 </Badge>
               </Link>

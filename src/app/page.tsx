@@ -324,7 +324,7 @@ export default function HomePage() {
                 <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 600, marginBottom: '0.4rem' }}>
                   {city.stateCode}
                 </div>
-                <Badge variant={city.citySlug === 'salvador' ? 'ruby' : 'neutral'} size="sm">
+                <Badge variant={city.citySlug === 'salvador' ? 'ruby' : 'neutral'}>
                   {city.profileCount} {city.profileCount === 1 ? 'perfil' : 'perfis'}
                 </Badge>
               </Link>
@@ -349,7 +349,7 @@ export default function HomePage() {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
                     <Tag size={18} color="var(--accent-gold)" />
-                    {cat.profileCount > 0 && <Badge variant="neutral" size="sm">{cat.profileCount} perfis</Badge>}
+                    {cat.profileCount > 0 && <Badge variant="neutral">{cat.profileCount} perfis</Badge>}
                   </div>
                   <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '0.35rem' }}>{cat.name}</h3>
                   {cat.description && (
