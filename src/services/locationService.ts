@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
 import { BrazilState, BrazilCity, Category } from '@/types/app.types';
+import { DEMO_STATES, DEMO_CITIES, DEMO_CATEGORIES } from '@/data/demoProfiles';
 
 export const locationService = {
   async getStates(): Promise<BrazilState[]> {
@@ -9,11 +10,10 @@ export const locationService = {
       .select('*')
       .order('name', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching states:', error);
-      return [];
+    if (error || !data || data.length === 0) {
+      return DEMO_STATES;
     }
-    return data || [];
+    return data;
   },
 
   async getCitiesByState(stateId: string): Promise<BrazilCity[]> {
@@ -24,11 +24,10 @@ export const locationService = {
       .eq('state_id', stateId)
       .order('name', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching cities:', error);
-      return [];
+    if (error || !data || data.length === 0) {
+      return DEMO_CITIES.filter((c) => c.state_id === stateId);
     }
-    return data || [];
+    return data;
   },
 
   async getCategories(): Promise<Category[]> {
@@ -39,10 +38,9 @@ export const locationService = {
       .eq('status', 'active')
       .order('sort_order', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching categories:', error);
-      return [];
+    if (error || !data || data.length === 0) {
+      return DEMO_CATEGORIES;
     }
-    return data || [];
+    return data;
   },
 };

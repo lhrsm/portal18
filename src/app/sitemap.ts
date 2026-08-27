@@ -51,9 +51,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // Approved public advertiser profile routes
+  // Approved public advertiser profile routes (Excludes demo seed records from search engines)
   const profileRoutes: MetadataRoute.Sitemap = publicProfiles.data
-    .filter((adv) => adv.state_slug && adv.city_slug && adv.slug)
+    .filter((adv) => adv.state_slug && adv.city_slug && adv.slug && !adv.slug.startsWith('demo-'))
     .map((adv) => {
       const sourceDate = adv.updated_at ?? adv.created_at;
       return {
