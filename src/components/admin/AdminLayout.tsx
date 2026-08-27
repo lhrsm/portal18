@@ -25,7 +25,10 @@ import {
   CreditCard,
   Sparkles,
   Compass,
-  ArrowLeft 
+  LifeBuoy,
+  Scale,
+  Shield,
+  Activity
 } from 'lucide-react';
 
 export interface AdminLayoutProps {
@@ -47,9 +50,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/moderation/media', label: 'Fila de Mídias', icon: <ImageIcon size={18} />, allowed: isModerator },
     { href: '/admin/reports', label: 'Denúncias', icon: <AlertTriangle size={18} />, allowed: isModerator },
     { href: '/admin/verifications', label: 'Verificações 18+', icon: <FileCheck2 size={18} />, allowed: isModerator },
+    { href: '/admin/risk', label: 'Risco & Antifraude', icon: <Activity size={18} />, allowed: isAdmin },
     { href: '/admin/plans', label: 'Planos & Preços', icon: <Crown size={18} />, allowed: isAdmin },
     { href: '/admin/payments', label: 'Faturamento', icon: <CreditCard size={18} />, allowed: isAdmin },
     { href: '/admin/subscriptions', label: 'Assinaturas', icon: <FileCheck2 size={18} />, allowed: isAdmin },
+    { href: '/admin/support', label: 'Suporte', icon: <LifeBuoy size={18} />, allowed: isModerator },
+    { href: '/admin/privacy', label: 'Privacidade & LGPD', icon: <Scale size={18} />, allowed: isAdmin },
+    { href: '/admin/security', label: 'Segurança & Sessões', icon: <Shield size={18} />, allowed: isAdmin },
     { href: '/admin/media-processing', label: 'Pipeline de Mídia', icon: <Sparkles size={18} />, allowed: isAdmin },
     { href: '/admin/discovery', label: 'Ranking & Descoberta', icon: <Compass size={18} />, allowed: isSuperAdmin },
     { href: '/admin/users', label: 'Usuários & Cargos', icon: <Users size={18} />, allowed: isSuperAdmin },

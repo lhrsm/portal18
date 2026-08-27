@@ -20,7 +20,11 @@ import {
   FileCheck2, 
   Ban, 
   ArrowRight,
-  Sparkles
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  Server,
+  Key
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
@@ -114,6 +118,69 @@ export default function AdminDashboardPage() {
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Publicados no portal</span>
         </Card>
       </div>
+
+      {/* Production Readiness Status Card (Sections 85, 86, 87) */}
+      <Card variant="glass" padding="lg" style={{ marginBottom: '2rem', border: '1px solid rgba(229, 185, 92, 0.2)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Server size={20} color="var(--accent-gold)" />
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Status Operacional da Plataforma</h3>
+          </div>
+          <Badge variant="gold">
+            STATUS: GO WITH RESTRICTIONS
+          </Badge>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+          <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+              <CheckCircle2 size={14} color="var(--color-success)" />
+              <strong style={{ fontSize: '0.85rem' }}>Supabase & Auth</strong>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Conectado (Migrations 00017)</span>
+          </div>
+
+          <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+              <CheckCircle2 size={14} color="var(--color-success)" />
+              <strong style={{ fontSize: '0.85rem' }}>Trust & Safety</strong>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Publication Gate Endurecido</span>
+          </div>
+
+          <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+              <AlertCircle size={14} color="var(--accent-gold)" />
+              <strong style={{ fontSize: '0.85rem' }}>KYC 18+ (Sumsub)</strong>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sandbox Pronto / Prod Pendente</span>
+          </div>
+
+          <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+              <AlertCircle size={14} color="var(--accent-gold)" />
+              <strong style={{ fontSize: '0.85rem' }}>Pagamentos & Faturamento</strong>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Kill Switch Ativo / Prod Desativada</span>
+          </div>
+
+          <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+              <AlertCircle size={14} color="var(--accent-gold)" />
+              <strong style={{ fontSize: '0.85rem' }}>E-mail Transacional</strong>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Templates Prontos / Credenciais Pendentes</span>
+          </div>
+
+          <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+              <CheckCircle2 size={14} color="var(--color-success)" />
+              <strong style={{ fontSize: '0.85rem' }}>Backup & DR</strong>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Runbook & Manifestos Prontos</span>
+          </div>
+        </div>
+      </Card>
 
       {/* Secondary Metrics */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
