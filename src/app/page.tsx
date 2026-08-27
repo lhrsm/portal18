@@ -401,44 +401,46 @@ export default function HomePage() {
       {/* 8. ADVERTISER CTA ("Quer aparecer aqui?") */}
       <section className="container">
         <Card variant="elevated" padding="lg" style={{ 
-          background: 'linear-gradient(135deg, rgba(163, 0, 33, 0.2) 0%, rgba(18, 22, 31, 0.95) 100%)', 
-          border: '1px solid var(--accent-ruby)',
-          borderRadius: 'var(--radius-xl)'
+          background: 'linear-gradient(135deg, rgba(163, 0, 33, 0.22) 0%, rgba(18, 22, 31, 0.98) 100%)', 
+          border: '1px solid rgba(255, 45, 85, 0.4)',
+          borderRadius: 'var(--radius-xl)',
+          boxShadow: 'var(--shadow-glow-ruby)'
         }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem', alignItems: 'center' }}>
             <div>
-              <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.6rem' }}>
+              <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.75rem' }}>
                 <Badge variant="ruby">ESPAÇO DO ANUNCIANTE</Badge>
+                <Badge variant="gold">CONVERSÃO DIRETA</Badge>
               </div>
-              <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.75rem', lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.3rem)', fontWeight: 800, marginBottom: '0.75rem', lineHeight: 1.2 }}>
                 Quer aparecer aqui e receber contatos diretos?
               </h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
-                Divulgue seu perfil de forma independente com total segurança, controle de fotos e sem intermediários.
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '1.75rem' }}>
+                Divulgue seu perfil de forma independente com total segurança, controle de fotos, métricas de visualizações e sem intermediários.
               </p>
               <Link href={getAdvertiserCtaUrl()}>
-                <Button variant="ruby" size="lg" leftIcon={<Megaphone size={18} />}>
+                <Button variant="ruby" size="lg" leftIcon={<Megaphone size={18} />} style={{ fontWeight: 700, boxShadow: 'var(--shadow-glow-ruby)' }}>
                   Criar meu perfil agora
                 </Button>
               </Link>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-              <div style={{ background: 'var(--bg-glass)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--accent-gold)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.25rem' }}>Alta Visibilidade</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Destaque local na sua cidade e bairro de atendimento.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.85rem' }}>
+              <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '1.15rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(229, 185, 92, 0.2)' }}>
+                <div style={{ color: 'var(--accent-gold)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.35rem' }}>Alta Visibilidade</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Destaque local na sua cidade e bairro de atendimento.</div>
               </div>
-              <div style={{ background: 'var(--bg-glass)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--accent-ruby)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.25rem' }}>Controle Total</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Gerencie suas fotos, horários e canais de contato.</div>
+              <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '1.15rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 45, 85, 0.2)' }}>
+                <div style={{ color: 'var(--accent-ruby)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.35rem' }}>Controle Total</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Gerencie suas fotos, horários e canais de contato.</div>
               </div>
-              <div style={{ background: 'var(--bg-glass)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--color-success)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.25rem' }}>Segurança & LGPD</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Proteção de dados com criptografia e privacidade.</div>
+              <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '1.15rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                <div style={{ color: 'var(--color-success)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.35rem' }}>Segurança & LGPD</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Proteção de dados com criptografia e privacidade.</div>
               </div>
-              <div style={{ background: 'var(--bg-glass)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-                <div style={{ color: 'var(--accent-cyan)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.25rem' }}>Métricas Reais</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Acompanhe visualizações e cliques no WhatsApp.</div>
+              <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '1.15rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(0, 212, 255, 0.2)' }}>
+                <div style={{ color: 'var(--accent-cyan)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.35rem' }}>Métricas Reais</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Acompanhe visualizações e cliques no WhatsApp.</div>
               </div>
             </div>
           </div>
@@ -448,29 +450,37 @@ export default function HomePage() {
       {/* 9. TRUST & SAFETY COMPACT CARDS */}
       <section className="container">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-          <Card variant="glass" padding="md" style={{ textAlign: 'center' }}>
-            <ShieldCheck size={28} color="var(--accent-gold)" style={{ margin: '0 auto 0.5rem auto' }} />
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Maioridade Estrita 18+</div>
-            <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Verificação obrigatória e tolerância zero contra menores.</div>
-          </Card>
+          <Link href="/trust/minors" style={{ textDecoration: 'none' }}>
+            <Card variant="glass" padding="md" style={{ textAlign: 'center', height: '100%', transition: 'all var(--transition-normal)' }}>
+              <ShieldCheck size={30} color="var(--accent-gold)" style={{ margin: '0 auto 0.65rem auto' }} />
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.35rem' }}>Maioridade Estrita 18+</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Verificação obrigatória e tolerância zero contra menores.</div>
+            </Card>
+          </Link>
 
-          <Card variant="glass" padding="md" style={{ textAlign: 'center' }}>
-            <CheckCircle2 size={28} color="var(--color-success)" style={{ margin: '0 auto 0.5rem auto' }} />
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Moderação Contínua</div>
-            <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Revisão rigorosa de fotos e conteúdo antes da publicação.</div>
-          </Card>
+          <Link href="/trust/moderation" style={{ textDecoration: 'none' }}>
+            <Card variant="glass" padding="md" style={{ textAlign: 'center', height: '100%', transition: 'all var(--transition-normal)' }}>
+              <CheckCircle2 size={30} color="var(--color-success)" style={{ margin: '0 auto 0.65rem auto' }} />
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.35rem' }}>Moderação Contínua</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Revisão rigorosa de fotos e conteúdo antes da publicação.</div>
+            </Card>
+          </Link>
 
-          <Card variant="glass" padding="md" style={{ textAlign: 'center' }}>
-            <Lock size={28} color="var(--color-info)" style={{ margin: '0 auto 0.5rem auto' }} />
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Privacidade & Sigilo</div>
-            <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Navegação segura com criptografia TLS 1.3 ponta a ponta.</div>
-          </Card>
+          <Link href="/trust/privacy" style={{ textDecoration: 'none' }}>
+            <Card variant="glass" padding="md" style={{ textAlign: 'center', height: '100%', transition: 'all var(--transition-normal)' }}>
+              <Lock size={30} color="var(--color-info)" style={{ margin: '0 auto 0.65rem auto' }} />
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.35rem' }}>Privacidade & Sigilo</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Navegação segura com criptografia TLS 1.3 ponta a ponta.</div>
+            </Card>
+          </Link>
 
-          <Card variant="glass" padding="md" style={{ textAlign: 'center' }}>
-            <ShieldAlert size={28} color="var(--accent-ruby)" style={{ margin: '0 auto 0.5rem auto' }} />
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Canal de Denúncias</div>
-            <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Atendimento prioritário para qualquer suspeita de abuso.</div>
-          </Card>
+          <Link href="/account/privacy" style={{ textDecoration: 'none' }}>
+            <Card variant="glass" padding="md" style={{ textAlign: 'center', height: '100%', transition: 'all var(--transition-normal)' }}>
+              <ShieldAlert size={30} color="var(--accent-ruby)" style={{ margin: '0 auto 0.65rem auto' }} />
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.35rem' }}>Canal de Denúncias</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Atendimento prioritário para qualquer suspeita de abuso.</div>
+            </Card>
+          </Link>
         </div>
       </section>
     </div>
