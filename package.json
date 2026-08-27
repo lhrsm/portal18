@@ -21,7 +21,8 @@
     "verify-phase10": "tsx scripts/verify-phase10.ts",
     "verify-phase11": "tsx scripts/verify-phase11.ts",
     "verify-phase12": "tsx scripts/verify-phase12.ts",
-    "verify-phase12a": "tsx scripts/verify-phase12a.ts"
+    "verify-phase12a": "tsx scripts/verify-phase12a.ts",
+    "verify-phase12b": "tsx scripts/verify-phase12b.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
