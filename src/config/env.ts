@@ -20,7 +20,16 @@ export const serverEnvSchema = publicEnvSchema.extend({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   KYC_PROVIDER: z.string().default('unconfigured'),
   PAYMENT_PROVIDER: z.string().default('unconfigured'),
-  EMAIL_PROVIDER: z.string().default('fallback'),
+  EMAIL_PROVIDER: z.string().default('unconfigured'),
+  EMAIL_FROM: z.string().optional(),
+  EMAIL_FROM_NAME: z.string().optional(),
+  EMAIL_API_KEY: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
+  SENDGRID_API_KEY: z.string().optional(),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.string().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
 });
 
 export type PublicEnv = z.infer<typeof publicEnvSchema>;
@@ -50,5 +59,13 @@ export const env = {
   },
   get isPaymentConfigured(): boolean {
     return !!process.env.PAYMENT_PROVIDER && process.env.PAYMENT_PROVIDER !== 'unconfigured';
+  },
+  get isEmailConfigured(): boolean {
+    const provider = process.env.EMAIL_PROVIDER;
+    if (!provider || provider === 'unconfigured' || provider === 'fallback') return false;
+    return !!(process.env.EMAIL_API_KEY || process.env.RESEND_API_KEY || process.env.SENDGRID_API_KEY || process.env.SMTP_HOST);
+  },
+  get emailProviderName(): string {
+    return process.env.EMAIL_PROVIDER || 'unconfigured';
   },
 };

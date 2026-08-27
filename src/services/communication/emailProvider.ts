@@ -21,8 +21,17 @@ export interface EmailDeliveryResult {
   error?: string;
 }
 
+function escapeHtml(unsafe: string): string {
+  return String(unsafe)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Template registry with discreet subjects and clean HTML/text bodies
-const DISCREET_TEMPLATES: Record<string, { subject: string; html: (v: Record<string, any>) => string; text: (v: Record<string, any>) => string }> = {
+export const DISCREET_TEMPLATES: Record<string, { subject: string; html: (v: Record<string, any>) => string; text: (v: Record<string, any>) => string }> = {
   welcome: {
     subject: 'Bem-vindo ao Portal Nacional',
     html: (v) => `<p>Olá, ${escapeHtml(v.name || 'usuário')}.</p><p>Sua conta foi criada com sucesso no Portal Nacional 18+.</p><p>Acesse o painel para gerenciar suas preferências com total privacidade.</p>`,
@@ -63,6 +72,11 @@ const DISCREET_TEMPLATES: Record<string, { subject: string; html: (v: Record<str
     html: (v) => `<p>Olá,</p><p>A equipe de moderação solicitou alguns ajustes antes de publicar seu perfil.</p><p>Motivo: ${escapeHtml(v.reason || 'Consulte o painel')}</p>`,
     text: (v) => `Ajustes necessários no seu perfil: ${v.reason || 'Consulte o painel'}.`,
   },
+  profile_suspended: {
+    subject: 'Aviso importante sobre sua conta',
+    html: (v) => `<p>Olá,</p><p>Seu perfil foi suspenso temporariamente pela equipe de moderação e conformidade.</p><p>Motivo: ${escapeHtml(v.reason || 'Consulte os termos de uso')}</p><p>Entre em contato com o suporte para esclarecimentos.</p>`,
+    text: (v) => `Aviso importante: Seu perfil foi suspenso temporariamente. Motivo: ${v.reason || 'Consulte os termos'}. Contate o suporte.`,
+  },
   payment_confirmed: {
     subject: 'Confirmação de pagamento',
     html: (v) => `<p>Olá,</p><p>Confirmamos o recebimento do pagamento no valor de <strong>R$ ${escapeHtml(String(v.amount || '0,00'))}</strong>.</p><p>Recibo: #${escapeHtml(v.order_number || '0000')}</p>`,
@@ -95,15 +109,6 @@ const DISCREET_TEMPLATES: Record<string, { subject: string; html: (v: Record<str
   },
 };
 
-function escapeHtml(unsafe: string): string {
-  return String(unsafe)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
 export const emailProvider = {
   /**
    * Renders and dispatches email via configured gateway or dev sandbox.
@@ -114,14 +119,124 @@ export const emailProvider = {
     const htmlBody = template ? template.html(payload.variables) : `<p>Notificação da sua conta.</p>`;
     const textBody = template ? template.text(payload.variables) : 'Notificação da sua conta.';
 
-    const providerName = process.env.EMAIL_PROVIDER || 'unconfigured_sandbox';
+    const providerName = (process.env.EMAIL_PROVIDER || 'unconfigured_sandbox').toLowerCase();
+    const fromName = process.env.EMAIL_FROM_NAME || 'Portal Nacional';
+    const fromEmail = process.env.EMAIL_FROM || 'atendimento@portalnacional.com.br';
+    const replyTo = process.env.EMAIL_REPLY_TO || 'suporte@portalnacional.com.br';
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[EmailProvider:${providerName}] -> Sending to ${payload.to}`);
-      console.log(`  Subject: ${subject}`);
-      console.log(`  Preview: ${textBody.slice(0, 100)}...`);
+    // 1. Resend Provider Adapter
+    if (providerName === 'resend') {
+      const apiKey = process.env.EMAIL_API_KEY || process.env.RESEND_API_KEY;
+      if (!apiKey) {
+        return {
+          success: false,
+          provider: 'resend',
+          status: 'failed',
+          error: 'RESEND_API_KEY não configurada no ambiente de produção.',
+        };
+      }
+
+      try {
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: `${fromName} <${fromEmail}>`,
+            to: [payload.to],
+            reply_to: replyTo,
+            subject,
+            html: htmlBody,
+            text: textBody,
+          }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          return {
+            success: false,
+            provider: 'resend',
+            status: 'failed',
+            error: errData.message || `Resend HTTP error ${res.status}`,
+          };
+        }
+
+        const data = await res.json();
+        return {
+          success: true,
+          messageId: data.id || `resend-${Date.now()}`,
+          provider: 'resend',
+          status: 'sent',
+        };
+      } catch (err: any) {
+        return {
+          success: false,
+          provider: 'resend',
+          status: 'failed',
+          error: err.message || 'Falha na conexão com Resend API',
+        };
+      }
     }
 
+    // 2. SendGrid Provider Adapter
+    if (providerName === 'sendgrid') {
+      const apiKey = process.env.EMAIL_API_KEY || process.env.SENDGRID_API_KEY;
+      if (!apiKey) {
+        return {
+          success: false,
+          provider: 'sendgrid',
+          status: 'failed',
+          error: 'SENDGRID_API_KEY não configurada no ambiente de produção.',
+        };
+      }
+
+      try {
+        const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            personalizations: [{ to: [{ email: payload.to }] }],
+            from: { email: fromEmail, name: fromName },
+            reply_to: { email: replyTo },
+            subject,
+            content: [
+              { type: 'text/plain', value: textBody },
+              { type: 'text/html', value: htmlBody },
+            ],
+          }),
+        });
+
+        if (!res.ok) {
+          return {
+            success: false,
+            provider: 'sendgrid',
+            status: 'failed',
+            error: `SendGrid HTTP error ${res.status}`,
+          };
+        }
+
+        return {
+          success: true,
+          messageId: `sendgrid-${Date.now()}`,
+          provider: 'sendgrid',
+          status: 'sent',
+        };
+      } catch (err: any) {
+        return {
+          success: false,
+          provider: 'sendgrid',
+          status: 'failed',
+          error: err.message || 'Falha na conexão com SendGrid API',
+        };
+      }
+    }
+
+    // 3. Fallback Sandbox for Development/Test
     return {
       success: true,
       messageId: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,

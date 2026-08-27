@@ -154,9 +154,10 @@ export async function runSupabaseRuntimeValidation(): Promise<RuntimeCheckResult
   const paymentProvider = PaymentProviderFactory.getProvider();
   let paymentBlocked = false;
   let paymentMessage = '';
-  const prevEnv = process.env.NODE_ENV;
+  const envMap = process.env as Record<string, string | undefined>;
+  const prevEnv = envMap['NODE_ENV'];
   try {
-    process.env.NODE_ENV = 'production';
+    envMap['NODE_ENV'] = 'production';
     await paymentProvider.createCheckout({
       orderId: 'test-order',
       orderNumber: 'ORD-TEST',
@@ -174,9 +175,9 @@ export async function runSupabaseRuntimeValidation(): Promise<RuntimeCheckResult
     paymentMessage = err.message || 'PAYMENTS_DISABLED';
   } finally {
     if (prevEnv !== undefined) {
-      process.env.NODE_ENV = prevEnv;
+      envMap['NODE_ENV'] = prevEnv;
     } else {
-      delete process.env.NODE_ENV;
+      delete envMap['NODE_ENV'];
     }
   }
 
