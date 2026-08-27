@@ -98,10 +98,36 @@ export async function runCompetitiveUXVerification(): Promise<UXCheckResult[]> {
   results.push({
     id: 'UX-PROFILE-01',
     category: 'PROFILE PAGE',
-    name: 'Public profile resolution with full attributes',
+    name: 'Public profile resolution with full attributes (Marina Alves)',
     expected: 'Marina Alves resolved with age 26 in Salvador/Barra',
     passed: marinaResolved,
     details: `Resolved: ${marina?.stage_name}, Age: ${marina?.age}, Location: ${marina?.city_name}/${marina?.neighborhood}`,
+  });
+
+  // 6. ISABELA MARTINS RESOLUTION (Phase 24B Target)
+  const isabela = await publicProfilesService.getPublicProfileBySlug('bahia', 'salvador', 'demo-isabela-martins-salvador');
+  const isabelaResolved = Boolean(isabela && isabela.stage_name === 'Isabela Martins' && isabela.age === 25 && isabela.neighborhood === 'Graça');
+
+  results.push({
+    id: 'UX-PROFILE-02',
+    category: 'PROFILE PAGE 24B',
+    name: 'Target profile resolution (Isabela Martins in Graça)',
+    expected: 'Isabela Martins resolved with age 25 in Salvador/Graça',
+    passed: isabelaResolved,
+    details: `Resolved: ${isabela?.stage_name}, Age: ${isabela?.age}, Location: ${isabela?.city_name}/${isabela?.neighborhood}`,
+  });
+
+  // 7. SIMILAR PROFILES APPROVED MEDIA INTEGRITY
+  const isabelaSimilar = await recommendationService.getSimilarProfiles(isabela?.advertiser_id || 'demo-isabela', 4, 'salvador', 'bahia');
+  const allSimilarHavePhotos = isabelaSimilar.length === 4 && isabelaSimilar.every((p) => Boolean(p.thumbnail_url));
+
+  results.push({
+    id: 'UX-SIMILAR-02',
+    category: 'SIMILAR MEDIA INTEGRITY',
+    name: 'Zero moderation placeholders in similar recommendations',
+    expected: '4 similar profiles returned with valid non-null approved thumbnail URLs',
+    passed: allSimilarHavePhotos,
+    details: `Count: ${isabelaSimilar.length}, All photos valid: ${allSimilarHavePhotos ? 'YES' : 'NO'}`,
   });
 
   return results;

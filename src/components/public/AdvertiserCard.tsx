@@ -186,19 +186,22 @@ export function AdvertiserCard({
       <div className="advertiser-card-container" onClick={handleCardClick}>
         <Link href={profileUrl} className="advertiser-card-link">
           <div className="advertiser-card-media-wrapper">
-            {advertiser.primary_photo_url ? (
-              <img
-                src={advertiser.primary_photo_url}
-                alt={advertiser.stage_name}
-                className="advertiser-card-image"
-                loading="lazy"
-              />
-            ) : (
-              <div className="advertiser-card-placeholder">
-                <Sparkles size={36} color="var(--accent-gold)" />
-                <span>Foto em moderação</span>
-              </div>
-            )}
+            {(() => {
+              const photoUrl = advertiser.primary_photo_url || (advertiser as any).primary_media_url || (advertiser as any).thumbnail_url;
+              return photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt={advertiser.stage_name}
+                  className="advertiser-card-image"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="advertiser-card-placeholder">
+                  <Sparkles size={36} color="var(--accent-gold)" />
+                  <span>Foto do perfil</span>
+                </div>
+              );
+            })()}
 
             {/* Badges Overlay */}
             <div className="advertiser-card-badges-top">
