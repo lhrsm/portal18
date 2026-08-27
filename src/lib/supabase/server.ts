@@ -8,7 +8,7 @@ import { Database } from '@/types/database.types';
  * Handles Next.js cookies and user sessions transparently for SSR.
  */
 export async function createClient() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-project.supabase.co';
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
 

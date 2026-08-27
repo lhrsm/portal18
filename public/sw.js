@@ -1,5 +1,5 @@
-// Portal Nacional PWA Service Worker (Phase 10)
-const CACHE_NAME = 'portal-shell-v1';
+// Portal Nacional PWA Service Worker (Phase 10 / Hardened RC)
+const CACHE_NAME = 'portal-shell-RC-20260827-054500-HARDENED';
 const STATIC_ASSETS = [
   '/',
   '/offline',

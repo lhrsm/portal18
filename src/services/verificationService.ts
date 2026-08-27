@@ -6,6 +6,15 @@ export const verificationService = {
    * Initiates a secure identity verification session for the authenticated advertiser.
    */
   async startVerificationSession(verificationType = 'identity_and_age'): Promise<VerificationSessionResponse> {
+    // Gate 6.3: Production Guard
+    if (process.env.NODE_ENV === 'production' && (!process.env.KYC_PROVIDER || process.env.KYC_PROVIDER === 'unconfigured')) {
+      return {
+        success: false,
+        status: 'unavailable',
+        error: 'VERIFICATION_UNAVAILABLE: Provedor de verificação 18+ em homologação/aguardando credenciais de produção.',
+      };
+    }
+
     const supabase = createClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase.rpc as any)('create_identity_verification_session', {
