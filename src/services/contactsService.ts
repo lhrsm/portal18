@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
-import { AdvertiserContact } from '@/types/app.types';
-import { ContactType } from '@/types/database.types';
+import { AdvertiserContact, ContactType } from '@/types/app.types';
 
 export const contactsService = {
   async getContactsByAdvertiser(advertiserId: string): Promise<AdvertiserContact[]> {

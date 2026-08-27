@@ -52,12 +52,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Approved public advertiser profile routes
-  const profileRoutes: MetadataRoute.Sitemap = publicProfiles.data.map((adv) => ({
-    url: `${baseUrl}/perfil/${adv.state_slug}/${adv.city_slug}/${adv.slug}`,
-    lastModified: new Date(adv.updated_at || adv.created_at),
-    changeFrequency: 'daily',
-    priority: 0.6,
-  }));
+  const profileRoutes: MetadataRoute.Sitemap = publicProfiles.data
+    .filter((adv) => adv.state_slug && adv.city_slug && adv.slug)
+    .map((adv) => {
+      const sourceDate = adv.updated_at ?? adv.created_at;
+      return {
+        url: `${baseUrl}/perfil/${adv.state_slug}/${adv.city_slug}/${adv.slug}`,
+        ...(sourceDate ? { lastModified: new Date(sourceDate) } : {}),
+        changeFrequency: 'daily' as const,
+        priority: 0.6,
+      };
+    });
 
   return [
     ...staticRoutes,

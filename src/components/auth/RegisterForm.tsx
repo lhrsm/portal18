@@ -91,9 +91,9 @@ export function RegisterForm() {
         if (profile) {
           // Persist legal consents in consent_records
           await Promise.allSettled([
-            consentService.recordConsent((profile as { id: string }).id, 'age_declaration', null, true, 'registration'),
-            consentService.recordConsent((profile as { id: string }).id, 'terms', null, true, 'registration'),
-            consentService.recordConsent((profile as { id: string }).id, 'privacy', null, true, 'registration'),
+            consentService.recordConsent((profile as { id: string }).id, 'age_18_verification', null, true, 'registration'),
+            consentService.recordConsent((profile as { id: string }).id, 'terms_of_service', null, true, 'registration'),
+            consentService.recordConsent((profile as { id: string }).id, 'privacy_policy', null, true, 'registration'),
           ]);
         }
 

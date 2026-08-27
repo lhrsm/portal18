@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { advertisersService } from '@/services/advertisersService';
-import { AdvertiserProfile } from '@/types/app.types';
-import { Visibility } from '@/types/database.types';
+import { AdvertiserProfile, Visibility } from '@/types/app.types';
 import { AdvertiserLayout } from '@/components/advertiser/AdvertiserLayout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -29,7 +28,8 @@ export default function AdvertiserSettingsPage() {
         const adv = await advertisersService.getOwnAdvertiserProfile(profile.id);
         if (adv) {
           setAdvertiser(adv);
-          setVisibility(adv.visibility);
+          const validVis: Visibility = (adv.visibility === 'private' || adv.visibility === 'hidden') ? adv.visibility : 'public';
+          setVisibility(validVis);
         }
       }
       setLoading(false);

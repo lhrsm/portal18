@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
-import { ConsentRecord, LegalDocument } from '@/types/app.types';
-import { ConsentType } from '@/types/database.types';
+import { ConsentRecord, LegalDocument, ConsentType } from '@/types/app.types';
 
 export const consentService = {
   async getActiveLegalDocuments(): Promise<LegalDocument[]> {

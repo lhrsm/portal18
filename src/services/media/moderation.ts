@@ -12,7 +12,7 @@ export class AutomatedModerationService implements ContentModerationProvider {
     return {
       provider: 'automated_rule_engine',
       providerReference: scanId,
-      riskLevel: 'safe',
+      riskLevel: 'none',
       categories: [],
       isFlagged: false,
       isBlocked: false,

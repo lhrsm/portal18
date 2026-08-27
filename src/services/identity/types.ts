@@ -1,4 +1,4 @@
-import { VerificationStatus } from '@/types/database.types';
+import { VerificationStatus } from '@/types/app.types';
 
 export type VerificationType = 'identity_and_age' | 'age_only' | 'identity_only';
 

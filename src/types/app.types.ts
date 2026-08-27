@@ -1,5 +1,40 @@
 import { Database } from './database.types';
 
+// ============================================================================
+// Database Generated Enums (Derived directly from PostgreSQL Enums)
+// ============================================================================
+export type ActivityBucket = Database['public']['Enums']['activity_bucket'];
+export type BillingInterval = Database['public']['Enums']['billing_interval'];
+export type CampaignStatus = Database['public']['Enums']['campaign_status'];
+export type DiscountType = Database['public']['Enums']['discount_type'];
+export type LocationPrecision = Database['public']['Enums']['location_precision'];
+export type OrderStatus = Database['public']['Enums']['order_status'];
+export type PaymentStatus = Database['public']['Enums']['payment_status'];
+export type PaymentType = Database['public']['Enums']['payment_type'];
+export type ProcessingStatus = Database['public']['Enums']['processing_status'];
+export type PromotionPlacement = Database['public']['Enums']['promotion_placement'];
+export type SubscriptionStatus = Database['public']['Enums']['subscription_status'];
+
+// ============================================================================
+// Text + CHECK Domain Types (Mapped to PostgreSQL Constraints)
+// ============================================================================
+export type AccountType = 'user' | 'advertiser' | 'moderator' | 'admin' | 'super_admin';
+export type ProfileStatus = 'draft' | 'pending_review' | 'active' | 'suspended' | 'rejected';
+export type Visibility = 'public' | 'private' | 'hidden';
+export type VerificationStatus = 'not_started' | 'pending' | 'processing' | 'verified' | 'rejected' | 'requires_review' | 'expired';
+export type ContactType = 'whatsapp' | 'telegram' | 'phone' | 'website' | 'email' | 'instagram' | 'twitter' | 'onlyfans' | 'privacy';
+export type ConsentType = 'terms_of_service' | 'privacy_policy' | 'age_18_verification' | 'commercial_terms' | 'marketing_cookies' | 'analytics_tracking';
+export type MediaType = 'image' | 'video';
+export type ModerationStatus = 'pending' | 'approved' | 'rejected' | 'flagged' | 'blocked';
+export type ModerationRiskLevel = 'none' | 'low' | 'medium' | 'high' | 'critical';
+export type ModerationCategory = 'nudity' | 'suggestive' | 'violence' | 'hate_speech' | 'minor' | 'spam' | 'other';
+export type ReportStatus = 'open' | 'under_review' | 'resolved' | 'rejected' | 'escalated';
+export type ReportSeverity = 'low' | 'medium' | 'high' | 'critical';
+export type LegalDocumentType = 'terms_of_service' | 'privacy_policy' | 'advertiser_rules' | 'compliance_guide' | 'dmca_policy';
+
+// ============================================================================
+// Database Table Row Types
+// ============================================================================
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type UserRole = Database['public']['Tables']['user_roles']['Row'];
 export type BrazilState = Database['public']['Tables']['brazil_states']['Row'];
@@ -118,8 +153,29 @@ export interface MediaQuota {
   canUploadVideo: boolean;
 }
 
-// View Type
-export type PublicAdvertiser = Database['public']['Views']['public_advertiser_profiles']['Row'];
+// Raw View Row Type from Supabase
+export type PublicAdvertiserRow = Database['public']['Views']['public_advertiser_profiles']['Row'];
+
+// Validated Domain Public Advertiser Model
+export type PublicAdvertiser = PublicAdvertiserRow & {
+  advertiser_id: string;
+  stage_name: string;
+  slug: string;
+};
+
+// Runtime type guard for domain invariants
+export function isValidPublicAdvertiser(value: unknown): value is PublicAdvertiser {
+  if (!value || typeof value !== 'object') return false;
+  const p = value as Record<string, unknown>;
+  return (
+    typeof p.advertiser_id === 'string' &&
+    p.advertiser_id.length > 0 &&
+    typeof p.stage_name === 'string' &&
+    p.stage_name.length > 0 &&
+    typeof p.slug === 'string' &&
+    p.slug.length > 0
+  );
+}
 
 export interface UserSession {
   id: string;

@@ -1,4 +1,4 @@
-import { MediaType, ProcessingStatus, ModerationStatus, ModerationRiskLevel, ModerationCategory } from '@/types/database.types';
+import { MediaType, ProcessingStatus, ModerationStatus, ModerationRiskLevel, ModerationCategory } from '@/types/app.types';
 
 export interface ProcessImageParams {
   storagePath: string;

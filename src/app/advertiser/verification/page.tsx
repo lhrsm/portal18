@@ -178,9 +178,11 @@ export default function AdvertiserVerificationPage() {
           </p>
 
           <div style={{ background: 'var(--bg-tertiary)', padding: '1rem', borderRadius: 'var(--radius-md)', maxWidth: '420px', margin: '0 auto 2rem auto', fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            <div>
-              <strong>Concluída em:</strong> {request?.completed_at ? new Date(request.completed_at).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR')}
-            </div>
+            {request?.reviewed_at && (
+              <div>
+                <strong>Concluída em:</strong> {new Date(request.reviewed_at).toLocaleDateString('pt-BR')}
+              </div>
+            )}
             {request?.expires_at && (
               <div>
                 <strong>Válida até:</strong> {new Date(request.expires_at).toLocaleDateString('pt-BR')}

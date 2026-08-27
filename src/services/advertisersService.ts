@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
 import { Database } from '@/types/database.types';
-import { AdvertiserProfile, AdvertiserProfileHistory } from '@/types/app.types';
+import { AdvertiserProfile, AdvertiserProfileHistory, Visibility } from '@/types/app.types';
 
 type AdvertiserInsert = Database['public']['Tables']['advertiser_profiles']['Insert'];
 type AdvertiserUpdate = Database['public']['Tables']['advertiser_profiles']['Update'];
@@ -178,7 +178,7 @@ export const advertisersService = {
 
   async updateVisibility(
     advertiserId: string,
-    visibility: Database['public']['Enums']['visibility']
+    visibility: Visibility
   ): Promise<{ success: boolean; error?: string }> {
     const supabase = createClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,4 +1,4 @@
-import { PaymentStatus, SubscriptionStatus, PaymentType, BillingInterval } from '@/types/database.types';
+import { PaymentStatus, SubscriptionStatus, PaymentType, BillingInterval } from '@/types/app.types';
 
 export interface CreateCheckoutParams {
   orderId: string;

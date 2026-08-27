@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
-import { PublicAdvertiser, ExploreFilters, BrazilCity, Category } from '@/types/app.types';
+import { PublicAdvertiser, ExploreFilters, BrazilCity, Category, isValidPublicAdvertiser } from '@/types/app.types';
 
 export const publicProfilesService = {
   async getPublicAdvertisers(filters: ExploreFilters = {}): Promise<{
@@ -79,7 +79,7 @@ export const publicProfilesService = {
       return { data: [], totalCount: 0, hasMore: false };
     }
 
-    const profiles = (data as PublicAdvertiser[]) || [];
+    const profiles = (data || []).filter(isValidPublicAdvertiser);
     const totalCount = count || 0;
 
     return {
@@ -103,10 +103,10 @@ export const publicProfilesService = {
       .eq('city_slug', citySlug.toLowerCase())
       .maybeSingle();
 
-    if (error || !data) {
+    if (error || !data || !isValidPublicAdvertiser(data)) {
       return null;
     }
-    return data as PublicAdvertiser;
+    return data;
   },
 
   async getRecommendedAdvertisers(limit = 6): Promise<PublicAdvertiser[]> {
