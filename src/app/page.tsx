@@ -30,7 +30,10 @@ import {
   CheckCircle2, 
   Heart, 
   History, 
-  Users 
+  Flame,
+  Star,
+  Eye,
+  TrendingUp
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -42,45 +45,44 @@ export default function HomePage() {
   const [categories, setCategories] = useState<(Category & { profileCount: number })[]>([]);
   const [recommendedProfiles, setRecommendedProfiles] = useState<PublicAdvertiser[]>([]);
   const [recentProfiles, setRecentProfiles] = useState<PublicAdvertiser[]>([]);
+  const [featuredProfiles, setFeaturedProfiles] = useState<PublicAdvertiser[]>([]);
   const [activeCities, setActiveCities] = useState<{ cityName: string; citySlug: string; stateCode: string; stateSlug: string; profileCount: number }[]>([]);
 
-  // Authenticated Personalized Feeds (Section 74 to 78)
+  // Authenticated Feeds
   const [forYouProfiles, setForYouProfiles] = useState<DiscoveryProfileCard[]>([]);
   const [userRecentViews, setUserRecentViews] = useState<any[]>([]);
   const [userFavorites, setUserFavorites] = useState<any[]>([]);
-  const [userFollowing, setUserFollowing] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadHomeData() {
       try {
-        const [recs, recents, cats, cities] = await Promise.all([
-          publicProfilesService.getRecommendedAdvertisers(8),
-          publicProfilesService.getRecentAdvertisers(8),
+        const [recs, recents, cats, cities, allAdv] = await Promise.all([
+          publicProfilesService.getRecommendedAdvertisers(10),
+          publicProfilesService.getRecentAdvertisers(10),
           publicProfilesService.getCategoriesWithCount(),
           publicProfilesService.getCitiesWithActiveProfiles(),
+          publicProfilesService.getPublicAdvertisers({ limit: 10, sort: 'active' }),
         ]);
         setRecommendedProfiles(recs);
         setRecentProfiles(recents);
+        setFeaturedProfiles(allAdv.data);
         setCategories(cats);
         setActiveCities(cities);
 
         // Load authenticated sections if logged in
         if (profile) {
-          const [userFavs, userHist, userFollows, userPrefs] = await Promise.all([
+          const [userFavs, userHist, userPrefs] = await Promise.all([
             favoritesService.getUserFavorites(profile.id),
             historyService.getUserHistory(profile.id),
-            followingService.getFollowedProfiles(profile.id),
             preferencesService.getUserPreferences(profile.id),
           ]);
 
-          setUserFavorites(userFavs.slice(0, 6));
-          setUserRecentViews(userHist.slice(0, 6));
-          setUserFollowing(userFollows.slice(0, 6));
+          setUserFavorites(userFavs.slice(0, 5));
+          setUserRecentViews(userHist.slice(0, 5));
 
-          // Load "Para você" recommendations if personalization is enabled (Section 43 & 50)
           if (!userPrefs || userPrefs.personalization_enabled) {
-            const forYou = await recommendationService.getRecommendedHome(8);
+            const forYou = await recommendationService.getRecommendedHome(10);
             setForYouProfiles(forYou);
           }
         }
@@ -113,36 +115,46 @@ export default function HomePage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem', paddingBottom: '4rem' }}>
-      {/* 1. HERO SECTION */}
-      <section className="hero-section">
-        <div className="container" style={{ textAlign: 'center', maxWidth: '860px', margin: '0 auto' }}>
-          <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '1.25rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem', paddingBottom: '4rem' }}>
+      {/* 1. COMPACT HERO SECTION (Above-the-fold optimization) */}
+      <section style={{ 
+        paddingTop: '2.5rem', 
+        paddingBottom: '1.5rem',
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(229, 185, 92, 0.08) 0%, transparent 70%)'
+      }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '960px', margin: '0 auto' }}>
+          <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.85rem' }}>
             <Badge variant="gold">PORTAL NACIONAL 18+</Badge>
-            <Badge variant="ruby">100% INDEPENDENTE</Badge>
+            <Badge variant="ruby">ACESSO DISCRETO</Badge>
           </div>
 
-          <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.6rem)', fontWeight: 800, lineHeight: 1.15, marginBottom: '1rem', letterSpacing: '-0.02em' }}>
-            Encontre perfis na <span style={{ background: 'linear-gradient(135deg, var(--accent-gold) 0%, #fff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>sua região</span>
+          <h1 style={{ 
+            fontSize: 'clamp(1.85rem, 4.5vw, 3rem)', 
+            fontWeight: 800, 
+            lineHeight: 1.15, 
+            marginBottom: '0.75rem', 
+            letterSpacing: '-0.02em' 
+          }}>
+            Encontre acompanhantes na <span style={{ background: 'linear-gradient(135deg, var(--accent-gold) 0%, #fff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>sua região</span>
           </h1>
 
-          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', marginBottom: '2.5rem', lineHeight: 1.6 }}>
-            Descoberta segura de acompanhantes e profissionais independentes em todo o Brasil.
+          <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '1.75rem', lineHeight: 1.5 }}>
+            A plataforma mais segura e discreta de anúncios para acompanhantes e profissionais independentes.
           </p>
 
-          {/* Hero Search Bar */}
-          <Card variant="glass" padding="md" style={{ maxWidth: '780px', margin: '0 auto', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
-            <form onSubmit={handleSearchSubmit} className="hero-search-form">
-              <div style={{ flex: '1 1 280px' }}>
+          {/* Compact Hero Search Bar */}
+          <Card variant="glass" padding="sm" style={{ maxWidth: '840px', margin: '0 auto 1.5rem auto', boxShadow: '0 16px 36px rgba(0,0,0,0.6)' }}>
+            <form onSubmit={handleSearchSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'center' }}>
+              <div style={{ flex: '1 1 260px' }}>
                 <CityAutocomplete onSelectCity={setSelectedCity} placeholder="Digite sua cidade ou estado..." />
               </div>
 
-              <div style={{ flex: '1 1 200px' }}>
+              <div style={{ flex: '1 1 180px' }}>
                 <select
                   className="input"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', padding: '0.65rem 0.85rem', height: '42px' }}
                 >
                   <option value="">Todas as Categorias</option>
                   {categories.map((cat) => (
@@ -153,23 +165,45 @@ export default function HomePage() {
                 </select>
               </div>
 
-              <Button type="submit" variant="ruby" size="lg" leftIcon={<Search size={18} />}>
+              <Button type="submit" variant="ruby" size="md" leftIcon={<Search size={16} />} style={{ flexShrink: 0, height: '42px' }}>
                 Explorar
               </Button>
             </form>
           </Card>
+
+          {/* Quick Filter Chips */}
+          <div className="filter-chips-container" style={{ justifyContent: 'center', marginTop: '0.5rem' }}>
+            <Link href="/acompanhantes/bahia/salvador" className="filter-chip-item active">
+              <MapPin size={13} /> Salvador / BA ({activeCities.find(c => c.citySlug === 'salvador')?.profileCount || 24})
+            </Link>
+            <Link href="/acompanhantes/sao-paulo/sao-paulo" className="filter-chip-item">
+              <MapPin size={13} /> São Paulo / SP
+            </Link>
+            <Link href="/acompanhantes/rio-de-janeiro/rio-de-janeiro" className="filter-chip-item">
+              <MapPin size={13} /> Rio de Janeiro / RJ
+            </Link>
+            <Link href="/explorar?verificado=true" className="filter-chip-item">
+              <ShieldCheck size={13} color="var(--color-success)" /> Verificados 18+
+            </Link>
+            <Link href="/categoria/massagistas" className="filter-chip-item">
+              <Tag size={13} /> Massagistas
+            </Link>
+            <Link href="/categoria/executivas-vip" className="filter-chip-item">
+              <Star size={13} color="var(--accent-gold)" /> Executivas VIP
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* 2. AUTHENTICATED: "PARA VOCÊ" (Section 50 & 74) */}
+      {/* 2. AUTHENTICATED: "PARA VOCÊ" */}
       {profile && forYouProfiles.length > 0 && (
         <section className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.75rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.25rem' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                <Sparkles size={16} /> Recomendações Personalizadas
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+                <Sparkles size={14} /> Recomendações Personalizadas
               </div>
-              <h2 style={{ fontSize: '1.85rem' }}>Para Você</h2>
+              <h2 style={{ fontSize: '1.65rem' }}>Para Você</h2>
             </div>
             <Link href="/account/preferences">
               <Button variant="ghost" size="sm">
@@ -179,7 +213,7 @@ export default function HomePage() {
           </div>
 
           <div className="advertiser-grid">
-            {forYouProfiles.map((adv) => (
+            {forYouProfiles.slice(0, 5).map((adv) => (
               <AdvertiserCard
                 key={adv.advertiser_id}
                 advertiser={{
@@ -205,95 +239,142 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* 3. AUTHENTICATED: "RECENTEMENTE VISUALIZADOS" (Section 74 & 75) */}
-      {profile && userRecentViews.length > 0 && (
-        <section className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.75rem' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-info)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                <History size={16} /> Seu Histórico Privado
-              </div>
-              <h2 style={{ fontSize: '1.85rem' }}>Recentemente Visualizados</h2>
-            </div>
-            <Link href="/account/history">
-              <Button variant="ghost" size="sm" rightIcon={<ArrowRight size={14} />}>
-                Ver Histórico Completo
-              </Button>
-            </Link>
-          </div>
-
-          <div className="advertiser-grid">
-            {userRecentViews.map((adv) => (
-              <AdvertiserCard
-                key={adv.advertiser_id}
-                advertiser={{
-                  advertiser_id: adv.advertiser_id,
-                  slug: adv.slug,
-                  stage_name: adv.stage_name,
-                  city_name: adv.city_name,
-                  state_code: adv.state_code,
-                  headline: adv.headline,
-                  primary_media_url: adv.primary_photo_url,
-                  verification_status: adv.verification_status as any,
-                  profile_status: adv.profile_status as any,
-                  visibility: 'public',
-                  category_names: [],
-                } as any}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 4. AUTHENTICATED: "MEUS FAVORITOS" (Section 74 & 76) */}
-      {profile && userFavorites.length > 0 && (
-        <section className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.75rem' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-ruby)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                <Heart size={16} /> Seus Perfis Salvos
-              </div>
-              <h2 style={{ fontSize: '1.85rem' }}>Meus Favoritos</h2>
-            </div>
-            <Link href="/account/favorites">
-              <Button variant="ghost" size="sm" rightIcon={<ArrowRight size={14} />}>
-                Ver todos ({userFavorites.length})
-              </Button>
-            </Link>
-          </div>
-
-          <div className="advertiser-grid">
-            {userFavorites.map((adv) => (
-              <AdvertiserCard
-                key={adv.advertiser_id}
-                initialFavorite={true}
-                advertiser={{
-                  advertiser_id: adv.advertiser_id,
-                  slug: adv.slug,
-                  stage_name: adv.stage_name,
-                  city_name: adv.city_name,
-                  state_code: adv.state_code,
-                  headline: adv.headline,
-                  primary_media_url: adv.primary_photo_url,
-                  verification_status: adv.verification_status as any,
-                  profile_status: adv.profile_status as any,
-                  visibility: 'public',
-                  category_names: [],
-                } as any}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 5. RECOMMENDED PROFILES (Public / General) */}
+      {/* 3. PERFIS EM DESTAQUE (Featured Carousel / Grid) */}
       <section className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.25rem' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-              <Sparkles size={16} /> Perfis em Destaque
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+              <Flame size={15} color="var(--accent-ruby)" /> Vitrine Principal
             </div>
-            <h2 style={{ fontSize: '1.85rem' }}>Perfis Recomendados</h2>
+            <h2 style={{ fontSize: '1.65rem' }}>Perfis em Destaque</h2>
+          </div>
+          <Link href="/explorar?sort=active">
+            <Button variant="ghost" size="sm" rightIcon={<ArrowRight size={14} />}>
+              Ver todos ({featuredProfiles.length})
+            </Button>
+          </Link>
+        </div>
+
+        {isLoading ? (
+          <div className="advertiser-grid">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Skeleton key={n} height="320px" borderRadius="var(--radius-lg)" />
+            ))}
+          </div>
+        ) : (
+          <div className="advertiser-grid">
+            {featuredProfiles.slice(0, 5).map((adv) => (
+              <AdvertiserCard key={adv.advertiser_id} advertiser={adv} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* 4. NOVOS PERFIS (Latest Additions) */}
+      <section className="container">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.25rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-cyan)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+              <Sparkles size={14} /> Recém Aprovados
+            </div>
+            <h2 style={{ fontSize: '1.65rem' }}>Novos Anúncios</h2>
+          </div>
+          <Link href="/explorar?sort=recent">
+            <Button variant="ghost" size="sm" rightIcon={<ArrowRight size={14} />}>
+              Ver novidades
+            </Button>
+          </Link>
+        </div>
+
+        {isLoading ? (
+          <div className="advertiser-grid">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Skeleton key={n} height="320px" borderRadius="var(--radius-lg)" />
+            ))}
+          </div>
+        ) : (
+          <div className="advertiser-grid">
+            {recentProfiles.slice(0, 5).map((adv) => (
+              <AdvertiserCard key={adv.advertiser_id} advertiser={adv} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* 5. CIDADES POPULARES (8 Principal Cities) */}
+      {activeCities.length > 0 && (
+        <section className="container">
+          <div style={{ marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+              <MapPin size={14} /> Cobertura Nacional
+            </div>
+            <h2 style={{ fontSize: '1.65rem' }}>Cidades Populares</h2>
+          </div>
+
+          <div className="discovery-card-grid">
+            {activeCities.map((city, i) => (
+              <Link
+                key={i}
+                href={`/acompanhantes/${city.stateSlug}/${city.citySlug}`}
+                className="discovery-pill-card"
+              >
+                <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem', marginBottom: '0.2rem' }}>
+                  {city.cityName}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 600, marginBottom: '0.4rem' }}>
+                  {city.stateCode}
+                </div>
+                <Badge variant={city.citySlug === 'salvador' ? 'ruby' : 'neutral'} size="sm">
+                  {city.profileCount} {city.profileCount === 1 ? 'perfil' : 'perfis'}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 6. CATEGORIAS VISUAIS */}
+      <section className="container">
+        <div style={{ marginBottom: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+            <Tag size={14} /> Estilos de Atendimento
+          </div>
+          <h2 style={{ fontSize: '1.65rem' }}>Categorias em Destaque</h2>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          {categories.map((cat) => (
+            <Link key={cat.id} href={`/categoria/${cat.slug}`} style={{ textDecoration: 'none' }}>
+              <Card variant="glass" padding="md" style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'all var(--transition-normal)' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
+                    <Tag size={18} color="var(--accent-gold)" />
+                    {cat.profileCount > 0 && <Badge variant="neutral" size="sm">{cat.profileCount} perfis</Badge>}
+                  </div>
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '0.35rem' }}>{cat.name}</h3>
+                  {cat.description && (
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                      {cat.description}
+                    </p>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--accent-gold)', marginTop: '0.85rem', fontWeight: 600 }}>
+                  Explorar <ArrowRight size={11} />
+                </div>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* 7. PERFIS RECOMENDADOS (Secondary Discovery Batch) */}
+      <section className="container">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.25rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+              <TrendingUp size={14} /> Seleção Especial
+            </div>
+            <h2 style={{ fontSize: '1.65rem' }}>Mais Recomendados</h2>
           </div>
           <Link href="/explorar?sort=recommended">
             <Button variant="ghost" size="sm" rightIcon={<ArrowRight size={14} />}>
@@ -304,197 +385,93 @@ export default function HomePage() {
 
         {isLoading ? (
           <div className="advertiser-grid">
-            {[1, 2, 3, 4].map((n) => (
-              <Skeleton key={n} height="360px" borderRadius="var(--radius-lg)" />
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Skeleton key={n} height="320px" borderRadius="var(--radius-lg)" />
             ))}
           </div>
-        ) : recommendedProfiles.length === 0 ? (
-          <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
-            <Sparkles size={40} color="var(--accent-gold)" style={{ margin: '0 auto 1rem auto' }} />
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Novos perfis em processo de moderação</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              Seja um dos primeiros anunciantes independentes da sua cidade.
-            </p>
-            <Link href={getAdvertiserCtaUrl()}>
-              <Button variant="primary">Criar Meu Perfil de Anunciante</Button>
-            </Link>
-          </Card>
         ) : (
           <div className="advertiser-grid">
-            {recommendedProfiles.map((adv) => (
+            {recommendedProfiles.slice(0, 5).map((adv) => (
               <AdvertiserCard key={adv.advertiser_id} advertiser={adv} />
             ))}
           </div>
         )}
       </section>
 
-      {/* 6. RECENT PROFILES */}
+      {/* 8. ADVERTISER CTA ("Quer aparecer aqui?") */}
       <section className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.75rem' }}>
-          <div>
-            <h2 style={{ fontSize: '1.85rem' }}>Novos Perfis</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Profissionais recém-aprovados na plataforma</p>
-          </div>
-          <Link href="/explorar?sort=recent">
-            <Button variant="ghost" size="sm" rightIcon={<ArrowRight size={14} />}>
-              Ver todos
-            </Button>
-          </Link>
-        </div>
-
-        {isLoading ? (
-          <div className="advertiser-grid">
-            {[1, 2, 3, 4].map((n) => (
-              <Skeleton key={n} height="360px" borderRadius="var(--radius-lg)" />
-            ))}
-          </div>
-        ) : (
-          <div className="advertiser-grid">
-            {recentProfiles.map((adv) => (
-              <AdvertiserCard key={adv.advertiser_id} advertiser={adv} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* 7. EXPLORE BY CITY */}
-      {activeCities.length > 0 && (
-        <section className="container">
-          <div style={{ marginBottom: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.85rem', marginBottom: '0.35rem' }}>Explore por Cidade</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Cidades com profissionais disponíveis</p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-            {activeCities.map((city, i) => (
-              <Link
-                key={i}
-                href={`/acompanhantes/${city.stateSlug}/${city.citySlug}`}
-                style={{ textDecoration: 'none' }}
-              >
-                <Card
-                  variant="glass"
-                  padding="md"
-                  className="city-card"
-                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all var(--transition-fast)' }}
-                >
-                  <div>
-                    <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '1rem' }}>
-                      {city.cityName}
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--accent-gold)' }}>
-                      {city.stateCode}
-                    </div>
-                  </div>
-                  <Badge variant="neutral">{city.profileCount} {city.profileCount === 1 ? 'perfil' : 'perfis'}</Badge>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 8. EXPLORE BY CATEGORY */}
-      <section className="container">
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.85rem', marginBottom: '0.35rem' }}>Explore por Categoria</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Encontre o estilo de atendimento ideal</p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
-          {categories.map((cat) => (
-            <Link key={cat.id} href={`/categoria/${cat.slug}`} style={{ textDecoration: 'none' }}>
-              <Card variant="glass" padding="md" style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                    <Tag size={20} color="var(--accent-gold)" />
-                    {cat.profileCount > 0 && <Badge variant="neutral">{cat.profileCount} perfis</Badge>}
-                  </div>
-                  <h3 style={{ fontSize: '1.15rem', marginBottom: '0.35rem' }}>{cat.name}</h3>
-                  {cat.description && (
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                      {cat.description}
-                    </p>
-                  )}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', color: 'var(--accent-gold)', marginTop: '1rem' }}>
-                  Ver categoria <ArrowRight size={12} />
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 9. SAFETY & PRIVACY */}
-      <section className="container">
-        <Card variant="glass" padding="lg" style={{ border: '1px solid rgba(229, 185, 92, 0.2)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem', alignItems: 'center' }}>
+        <Card variant="elevated" padding="lg" style={{ 
+          background: 'linear-gradient(135deg, rgba(163, 0, 33, 0.2) 0%, rgba(18, 22, 31, 0.95) 100%)', 
+          border: '1px solid var(--accent-ruby)',
+          borderRadius: 'var(--radius-xl)'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', alignItems: 'center' }}>
             <div>
-              <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.75rem' }}>
-                <Badge variant="ruby">SEGURANÇA & CONFORMIDADE</Badge>
+              <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.6rem' }}>
+                <Badge variant="ruby">ESPAÇO DO ANUNCIANTE</Badge>
               </div>
-              <h2 style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>Segurança e Privacidade em Primeiro Lugar</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                Operamos com tolerância zero contra exploração e em estrita conformidade com as leis vigentes de proteção e maioridade civil no Brasil.
+              <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.75rem', lineHeight: 1.2 }}>
+                Quer aparecer aqui e receber contatos diretos?
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
+                Divulgue seu perfil de forma independente com total segurança, controle de fotos e sem intermediários.
               </p>
-              <Link href="/account/privacy">
-                <Button variant="secondary" leftIcon={<ShieldCheck size={16} />}>
-                  Conheça nossa Central de Segurança
+              <Link href={getAdvertiserCtaUrl()}>
+                <Button variant="ruby" size="lg" leftIcon={<Megaphone size={18} />}>
+                  Criar meu perfil agora
                 </Button>
               </Link>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <CheckCircle2 size={20} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Maioridade Estrita 18+</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Restrição no banco de dados e termos de responsabilidade civil para 100% dos perfis.</div>
-                </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+              <div style={{ background: 'var(--bg-glass)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ color: 'var(--accent-gold)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.25rem' }}>Alta Visibilidade</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Destaque local na sua cidade e bairro de atendimento.</div>
               </div>
-
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <ShieldAlert size={20} color="var(--accent-ruby)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Canal Ativo de Denúncias</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Prioridade crítica imediata para qualquer suspeita de irregularidade ou menores.</div>
-                </div>
+              <div style={{ background: 'var(--bg-glass)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ color: 'var(--accent-ruby)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.25rem' }}>Controle Total</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Gerencie suas fotos, horários e canais de contato.</div>
               </div>
-
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <Lock size={20} color="var(--color-info)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Privacidade & Sem Intermediação</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Nenhum valor é cobrado de encontros e dados pessoais nunca são expostos.</div>
-                </div>
+              <div style={{ background: 'var(--bg-glass)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ color: 'var(--color-success)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.25rem' }}>Segurança & LGPD</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Proteção de dados com criptografia e privacidade.</div>
+              </div>
+              <div style={{ background: 'var(--bg-glass)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ color: 'var(--accent-cyan)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.25rem' }}>Métricas Reais</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Acompanhe visualizações e cliques no WhatsApp.</div>
               </div>
             </div>
           </div>
         </Card>
       </section>
 
-      {/* 10. ADVERTISER CTA BANNER */}
+      {/* 9. TRUST & SAFETY COMPACT CARDS */}
       <section className="container">
-        <Card variant="elevated" padding="lg" style={{ background: 'linear-gradient(135deg, rgba(163, 0, 33, 0.25) 0%, rgba(20, 20, 25, 0.95) 100%)', border: '1px solid var(--accent-ruby)' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '2rem' }}>
-            <div style={{ maxWidth: '580px' }}>
-              <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.5rem' }}>
-                <Badge variant="ruby">SEJA UM(A) ANUNCIANTE</Badge>
-              </div>
-              <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Quer anunciar seu perfil profissional?</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                Ganhe visibilidade na sua cidade, gerencie sua galeria com proteção e receba contatos diretos sem intermediários.
-              </p>
-            </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+          <Card variant="glass" padding="md" style={{ textAlign: 'center' }}>
+            <ShieldCheck size={28} color="var(--accent-gold)" style={{ margin: '0 auto 0.5rem auto' }} />
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Maioridade Estrita 18+</div>
+            <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Verificação obrigatória e tolerância zero contra menores.</div>
+          </Card>
 
-            <Link href={getAdvertiserCtaUrl()}>
-              <Button variant="ruby" size="lg" leftIcon={<Megaphone size={18} />}>
-                Criar meu perfil
-              </Button>
-            </Link>
-          </div>
-        </Card>
+          <Card variant="glass" padding="md" style={{ textAlign: 'center' }}>
+            <CheckCircle2 size={28} color="var(--color-success)" style={{ margin: '0 auto 0.5rem auto' }} />
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Moderação Contínua</div>
+            <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Revisão rigorosa de fotos e conteúdo antes da publicação.</div>
+          </Card>
+
+          <Card variant="glass" padding="md" style={{ textAlign: 'center' }}>
+            <Lock size={28} color="var(--color-info)" style={{ margin: '0 auto 0.5rem auto' }} />
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Privacidade & Sigilo</div>
+            <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Navegação segura com criptografia TLS 1.3 ponta a ponta.</div>
+          </Card>
+
+          <Card variant="glass" padding="md" style={{ textAlign: 'center' }}>
+            <ShieldAlert size={28} color="var(--accent-ruby)" style={{ margin: '0 auto 0.5rem auto' }} />
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Canal de Denúncias</div>
+            <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Atendimento prioritário para qualquer suspeita de abuso.</div>
+          </Card>
+        </div>
       </section>
     </div>
   );

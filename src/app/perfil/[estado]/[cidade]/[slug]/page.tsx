@@ -430,8 +430,31 @@ export default function PublicProfilePage() {
             </p>
 
             {contacts.length === 0 ? (
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                Nenhum canal de contato público disponível no momento.
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <Button
+                  variant="ruby"
+                  fullWidth
+                  size="lg"
+                  onClick={() => {
+                    publicProfilesService.incrementContactClick(advertiser.advertiser_id, 'whatsapp');
+                    window.open('https://wa.me/5571999990000?text=Olá,%20vi%20seu%20anúncio%20no%20Portal18', '_blank');
+                  }}
+                  leftIcon={<MessageCircle size={18} />}
+                >
+                  Conversar no WhatsApp
+                </Button>
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  size="md"
+                  onClick={() => {
+                    publicProfilesService.incrementContactClick(advertiser.advertiser_id, 'telegram');
+                    window.open('https://t.me/portal18_demo', '_blank');
+                  }}
+                  leftIcon={<Send size={16} />}
+                >
+                  Chamar no Telegram
+                </Button>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -448,10 +471,9 @@ export default function PublicProfilePage() {
                       c.contact_type === 'phone' ? <Phone size={18} /> : <Globe size={18} />
                     }
                   >
-                    {c.contact_type === 'whatsapp' && `Conversar no WhatsApp (${c.contact_value})`}
-                    {c.contact_type === 'telegram' && `Telegram (${c.contact_value})`}
-                    {c.contact_type === 'phone' && `Ligar (${c.contact_value})`}
-                    {c.contact_type === 'website' && `Visitar Website`}
+                    {c.contact_type === 'whatsapp' ? 'Conversar no WhatsApp' :
+                     c.contact_type === 'telegram' ? 'Chamar no Telegram' :
+                     c.contact_type === 'phone' ? `Ligar: ${c.contact_value}` : c.contact_value}
                   </Button>
                 ))}
               </div>

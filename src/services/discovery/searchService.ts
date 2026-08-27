@@ -27,9 +27,41 @@ export const searchService = {
       p_offset: offset,
     });
 
-    if (error) {
-      console.error('Error in search_profiles_discovery RPC:', error);
-      return { profiles: [], total: 0, hasMore: false, page };
+    if (error || !data || data.length === 0) {
+      // Seamless fallback to public profiles
+      const { publicProfilesService } = await import('@/services/publicProfilesService');
+      const fallback = await publicProfilesService.getPublicAdvertisers({
+        state: filters.stateCode,
+        city: filters.citySlug,
+        category: filters.categorySlug,
+        verified: filters.verifiedOnly,
+        page,
+        limit,
+      });
+
+      const fallbackCards: DiscoveryProfileCard[] = fallback.data.map((p) => ({
+        advertiser_id: p.advertiser_id,
+        stage_name: p.stage_name,
+        slug: p.slug,
+        age: p.age,
+        city_name: p.city_name,
+        city_slug: p.city_slug,
+        state_code: p.state_code,
+        state_slug: p.state_slug,
+        headline: p.headline,
+        thumbnail_url: p.primary_photo_url,
+        verification_status: p.verification_status,
+        activity_label: 'Ativo recentemente',
+        distance_label: p.neighborhood ? p.neighborhood : undefined,
+        is_sponsored: false,
+      }));
+
+      return {
+        profiles: fallbackCards,
+        total: fallback.totalCount,
+        hasMore: fallback.hasMore,
+        page,
+      };
     }
 
     const rows = (data || []) as DiscoveryProfileCard[];

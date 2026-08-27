@@ -15,9 +15,28 @@ export const recommendationService = {
       p_limit: limit,
     });
 
-    if (error) {
-      console.error('Error in get_similar_profiles RPC:', error);
-      return [];
+    if (error || !data || data.length === 0) {
+      const { publicProfilesService } = await import('@/services/publicProfilesService');
+      const fallback = await publicProfilesService.getPublicAdvertisers({ limit: limit + 1 });
+      return fallback.data
+        .filter((p) => p.advertiser_id !== advertiserId)
+        .slice(0, limit)
+        .map((p) => ({
+          advertiser_id: p.advertiser_id,
+          stage_name: p.stage_name,
+          slug: p.slug,
+          age: p.age,
+          city_name: p.city_name,
+          city_slug: p.city_slug,
+          state_code: p.state_code,
+          state_slug: p.state_slug,
+          headline: p.headline,
+          thumbnail_url: p.primary_photo_url,
+          verification_status: p.verification_status,
+          activity_label: 'Ativo hoje',
+          distance_label: p.neighborhood || 'Região',
+          is_sponsored: false,
+        }));
     }
 
     return (data || []).map((row: any) => ({

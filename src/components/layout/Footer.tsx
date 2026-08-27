@@ -51,31 +51,32 @@ export function Footer() {
           <div className="footer-column">
             <h4 className="footer-heading">Segurança</h4>
             <ul className="footer-list">
-              <li><Link href="/account/privacy" className="footer-link">Central de Segurança</Link></li>
-              <li><Link href="/account/privacy" className="footer-link">Denunciar</Link></li>
-              <li><Link href="/account/privacy" className="footer-link">Privacidade</Link></li>
-              <li><Link href="/account/privacy" className="footer-link">LGPD</Link></li>
+              <li><Link href="/trust" className="footer-link">Trust Center</Link></li>
+              <li><Link href="/trust/minors" className="footer-link">Proteção 18+</Link></li>
+              <li><Link href="/trust/moderation" className="footer-link">Moderação</Link></li>
+              <li><Link href="/trust/content-removal" className="footer-link">Remoção de Conteúdo</Link></li>
             </ul>
           </div>
 
-          {/* Column 4: Legal */}
+          {/* Column 4: Legal & Privacidade */}
           <div className="footer-column">
-            <h4 className="footer-heading">Legal</h4>
+            <h4 className="footer-heading">Legal & Privacidade</h4>
             <ul className="footer-list">
-              <li><Link href="/account/privacy" className="footer-link">Termos de Uso</Link></li>
-              <li><Link href="/account/privacy" className="footer-link">Política de Privacidade</Link></li>
-              <li><Link href="/account/privacy" className="footer-link">Cookies</Link></li>
-              <li><Link href="/account/privacy" className="footer-link">Diretrizes da Comunidade</Link></li>
+              <li><Link href="/trust/privacy" className="footer-link">Política de Privacidade</Link></li>
+              <li><Link href="/trust/lgpd" className="footer-link">Direitos LGPD</Link></li>
+              <li><Link href="/trust/security" className="footer-link">Segurança da Informação</Link></li>
+              <li><Link href="/status" className="footer-link">Status da Plataforma</Link></li>
             </ul>
           </div>
 
-          {/* Column 5: Institucional */}
+          {/* Column 5: Suporte */}
           <div className="footer-column">
-            <h4 className="footer-heading">Institucional</h4>
+            <h4 className="footer-heading">Suporte</h4>
             <ul className="footer-list">
-              <li><Link href="/explorar" className="footer-link">Sobre o Portal</Link></li>
-              <li><Link href="/account/privacy" className="footer-link">Ajuda & Suporte</Link></li>
-              <li><Link href="/advertiser/start" className="footer-link">Contato</Link></li>
+              <li><Link href="/help" className="footer-link">Central de Ajuda</Link></li>
+              <li><Link href="/help/faq" className="footer-link">Perguntas Frequentes</Link></li>
+              <li><Link href="/support/novo" className="footer-link">Abrir Chamado</Link></li>
+              <li><Link href="/advertiser/start" className="footer-link">Quero Anunciar</Link></li>
             </ul>
           </div>
         </div>
