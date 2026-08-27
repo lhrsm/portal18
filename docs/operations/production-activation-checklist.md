@@ -1,55 +1,74 @@
-# Checklist de Ativação em Produção (Production Activation Checklist)
+# CHECKLIST & PROTOCOLO DE ATIVAÇÃO EM PRODUÇÃO (GO-LIVE)
 
-## Ordem Rigorosa de Ativação (Etapas 1 a 17)
+**Projeto:** Portal Nacional de Entretenimento Adulto 18+  
+**Versão:** 2.0 (Pós-Fase 22)  
+**Data:** 27 de Agosto de 2026  
+**Status Operacional Atual:** `CLOSED BETA / GO WITH RESTRICTIONS`  
+
+---
+
+## 1. ORDEM RIGOROSA DE ATIVAÇÃO (ETAPAS 1 A 17)
 
 ```text
-1. Provisionar Projeto Supabase Dedicado (Região sa-east-1 / São Paulo)
-2. Executar Migrations do Banco (00001 a 00014) via CLI com pre-flight check
-3. Validar 100% das Políticas de RLS em todas as tabelas
-4. Criar e validar Buckets de Storage (uploads, kyc-documents, exports, ticket-attachments)
-5. Configurar Supabase Auth (Site URL, Redirect URLs, PKCE, MFA)
-6. Fazer deploy das Edge Functions e configurar Secrets de servidor
-7. Validar e ativar Jobs agendados seguros
-8. Deploy do Frontend Next.js (App Router, Turbopack)
-9. Configurar Domínio Oficial, DNS e Certificado SSL/HTTPS
-10. Validar Entregabilidade de E-mail Transacional (SPF, DKIM, DMARC)
-11. Escalar Equipe de Moderação Humana e Treinamento do Runbook
-12. Homologar Provedor de Identidade e Idade 18+ (KYC)
-13. Iniciar Fase de Closed Beta (Acesso restrito / Testes controlados)
-14. Concluir Credenciamento Comercial com Adquirente Especializado no Segmento Adulto
-15. Ativar Pagamentos e Planos de Assinatura (payments_enabled = true)
-16. Ativar Recursos de Impulsionamento e Destaques Regionais
-17. Lançamento Comercial Aberto ao Público Geral
+1. Provisionar Projeto Supabase Dedicado (Região sa-east-1 / São Paulo) [CONCLUÍDO]
+2. Executar Migrations do Banco (00001 a 00017) via CLI com pre-flight check [CONCLUÍDO]
+3. Validar 100% das Políticas de RLS em todas as tabelas públicas e privadas [CONCLUÍDO]
+4. Criar e validar Buckets de Storage (uploads, kyc-documents, exports, ticket-attachments) [CONCLUÍDO]
+5. Configurar Supabase Auth (Site URL, Redirect URLs, PKCE, MFA) [CONCLUÍDO]
+6. Fazer deploy do Frontend Next.js 16 (App Router, Turbopack, PWA) [CONCLUÍDO]
+7. Configurar Domínio Oficial, DNS e Certificado SSL/HTTPS [EM ANDAMENTO / TEMPORÁRIO VERCEL.APP]
+8. Validar Entregabilidade de E-mail Transacional (SPF, DKIM, DMARC) [CREDENCIAIS PENDENTES]
+9. Homologar Provedor de Identidade e Idade 18+ (KYC Sumsub) [SANDBOX PRONTO / PROD PENDENTE]
+10. Iniciar Fase de Closed Beta (Acesso restrito / Testes controlados) [LIBERADO]
+11. Escalar Equipe de Moderação Humana e Treinamento de Runbooks de Segurança [STAFF DESIGNADO]
+12. Concluir Credenciamento Comercial com Adquirente Especializado no Segmento Adulto [PENDENTE]
+13. Ativar Pagamentos e Planos de Assinatura (payments_enabled = true) [KILL SWITCH ATIVO]
+14. Ativar Recursos de Impulsionamento e Destaques Regionais [BLOQUEADO ATÉ PAGAMENTOS]
+15. Configurar Replicação Secundária de Backups em Bucket S3 Externo [PENDENTE]
+16. Validação Geral de Segurança, Headers e Testes de Carga [CONCLUÍDO]
+17. Lançamento Comercial Aberto ao Público Geral [AGUARDANDO GATES COMERCIAIS]
 ```
 
 ---
 
-## 1. Portão Supabase
-- [ ] Projeto Supabase exclusivo de produção provisionado (sem compartilhar com dev).
-- [ ] Conexão e variáveis `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` preenchidas no ambiente.
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` configurada exclusivamente no backend seguro.
-- [ ] Migrations 00001 a 00014 aplicadas sem erros e sem desvio de schema.
-- [ ] Backup PITR / snapshots diários confirmados e ativos no Supabase.
-- [ ] Rotina externa de backup de objetos de storage validada.
+## 2. STATUS DOS PORTÕES DE GO-LIVE
+
+### Portão 1: Infraestrutura & Banco de Dados
+- [x] Projeto Supabase conectado e validado em runtime.
+- [x] Migrations 00001 a 00017 aplicadas com paridade total (Local == Remote).
+- [x] 0 erros de aplicação no `supabase db lint`.
+- [x] 4 buckets de storage criados e isolados com políticas RLS estritas.
+
+### Portão 2: Segurança, Identidade & Trust & Safety
+- [x] Publication Gate endurecido: somente perfis `active + public + verified` e não-deletados são exibidos.
+- [x] Fluxo de suspensão instantânea com remoção de buscas, sitemaps e categorias.
+- [x] Hash SHA-256 de mídias bloqueadas verificado no upload.
+- [x] RBAC multinível (Super Admin, Admin, Moderator, Support, Compliance, User).
+- [x] Proteção anti-lockout: o último `super_admin` não pode ser rebaixado ou excluído.
+- [x] Zero segredos ou chaves privadas expostos nos bundles do cliente.
+
+### Portão 3: Verificação de Idade & KYC (Sumsub)
+- [x] Arquitetura desacoplada via `IdentityProviderFactory` e adapter `SumsubProvider`.
+- [x] Sandbox 100% validado com verificação de assinatura HMAC e detecção de menores (<18 anos).
+- [ ] **Pendente:** Aprovação do contrato comercial de produção com a Sumsub e inserção de credenciais de produção.
+- [x] Guard ativo: `isKycProductionEnabled = false` até fornecimento de credenciais válidas.
+
+### Portão 4: Pagamentos, Assinaturas & Faturamento
+- [x] Arquitetura desacoplada via `PaymentProvider` e `billingService`.
+- [x] Preços e cupons calculados exclusivamente no servidor em centavos inteiros (BRL).
+- [x] Prevenção de falsos checkouts, ataques de repetição e divergência de valores na conciliação.
+- [ ] **Pendente:** Contratação formal de adquirente autorizada para o segmento 18+.
+- [x] Kill Switch ativo: `payments_enabled = false`, `subscriptions_enabled = false`, `promotions_enabled = false`.
+
+### Portão 5: Comunicação & E-mail Transacional
+- [x] Multi-adapter resiliente (`Resend`, `SendGrid`, `SMTP Relay` e fallback de desenvolvimento).
+- [x] 15 templates transacionais neutros e discretos prontos.
+- [ ] **Pendente:** Configuração de registros DNS (SPF, DKIM, DMARC) no domínio definitivo.
 
 ---
 
-## 2. Portão de Autenticação e Segurança
-- [ ] URL do site configurada no Supabase Auth.
-- [ ] Redirect allowlist restrita exclusivamente ao domínio de produção.
-- [ ] MFA obrigatório ativado para todos os perfis administrativos (`super_admin`, `admin`, `moderator`, `compliance`).
-- [ ] Rotina segura de bootstrap do primeiro `super_admin` executada com sucesso.
+## 3. DECISÃO OPERACIONAL DE PRODUÇÃO
 
----
-
-## 3. Portão de Conteúdo e Moderação
-- [ ] Moderação humana 100% ativa antes da aprovação de qualquer anúncio.
-- [ ] Equipe de moderação designada para monitoramento contínuo da fila crítica de denúncias.
-- [ ] Termos de Uso, Política de Privacidade e Trust Center publicados.
-
----
-
-## 4. Portão Comercial e Financeiro
-- [ ] Aprovação formal do merchant com adquirente especializado no segmento adulto obtida por escrito.
-- [ ] Webhook de pagamentos configurado com chave HMAC de produção.
-- [ ] Ativação da flag `payments_enabled = true` somente após testes bem-sucedidos em sandbox do merchant.
+- **Modo Operacional:** `CLOSED BETA`
+- **Decisão Final:** `GO WITH RESTRICTIONS`
+- O portal está 100% estável e seguro para operação em ambiente controlado com anunciantes piloto, mantendo as travas de proteção financeiras e de verificação externa ativas até a conclusão dos contratos comerciais.
