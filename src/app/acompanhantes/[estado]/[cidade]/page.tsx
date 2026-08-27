@@ -16,7 +16,9 @@ import {
   Tag, 
   Megaphone, 
   ChevronRight,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Flame,
+  Star
 } from 'lucide-react';
 
 interface CityPageProps {
@@ -30,9 +32,11 @@ interface CityPageProps {
   searchParams?: Promise<{
     bairro?: string;
     categoria?: string;
+    ordenar?: string;
   }> | {
     bairro?: string;
     categoria?: string;
+    ordenar?: string;
   };
 }
 
@@ -67,6 +71,7 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
   const cidadeParam = resolvedParams?.cidade ? String(resolvedParams.cidade).toLowerCase() : '';
   const bairroParam = resolvedSearchParams?.bairro ? String(resolvedSearchParams.bairro) : undefined;
   const categoriaParam = resolvedSearchParams?.categoria ? String(resolvedSearchParams.categoria) : undefined;
+  const ordenarParam = resolvedSearchParams?.ordenar ? String(resolvedSearchParams.ordenar) : 'active';
 
   const states = await locationService.getStates();
   const state = states.find((s) => s.slug === estadoParam || s.code.toLowerCase() === estadoParam);
@@ -83,6 +88,7 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
       state: state.slug,
       city: cidadeParam,
       category: categoriaParam,
+      sort: ordenarParam as any,
       limit: 36,
     }),
     locationService.getCategories(),
@@ -106,56 +112,90 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
     new Set(allCityProfiles.map((p) => p.neighborhood).filter(Boolean) as string[])
   ).sort();
 
+  // Highlight featured top profiles for local spotlight if >= 6 profiles
+  const spotlightProfiles = profiles.length >= 6 ? profiles.slice(0, 4) : [];
+
   return (
-    <div className="container" style={{ padding: '1.5rem 1rem 4rem 1rem', maxWidth: '1400px' }}>
+    <div className="container" style={{ padding: '1.25rem 1rem 4rem 1rem', maxWidth: '1400px' }}>
       {/* 1. DISCREET BREADCRUMB (12px) */}
-      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.775rem', color: 'var(--text-muted)', marginBottom: '0.85rem' }}>
+      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
         <Link href="/" style={{ color: 'var(--text-muted)' }}>Início</Link>
-        <ChevronRight size={11} />
+        <ChevronRight size={10} />
         <Link href={`/acompanhantes/${state.slug}`} style={{ color: 'var(--text-muted)' }}>{state.name}</Link>
-        <ChevronRight size={11} />
+        <ChevronRight size={10} />
         <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>{cityName}</span>
         {bairroParam && (
           <>
-            <ChevronRight size={11} />
+            <ChevronRight size={10} />
             <span style={{ color: 'var(--text-secondary)' }}>{bairroParam}</span>
           </>
         )}
       </nav>
 
-      {/* 2. COMPACT HERO HEADER (30-36px font, reduced vertical height) */}
+      {/* 2. COMPACT CITY HEADER (28–32px H1) */}
       <div style={{ marginBottom: '1.25rem' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--accent-gold)', textTransform: 'uppercase' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.25rem' }}>
+          <span style={{ fontSize: '0.725rem', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--accent-gold)', textTransform: 'uppercase' }}>
             {cityName.toUpperCase()} / {state.code}
           </span>
-          <span style={{ color: 'var(--border-medium)' }}>•</span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+          <span style={{ color: 'var(--border-medium)', fontSize: '0.75rem' }}>•</span>
+          <span style={{ fontSize: '0.725rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
             {profiles.length} {profiles.length === 1 ? 'anúncio ativo' : 'anúncios ativos'}
           </span>
         </div>
 
-        <h1 style={{ fontSize: 'clamp(1.6rem, 2.8vw, 2.2rem)', fontWeight: 800, lineHeight: 1.2, letterSpacing: '-0.02em', marginBottom: '0.35rem' }}>
-          Acompanhantes em {cityName}, {state.code}
+        <h1 style={{ fontSize: 'clamp(1.6rem, 2.4vw, 2rem)', fontWeight: 800, lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>
+          Acompanhantes em {cityName}
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', maxWidth: '680px', lineHeight: 1.45, margin: 0 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', maxWidth: '650px', lineHeight: 1.45, margin: 0 }}>
           Anúncios verificados de acompanhantes e massagistas independentes em {cityName}. Contato direto via WhatsApp e privacidade absoluta.
         </p>
       </div>
 
-      {/* 3. UNIFIED COMPACT FILTER TOOLBAR (Bairros & Categorias) */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.5rem' }}>
-        {/* Neighborhood Chips */}
+      {/* 3. UNIFIED COMPACT FILTERS TOOLBAR */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
+        {/* Category & Style Quick Bar */}
+        <div className="filter-chips-outer" style={{ margin: 0, justifyContent: 'flex-start' }}>
+          <div className="filter-chips-scroller" style={{ margin: 0, padding: '0.15rem 0', gap: '0.4rem' }}>
+            <Link
+              href={`/acompanhantes/${state.slug}/${cidadeParam}${bairroParam ? `?bairro=${encodeURIComponent(bairroParam)}` : ''}`}
+              className={`filter-chip-item ${!categoriaParam ? 'active' : ''}`}
+              style={{ height: '32px', fontSize: '0.75rem', padding: '0 0.75rem' }}
+            >
+              Todos os estilos
+            </Link>
+            {categories.map((cat) => {
+              const isActive = categoriaParam === cat.slug;
+              const q = new URLSearchParams();
+              if (bairroParam) q.set('bairro', bairroParam);
+              q.set('categoria', cat.slug);
+
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/acompanhantes/${state.slug}/${cidadeParam}?${q.toString()}`}
+                  className={`filter-chip-item ${isActive ? 'active' : ''}`}
+                  style={{ height: '32px', fontSize: '0.75rem', padding: '0 0.75rem' }}
+                >
+                  {cat.name}
+                </Link>
+              );
+            })}
+            <div className="filter-chips-spacer" aria-hidden="true" style={{ flex: '0 0 24px', width: '24px', height: '1px' }} />
+          </div>
+        </div>
+
+        {/* Neighborhood Quick Bar (if available) */}
         {distinctNeighborhoods.length > 0 && (
-          <div className="filter-chips-wrapper" style={{ margin: 0, justifyContent: 'flex-start' }}>
-            <div className="filter-chips-container" style={{ margin: 0, padding: '0.2rem 0', gap: '0.45rem' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap', marginRight: '0.25rem' }}>
-                <MapPin size={12} color="var(--accent-gold)" /> Bairros:
+          <div className="filter-chips-outer" style={{ margin: 0, justifyContent: 'flex-start' }}>
+            <div className="filter-chips-scroller" style={{ margin: 0, padding: '0.15rem 0', gap: '0.4rem' }}>
+              <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem', whiteSpace: 'nowrap', marginRight: '0.2rem' }}>
+                <MapPin size={11} color="var(--accent-gold)" /> Bairro:
               </span>
               <Link
                 href={`/acompanhantes/${state.slug}/${cidadeParam}${categoriaParam ? `?categoria=${categoriaParam}` : ''}`}
                 className={`filter-chip-item ${!bairroParam ? 'active' : ''}`}
-                style={{ height: '32px', fontSize: '0.775rem', padding: '0 0.75rem' }}
+                style={{ height: '30px', fontSize: '0.725rem', padding: '0 0.65rem' }}
               >
                 Todos ({allCityProfiles.length})
               </Link>
@@ -171,57 +211,25 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
                     key={bairro}
                     href={`/acompanhantes/${state.slug}/${cidadeParam}?${q.toString()}`}
                     className={`filter-chip-item ${isActive ? 'active' : ''}`}
-                    style={{ height: '32px', fontSize: '0.775rem', padding: '0 0.75rem' }}
+                    style={{ height: '30px', fontSize: '0.725rem', padding: '0 0.65rem' }}
                   >
                     {bairro} ({count})
                   </Link>
                 );
               })}
+              <div className="filter-chips-spacer" aria-hidden="true" style={{ flex: '0 0 24px', width: '24px', height: '1px' }} />
             </div>
           </div>
         )}
-
-        {/* Category Shortcuts */}
-        <div className="filter-chips-wrapper" style={{ margin: 0, justifyContent: 'flex-start' }}>
-          <div className="filter-chips-container" style={{ margin: 0, padding: '0.2rem 0', gap: '0.45rem' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap', marginRight: '0.25rem' }}>
-              <Tag size={12} color="var(--accent-gold)" /> Estilo:
-            </span>
-            <Link
-              href={`/acompanhantes/${state.slug}/${cidadeParam}${bairroParam ? `?bairro=${encodeURIComponent(bairroParam)}` : ''}`}
-              className={`filter-chip-item ${!categoriaParam ? 'active' : ''}`}
-              style={{ height: '32px', fontSize: '0.775rem', padding: '0 0.75rem' }}
-            >
-              Todas
-            </Link>
-            {categories.map((cat) => {
-              const isActive = categoriaParam === cat.slug;
-              const q = new URLSearchParams();
-              if (bairroParam) q.set('bairro', bairroParam);
-              q.set('categoria', cat.slug);
-
-              return (
-                <Link
-                  key={cat.id}
-                  href={`/acompanhantes/${state.slug}/${cidadeParam}?${q.toString()}`}
-                  className={`filter-chip-item ${isActive ? 'active' : ''}`}
-                  style={{ height: '32px', fontSize: '0.775rem', padding: '0 0.75rem' }}
-                >
-                  {cat.name}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
-      {/* 4. DENSE PROFILES GRID (5 columns on desktop, 2 on mobile) */}
-      <div style={{ marginBottom: '2.5rem' }}>
+      {/* 4. MAIN PROFILES GRID (5 columns on widescreen, 2 on mobile) */}
+      <div style={{ marginBottom: '3rem' }}>
         {profiles.length === 0 ? (
           <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
             <Sparkles size={36} color="var(--accent-gold)" style={{ margin: '0 auto 1rem auto' }} />
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '0.4rem' }}>Nenhum perfil encontrado com os filtros selecionados</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '0.4rem' }}>Nenhum anúncio encontrado com os filtros selecionados</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
               Experimente remover os filtros de bairro ou categoria para ver todos os perfis em {cityName}.
             </p>
             <Link href={`/acompanhantes/${state.slug}/${cidadeParam}`}>
@@ -230,14 +238,45 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
           </Card>
         ) : (
           <div className="advertiser-grid">
-            {profiles.map((adv, idx) => (
+            {profiles.map((adv) => (
               <AdvertiserCard key={adv.advertiser_id} advertiser={adv} />
             ))}
           </div>
         )}
       </div>
 
-      {/* 5. COMPACT ADVERTISER PROMO BANNER */}
+      {/* 5. SECONDARY DISCOVERY: POPULAR NEIGHBORHOODS DIRECTORY */}
+      {distinctNeighborhoods.length > 3 && (
+        <section style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '2rem', marginBottom: '2.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '1rem' }}>
+            <MapPin size={15} color="var(--accent-gold)" />
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Bairros Populares em {cityName}</h2>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '0.65rem' }}>
+            {distinctNeighborhoods.map((bairro) => {
+              const count = allCityProfiles.filter((p) => p.neighborhood === bairro).length;
+              return (
+                <Link
+                  key={bairro}
+                  href={`/acompanhantes/${state.slug}/${cidadeParam}?bairro=${encodeURIComponent(bairro)}`}
+                  className="discovery-pill-card"
+                  style={{ flexDirection: 'row', justifyContent: 'space-between', padding: '0.65rem 0.85rem' }}
+                >
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.825rem' }}>
+                    {bairro}
+                  </span>
+                  <Badge variant="neutral">
+                    {count} {count === 1 ? 'perfil' : 'perfis'}
+                  </Badge>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* 6. COMPACT ADVERTISER PROMO BANNER */}
       <section style={{ marginBottom: '2.5rem' }}>
         <Card variant="elevated" padding="md" style={{ 
           background: 'linear-gradient(135deg, rgba(229, 185, 92, 0.12) 0%, rgba(18, 22, 31, 0.95) 100%)', 
@@ -246,10 +285,10 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
         }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
             <div>
-              <div style={{ fontWeight: 800, color: 'var(--accent-gold)', fontSize: '1.1rem', marginBottom: '0.2rem' }}>
+              <div style={{ fontWeight: 800, color: 'var(--accent-gold)', fontSize: '1.05rem', marginBottom: '0.2rem' }}>
                 Atende em {cityName}? Anuncie seu perfil profissional
               </div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.825rem' }}>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
                 Destaque-se no topo das buscas da sua região e receba contatos diretos no seu WhatsApp.
               </div>
             </div>
@@ -262,7 +301,7 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
         </Card>
       </section>
 
-      {/* 6. NEARBY CITIES COMPACT SECTION */}
+      {/* 7. NEARBY CITIES COMPACT SECTION */}
       {otherNearby.length > 0 && (
         <section style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '1rem' }}>
@@ -270,7 +309,7 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
             <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Também perto de {cityName}</h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.65rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '0.65rem' }}>
             {otherNearby.map((nc) => (
               <Link
                 key={nc.city_id}
@@ -278,7 +317,7 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
                 className="discovery-pill-card"
                 style={{ flexDirection: 'row', justifyContent: 'space-between', padding: '0.65rem 0.85rem' }}
               >
-                <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.85rem' }}>
+                <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.825rem' }}>
                   {nc.city_name}
                 </div>
                 <Badge variant="neutral">

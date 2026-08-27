@@ -1052,15 +1052,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-weight: 600;
 }
 
-/* 4. QUICK FILTER CHIPS (Phase 24E — Robust Non-Clipping Layout) */
+/* 4. QUICK FILTER CHIPS (Phase 24F — 3-Tier Robust Non-Clipping Layout with End Spacer) */
+.filter-chips-outer,
 .filter-chips-wrapper {
   width: 100%;
   max-width: 100%;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   margin-top: 0.75rem;
 }
 
+.filter-chips-scroller,
 .filter-chips-container {
   display: flex;
   align-items: center;
@@ -1069,16 +1072,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   overflow-y: hidden;
   max-width: 100%;
   width: max-content;
-  padding: 0.4rem 1.25rem;
-  scroll-padding-left: 1.25rem;
-  scroll-padding-right: 1.25rem;
+  padding: 0.35rem 1rem;
+  scroll-padding-left: 1rem;
+  scroll-padding-right: 1.5rem;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   margin: 0 auto;
 }
 
+.filter-chips-scroller::-webkit-scrollbar,
 .filter-chips-container::-webkit-scrollbar {
   display: none;
+}
+
+.filter-chips-spacer {
+  flex: 0 0 28px;
+  width: 28px;
+  min-width: 28px;
+  height: 1px;
+  pointer-events: none;
 }
 
 .filter-chip-item {
@@ -1106,6 +1118,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border-color: var(--border-medium);
   color: var(--text-primary);
   transform: translateY(-1px);
+}
+
+.filter-chip-item:active {
+  transform: scale(0.96);
+  opacity: 0.85;
 }
 
 .filter-chip-item:focus-visible {

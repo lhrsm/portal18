@@ -92,6 +92,7 @@ export default async function StateDirectoryPage({ params }: StatePageProps) {
               <Link
                 key={city.id}
                 href={`/acompanhantes/${state.slug}/${city.slug}`}
+                prefetch={true}
                 className="discovery-pill-card"
                 style={{ justifyContent: 'space-between', padding: '0.75rem 1rem' }}
               >

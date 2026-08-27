@@ -223,57 +223,65 @@ export default function HomePage() {
             </form>
           </Card>
 
-          {/* Quick Filter Chips (Phase 24C — Safe Padding & Working Links) */}
-          <div className="filter-chips-wrapper">
-            <div className="filter-chips-container">
+          {/* Quick Filter Chips (Phase 24F — 3-Tier Non-Clipping Layout with Prefetch & Spacer) */}
+          <div className="filter-chips-outer">
+            <div className="filter-chips-scroller">
               <Link 
                 href="/acompanhantes/bahia/salvador" 
+                prefetch={true}
                 className="filter-chip-item active"
                 title="Acompanhantes em Salvador, BA"
               >
-                <MapPin size={14} color="var(--accent-gold)" /> 
+                <MapPin size={13} color="var(--accent-gold)" /> 
                 <span>Salvador / BA ({activeCities.find(c => c.citySlug === 'salvador')?.profileCount || 24})</span>
               </Link>
               <Link 
                 href="/acompanhantes/sao-paulo/sao-paulo" 
+                prefetch={true}
                 className="filter-chip-item"
                 title="Acompanhantes em São Paulo, SP"
               >
-                <MapPin size={14} color="var(--text-muted)" /> 
+                <MapPin size={13} color="var(--text-muted)" /> 
                 <span>São Paulo / SP ({activeCities.find(c => c.citySlug === 'sao-paulo')?.profileCount || 10})</span>
               </Link>
               <Link 
                 href="/acompanhantes/rio-de-janeiro/rio-de-janeiro" 
+                prefetch={true}
                 className="filter-chip-item"
                 title="Acompanhantes no Rio de Janeiro, RJ"
               >
-                <MapPin size={14} color="var(--text-muted)" /> 
+                <MapPin size={13} color="var(--text-muted)" /> 
                 <span>Rio de Janeiro / RJ ({activeCities.find(c => c.citySlug === 'rio-de-janeiro')?.profileCount || 8})</span>
               </Link>
               <Link 
                 href="/explorar?verificado=true" 
+                prefetch={true}
                 className="filter-chip-item"
                 title="Filtrar por perfis verificados"
               >
-                <ShieldCheck size={14} color="var(--color-success)" /> 
+                <ShieldCheck size={13} color="var(--color-success)" /> 
                 <span>Verificados 18+</span>
               </Link>
               <Link 
                 href="/categoria/massagistas" 
+                prefetch={true}
                 className="filter-chip-item"
                 title="Ver categoria Massagistas"
               >
-                <Tag size={14} color="var(--accent-gold)" /> 
+                <Tag size={13} color="var(--accent-gold)" /> 
                 <span>Massagistas</span>
               </Link>
               <Link 
                 href="/categoria/executivas-vip" 
+                prefetch={true}
                 className="filter-chip-item"
                 title="Ver categoria Executivas VIP"
               >
-                <Star size={14} color="var(--accent-gold)" /> 
+                <Star size={13} color="var(--accent-gold)" /> 
                 <span>Executivas VIP</span>
               </Link>
+              {/* Explicit End Spacer for zero right-edge clipping */}
+              <div className="filter-chips-spacer" aria-hidden="true" />
             </div>
           </div>
         </div>
