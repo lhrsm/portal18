@@ -2,6 +2,8 @@
 -- MIGRATION 00009: Phase 6 — Plans, Subscriptions, Payments & Promotions
 -- ============================================================================
 
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 -- 1. Enums
 DO $$ BEGIN
     CREATE TYPE public.billing_interval AS ENUM ('monthly', 'quarterly', 'semiannual', 'annual');
@@ -578,8 +580,32 @@ BEGIN
     END IF;
 
     -- Record webhook event for replay protection
-    INSERT INTO public.webhook_events (provider, event_id, event_type, payload_hash, status)
-    VALUES (p_provider, p_event_id, p_event_type, `sha256_${Date.now()}`::text, 'processed');
+    INSERT INTO public.webhook_events (
+        provider,
+        event_id,
+        event_type,
+        payload_hash,
+        status
+    )
+    VALUES (
+        p_provider,
+        p_event_id,
+        p_event_type,
+        encode(
+            digest(
+                p_provider
+                || ':' ||
+                p_event_id
+                || ':' ||
+                p_event_type
+                || ':' ||
+                COALESCE(p_metadata, '{}'::jsonb)::text,
+                'sha256'
+            ),
+            'hex'
+        ),
+        'processed'
+    );
 
     -- Audit Log
     INSERT INTO public.audit_logs (actor_profile_id, action, entity_type, entity_id, metadata)
