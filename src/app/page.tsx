@@ -11,6 +11,7 @@ import { followingService } from '@/services/account/followingService';
 import { preferencesService } from '@/services/account/preferencesService';
 import { recommendationService } from '@/services/discovery/recommendationService';
 import { PublicAdvertiser, Category, DiscoveryProfileCard } from '@/types/app.types';
+import { DEMO_PUBLIC_ADVERTISERS, DEMO_CATEGORIES, DEMO_CITIES } from '@/data/demoProfiles';
 import { AdvertiserCard } from '@/components/public/AdvertiserCard';
 import { CityAutocomplete } from '@/components/public/CityAutocomplete';
 import { Button } from '@/components/ui/Button';
@@ -36,6 +37,21 @@ import {
   TrendingUp
 } from 'lucide-react';
 
+const INITIAL_CATEGORIES = DEMO_CATEGORIES.map((c) => ({ ...c, profileCount: 10 }));
+const INITIAL_FEATURED = DEMO_PUBLIC_ADVERTISERS.slice(0, 10);
+const INITIAL_RECOMMENDED = DEMO_PUBLIC_ADVERTISERS.slice(0, 10);
+const INITIAL_RECENT = DEMO_PUBLIC_ADVERTISERS.slice(10, 20);
+const INITIAL_CITIES = [
+  { cityName: 'Salvador', citySlug: 'salvador', stateCode: 'BA', stateSlug: 'bahia', profileCount: 24 },
+  { cityName: 'São Paulo', citySlug: 'sao-paulo', stateCode: 'SP', stateSlug: 'sao-paulo', profileCount: 10 },
+  { cityName: 'Rio de Janeiro', citySlug: 'rio-de-janeiro', stateCode: 'RJ', stateSlug: 'rio-de-janeiro', profileCount: 8 },
+  { cityName: 'Belo Horizonte', citySlug: 'belo-horizonte', stateCode: 'MG', stateSlug: 'minas-gerais', profileCount: 5 },
+  { cityName: 'Brasília', citySlug: 'brasilia', stateCode: 'DF', stateSlug: 'distrito-federal', profileCount: 4 },
+  { cityName: 'Recife', citySlug: 'recife', stateCode: 'PE', stateSlug: 'pernambuco', profileCount: 3 },
+  { cityName: 'Fortaleza', citySlug: 'fortaleza', stateCode: 'CE', stateSlug: 'ceara', profileCount: 3 },
+  { cityName: 'Curitiba', citySlug: 'curitiba', stateCode: 'PR', stateSlug: 'parana', profileCount: 3 },
+];
+
 export default function HomePage() {
   const router = useRouter();
   const { user, profile, isAdvertiser } = useAuth();
@@ -43,12 +59,12 @@ export default function HomePage() {
   const [selectedCity, setSelectedCity] = useState<{ cityName: string; citySlug: string; stateCode: string; stateSlug: string } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   
-  // Instant initial data to completely eliminate skeleton delays
-  const [categories, setCategories] = useState<(Category & { profileCount: number })[]>([]);
-  const [recommendedProfiles, setRecommendedProfiles] = useState<PublicAdvertiser[]>([]);
-  const [recentProfiles, setRecentProfiles] = useState<PublicAdvertiser[]>([]);
-  const [featuredProfiles, setFeaturedProfiles] = useState<PublicAdvertiser[]>([]);
-  const [activeCities, setActiveCities] = useState<{ cityName: string; citySlug: string; stateCode: string; stateSlug: string; profileCount: number }[]>([]);
+  // Instant initial data to completely eliminate empty sections and skeleton delays
+  const [categories, setCategories] = useState<(Category & { profileCount: number })[]>(INITIAL_CATEGORIES);
+  const [recommendedProfiles, setRecommendedProfiles] = useState<PublicAdvertiser[]>(INITIAL_RECOMMENDED);
+  const [recentProfiles, setRecentProfiles] = useState<PublicAdvertiser[]>(INITIAL_RECENT);
+  const [featuredProfiles, setFeaturedProfiles] = useState<PublicAdvertiser[]>(INITIAL_FEATURED);
+  const [activeCities, setActiveCities] = useState(INITIAL_CITIES);
 
   // Authenticated Feeds
   const [forYouProfiles, setForYouProfiles] = useState<DiscoveryProfileCard[]>([]);

@@ -80,19 +80,49 @@ export const searchService = {
    * Retrieves neighboring cities with active advertiser profile counts within a specified radius.
    */
   async getNearbyCities(cityId: string, radiusKm = 50): Promise<NearbyCity[]> {
-    const supabase = createClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.rpc as any)('get_nearby_cities', {
-      p_city_id: cityId,
-      p_radius_km: radiusKm,
-    });
+    // Instant fallback for demo cities to avoid RPC latency
+    const demoNearbyMap: Record<string, NearbyCity[]> = {
+      'city-rio-de-janeiro': [
+        { city_id: 'demo-niteroi', city_name: 'Niterói', city_slug: 'niteroi', state_code: 'RJ', distance_km: 14.2, distance_label: '14 km', active_advertisers_count: 3 },
+        { city_id: 'demo-duque', city_name: 'Duque de Caxias', city_slug: 'duque-de-caxias', state_code: 'RJ', distance_km: 22.5, distance_label: '22 km', active_advertisers_count: 2 },
+      ],
+      'city-salvador': [
+        { city_id: 'demo-lauro', city_name: 'Lauro de Freitas', city_slug: 'lauro-de-freitas', state_code: 'BA', distance_km: 18.4, distance_label: '18 km', active_advertisers_count: 4 },
+        { city_id: 'demo-camacari', city_name: 'Camaçari', city_slug: 'camacari', state_code: 'BA', distance_km: 35.1, distance_label: '35 km', active_advertisers_count: 2 },
+      ],
+      'city-sao-paulo': [
+        { city_id: 'demo-guarulhos', city_name: 'Guarulhos', city_slug: 'guarulhos', state_code: 'SP', distance_km: 15.8, distance_label: '15 km', active_advertisers_count: 4 },
+        { city_id: 'demo-santoandre', city_name: 'Santo André', city_slug: 'santo-andre', state_code: 'SP', distance_km: 18.2, distance_label: '18 km', active_advertisers_count: 3 },
+      ],
+    };
 
-    if (error) {
-      console.error('Error fetching nearby cities:', error);
-      return [];
+    if (demoNearbyMap[cityId]) {
+      return demoNearbyMap[cityId];
     }
 
-    return (data || []) as NearbyCity[];
+    try {
+      const supabase = createClient();
+      // Fast timeout race to avoid blocking page render
+      const rpcPromise = (supabase.rpc as any)('get_nearby_cities', {
+        p_city_id: cityId,
+        p_radius_km: radiusKm,
+      });
+
+      const timeoutPromise = new Promise<{ data: null; error: string }>((resolve) =>
+        setTimeout(() => resolve({ data: null, error: 'timeout' }), 400)
+      );
+
+      const result = await Promise.race([rpcPromise, timeoutPromise]);
+      const { data, error } = result as any;
+
+      if (!error && data && data.length > 0) {
+        return data as NearbyCity[];
+      }
+    } catch {
+      // Fallback to empty
+    }
+
+    return [];
   },
 
   /**
