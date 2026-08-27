@@ -18,7 +18,13 @@ export const serverEnvSchema = publicEnvSchema.extend({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   DATABASE_URL: z.string().optional(),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  KYC_PROVIDER: z.string().default('unconfigured'),
+  KYC_PROVIDER: z.string().default('sumsub'),
+  KYC_ENVIRONMENT: z.enum(['sandbox', 'production']).default('sandbox'),
+  SUMSUB_APP_TOKEN: z.string().optional(),
+  SUMSUB_SECRET_KEY: z.string().optional(),
+  SUMSUB_LEVEL_NAME: z.string().default('id-and-liveness'),
+  SUMSUB_BASE_URL: z.string().default('https://api.sumsub.com'),
+  SUMSUB_WEBHOOK_SECRET: z.string().optional(),
   PAYMENT_PROVIDER: z.string().default('unconfigured'),
   EMAIL_PROVIDER: z.string().default('unconfigured'),
   EMAIL_FROM: z.string().optional(),
@@ -55,7 +61,14 @@ export const env = {
     return process.env.NODE_ENV === 'production';
   },
   get isKycConfigured(): boolean {
-    return !!process.env.KYC_PROVIDER && process.env.KYC_PROVIDER !== 'unconfigured';
+    const provider = process.env.KYC_PROVIDER || process.env.IDENTITY_PROVIDER;
+    return !!provider && provider !== 'unconfigured';
+  },
+  get isKycProductionEnabled(): boolean {
+    return process.env.NODE_ENV === 'production' && process.env.KYC_ENVIRONMENT === 'production' && !!process.env.SUMSUB_APP_TOKEN;
+  },
+  get kycProviderName(): string {
+    return process.env.KYC_PROVIDER || process.env.IDENTITY_PROVIDER || 'sumsub';
   },
   get isPaymentConfigured(): boolean {
     return !!process.env.PAYMENT_PROVIDER && process.env.PAYMENT_PROVIDER !== 'unconfigured';

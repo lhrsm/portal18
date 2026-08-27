@@ -1,14 +1,18 @@
 import { IdentityVerificationProvider } from './provider';
 import { UnconfiguredIdentityVerificationProvider } from './providers/unconfiguredProvider';
+import { SumsubIdentityVerificationProvider } from './providers/sumsubProvider';
 
 export class IdentityProviderFactory {
   private static instance: IdentityVerificationProvider | null = null;
 
   public static getProvider(): IdentityVerificationProvider {
     if (!IdentityProviderFactory.instance) {
-      const providerName = process.env.IDENTITY_PROVIDER || 'unconfigured';
+      const providerName = (process.env.KYC_PROVIDER || process.env.IDENTITY_PROVIDER || 'sumsub').toLowerCase();
 
-      switch (providerName.toLowerCase()) {
+      switch (providerName) {
+        case 'sumsub':
+          IdentityProviderFactory.instance = new SumsubIdentityVerificationProvider();
+          break;
         case 'unconfigured':
         default:
           IdentityProviderFactory.instance = new UnconfiguredIdentityVerificationProvider();
