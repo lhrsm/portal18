@@ -127,51 +127,55 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
             <MapPin size={13} color="var(--accent-gold)" /> Bairros Populares em {cityName}:
           </div>
-          <div className="filter-chips-container">
-            <Link
-              href={`/acompanhantes/${state.slug}/${params.cidade}`}
-              className={`filter-chip-item ${!searchParams?.bairro ? 'active' : ''}`}
-            >
-              Todos os bairros ({allCityProfiles.length})
-            </Link>
-            {distinctNeighborhoods.map((bairro) => {
-              const count = allCityProfiles.filter((p) => p.neighborhood === bairro).length;
-              const isActive = searchParams?.bairro?.toLowerCase() === bairro.toLowerCase();
-              return (
-                <Link
-                  key={bairro}
-                  href={`/acompanhantes/${state.slug}/${params.cidade}?bairro=${encodeURIComponent(bairro)}`}
-                  className={`filter-chip-item ${isActive ? 'active' : ''}`}
-                >
-                  {bairro} ({count})
-                </Link>
-              );
-            })}
+          <div className="filter-chips-wrapper">
+            <div className="filter-chips-container">
+              <Link
+                href={`/acompanhantes/${state.slug}/${params.cidade}`}
+                className={`filter-chip-item ${!searchParams?.bairro ? 'active' : ''}`}
+              >
+                Todos os bairros ({allCityProfiles.length})
+              </Link>
+              {distinctNeighborhoods.map((bairro) => {
+                const count = allCityProfiles.filter((p) => p.neighborhood === bairro).length;
+                const isActive = searchParams?.bairro?.toLowerCase() === bairro.toLowerCase();
+                return (
+                  <Link
+                    key={bairro}
+                    href={`/acompanhantes/${state.slug}/${params.cidade}?bairro=${encodeURIComponent(bairro)}`}
+                    className={`filter-chip-item ${isActive ? 'active' : ''}`}
+                  >
+                    {bairro} ({count})
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
 
       {/* 4. CATEGORY SHORTCUTS */}
       <div style={{ marginBottom: '2rem' }}>
-        <div className="filter-chips-container">
-          <Link
-            href={`/acompanhantes/${state.slug}/${params.cidade}`}
-            className={`filter-chip-item ${!searchParams?.categoria ? 'active' : ''}`}
-          >
-            <Tag size={12} /> Todas as categorias
-          </Link>
-          {categories.map((cat) => {
-            const isActive = searchParams?.categoria === cat.slug;
-            return (
-              <Link
-                key={cat.id}
-                href={`/acompanhantes/${state.slug}/${params.cidade}?categoria=${cat.slug}`}
-                className={`filter-chip-item ${isActive ? 'active' : ''}`}
-              >
-                {cat.name}
-              </Link>
-            );
-          })}
+        <div className="filter-chips-wrapper">
+          <div className="filter-chips-container">
+            <Link
+              href={`/acompanhantes/${state.slug}/${params.cidade}`}
+              className={`filter-chip-item ${!searchParams?.categoria ? 'active' : ''}`}
+            >
+              <Tag size={12} /> Todas as categorias
+            </Link>
+            {categories.map((cat) => {
+              const isActive = searchParams?.categoria === cat.slug;
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/acompanhantes/${state.slug}/${params.cidade}?categoria=${cat.slug}`}
+                  className={`filter-chip-item ${isActive ? 'active' : ''}`}
+                >
+                  {cat.name}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
 

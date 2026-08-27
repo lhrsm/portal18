@@ -171,26 +171,58 @@ export default function HomePage() {
             </form>
           </Card>
 
-          {/* Quick Filter Chips */}
-          <div className="filter-chips-container" style={{ justifyContent: 'center', marginTop: '0.5rem' }}>
-            <Link href="/acompanhantes/bahia/salvador" className="filter-chip-item active">
-              <MapPin size={13} /> Salvador / BA ({activeCities.find(c => c.citySlug === 'salvador')?.profileCount || 24})
-            </Link>
-            <Link href="/acompanhantes/sao-paulo/sao-paulo" className="filter-chip-item">
-              <MapPin size={13} /> São Paulo / SP
-            </Link>
-            <Link href="/acompanhantes/rio-de-janeiro/rio-de-janeiro" className="filter-chip-item">
-              <MapPin size={13} /> Rio de Janeiro / RJ
-            </Link>
-            <Link href="/explorar?verificado=true" className="filter-chip-item">
-              <ShieldCheck size={13} color="var(--color-success)" /> Verificados 18+
-            </Link>
-            <Link href="/categoria/massagistas" className="filter-chip-item">
-              <Tag size={13} /> Massagistas
-            </Link>
-            <Link href="/categoria/executivas-vip" className="filter-chip-item">
-              <Star size={13} color="var(--accent-gold)" /> Executivas VIP
-            </Link>
+          {/* Quick Filter Chips (Phase 24C — Safe Padding & Working Links) */}
+          <div className="filter-chips-wrapper">
+            <div className="filter-chips-container">
+              <Link 
+                href="/acompanhantes/bahia/salvador" 
+                className="filter-chip-item active"
+                title="Acompanhantes em Salvador, BA"
+              >
+                <MapPin size={14} color="var(--accent-gold)" /> 
+                <span>Salvador / BA ({activeCities.find(c => c.citySlug === 'salvador')?.profileCount || 24})</span>
+              </Link>
+              <Link 
+                href="/acompanhantes/sao-paulo/sao-paulo" 
+                className="filter-chip-item"
+                title="Acompanhantes em São Paulo, SP"
+              >
+                <MapPin size={14} color="var(--text-muted)" /> 
+                <span>São Paulo / SP ({activeCities.find(c => c.citySlug === 'sao-paulo')?.profileCount || 10})</span>
+              </Link>
+              <Link 
+                href="/acompanhantes/rio-de-janeiro/rio-de-janeiro" 
+                className="filter-chip-item"
+                title="Acompanhantes no Rio de Janeiro, RJ"
+              >
+                <MapPin size={14} color="var(--text-muted)" /> 
+                <span>Rio de Janeiro / RJ ({activeCities.find(c => c.citySlug === 'rio-de-janeiro')?.profileCount || 8})</span>
+              </Link>
+              <Link 
+                href="/explorar?verificado=true" 
+                className="filter-chip-item"
+                title="Filtrar por perfis verificados"
+              >
+                <ShieldCheck size={14} color="var(--color-success)" /> 
+                <span>Verificados 18+</span>
+              </Link>
+              <Link 
+                href="/categoria/massagistas" 
+                className="filter-chip-item"
+                title="Ver categoria Massagistas"
+              >
+                <Tag size={14} color="var(--accent-gold)" /> 
+                <span>Massagistas</span>
+              </Link>
+              <Link 
+                href="/categoria/executivas-vip" 
+                className="filter-chip-item"
+                title="Ver categoria Executivas VIP"
+              >
+                <Star size={14} color="var(--accent-gold)" /> 
+                <span>Executivas VIP</span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

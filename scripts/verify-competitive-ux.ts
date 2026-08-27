@@ -130,6 +130,33 @@ export async function runCompetitiveUXVerification(): Promise<UXCheckResult[]> {
     details: `Count: ${isabelaSimilar.length}, All photos valid: ${allSimilarHavePhotos ? 'YES' : 'NO'}`,
   });
 
+  // 8. QUICK FILTERS FUNCTIONALITY (Phase 24C)
+  const [salvadorAdv, spAdv, rjAdv, verifiedAdv, massagistasAdv, executivasAdv] = await Promise.all([
+    publicProfilesService.getPublicAdvertisers({ city: 'salvador', limit: 5 }),
+    publicProfilesService.getPublicAdvertisers({ city: 'sao-paulo', limit: 5 }),
+    publicProfilesService.getPublicAdvertisers({ city: 'rio-de-janeiro', limit: 5 }),
+    publicProfilesService.getPublicAdvertisers({ verified: true, limit: 5 }),
+    publicProfilesService.getPublicAdvertisers({ category: 'massagistas', limit: 5 }),
+    publicProfilesService.getPublicAdvertisers({ category: 'executivas-vip', limit: 5 }),
+  ]);
+
+  const quickFiltersPass =
+    salvadorAdv.data.length > 0 &&
+    spAdv.data.length > 0 &&
+    rjAdv.data.length > 0 &&
+    verifiedAdv.data.length > 0 &&
+    massagistasAdv.data.length > 0 &&
+    executivasAdv.data.length > 0;
+
+  results.push({
+    id: 'UX-QUICK-FILTERS-01',
+    category: 'HOME QUICK FILTERS 24C',
+    name: 'Quick filter chips resolution and target routes',
+    expected: 'All 6 quick filters (Salvador, SP, RJ, Verificados, Massagistas, Executivas) return active profiles',
+    passed: quickFiltersPass,
+    details: `SSA: ${salvadorAdv.data.length}, SP: ${spAdv.data.length}, RJ: ${rjAdv.data.length}, Verif: ${verifiedAdv.data.length}, Massagistas: ${massagistasAdv.data.length}, VIP: ${executivasAdv.data.length}`,
+  });
+
   return results;
 }
 
