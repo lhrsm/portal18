@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
 import { PublicAdvertiser, ExploreFilters, BrazilCity, Category, isValidPublicAdvertiser } from '@/types/app.types';
-import { DEMO_PUBLIC_ADVERTISERS, DEMO_CATEGORIES, DEMO_CITIES } from '@/data/demoProfiles';
+import { DEMO_PUBLIC_ADVERTISERS, DEMO_CATEGORIES, DEMO_CITIES, DEMO_STATES } from '@/data/demoProfiles';
 
 function filterDemoAdvertisers(filters: ExploreFilters = {}): {
   data: PublicAdvertiser[];

@@ -20,14 +20,14 @@ export const DEMO_STATES: BrazilState[] = [
 ];
 
 export const DEMO_CITIES: BrazilCity[] = [
-  { id: 'city-salvador', state_id: 'state-ba', name: 'Salvador', slug: 'salvador', ibge_code: '2927408', latitude: -12.9714, longitude: -38.5014, population: 2418005, region: 'Nordeste' },
-  { id: 'city-sao-paulo', state_id: 'state-sp', name: 'São Paulo', slug: 'sao-paulo', ibge_code: '3550308', latitude: -23.5505, longitude: -46.6333, population: 11451245, region: 'Sudeste' },
-  { id: 'city-rio-de-janeiro', state_id: 'state-rj', name: 'Rio de Janeiro', slug: 'rio-de-janeiro', ibge_code: '3304557', latitude: -22.9068, longitude: -43.1729, population: 6211423, region: 'Sudeste' },
-  { id: 'city-belo-horizonte', state_id: 'state-mg', name: 'Belo Horizonte', slug: 'belo-horizonte', ibge_code: '3106200', latitude: -19.9167, longitude: -43.9345, population: 2315560, region: 'Sudeste' },
-  { id: 'city-brasilia', state_id: 'state-df', name: 'Brasília', slug: 'brasilia', ibge_code: '5300108', latitude: -15.7975, longitude: -47.8919, population: 2817068, region: 'Centro-Oeste' },
-  { id: 'city-recife', state_id: 'state-pe', name: 'Recife', slug: 'recife', ibge_code: '2611606', latitude: -8.0476, longitude: -34.8770, population: 1488920, region: 'Nordeste' },
-  { id: 'city-fortaleza', state_id: 'state-ce', name: 'Fortaleza', slug: 'fortaleza', ibge_code: '2304400', latitude: -3.7172, longitude: -38.5433, population: 2428678, region: 'Nordeste' },
-  { id: 'city-curitiba', state_id: 'state-pr', name: 'Curitiba', slug: 'curitiba', ibge_code: '4106902', latitude: -25.4284, longitude: -49.2733, population: 1773733, region: 'Sul' },
+  { id: 'city-salvador', state_id: 'state-ba', name: 'Salvador', slug: 'salvador', ibge_code: '2927408', latitude: -12.9714, longitude: -38.5014, population: 2418005, capital: true, region: 'Nordeste' },
+  { id: 'city-sao-paulo', state_id: 'state-sp', name: 'São Paulo', slug: 'sao-paulo', ibge_code: '3550308', latitude: -23.5505, longitude: -46.6333, population: 11451245, capital: true, region: 'Sudeste' },
+  { id: 'city-rio-de-janeiro', state_id: 'state-rj', name: 'Rio de Janeiro', slug: 'rio-de-janeiro', ibge_code: '3304557', latitude: -22.9068, longitude: -43.1729, population: 6211423, capital: true, region: 'Sudeste' },
+  { id: 'city-belo-horizonte', state_id: 'state-mg', name: 'Belo Horizonte', slug: 'belo-horizonte', ibge_code: '3106200', latitude: -19.9167, longitude: -43.9345, population: 2315560, capital: true, region: 'Sudeste' },
+  { id: 'city-brasilia', state_id: 'state-df', name: 'Brasília', slug: 'brasilia', ibge_code: '5300108', latitude: -15.7975, longitude: -47.8919, population: 2817068, capital: true, region: 'Centro-Oeste' },
+  { id: 'city-recife', state_id: 'state-pe', name: 'Recife', slug: 'recife', ibge_code: '2611606', latitude: -8.0476, longitude: -34.8770, population: 1488920, capital: true, region: 'Nordeste' },
+  { id: 'city-fortaleza', state_id: 'state-ce', name: 'Fortaleza', slug: 'fortaleza', ibge_code: '2304400', latitude: -3.7172, longitude: -38.5433, population: 2428678, capital: true, region: 'Nordeste' },
+  { id: 'city-curitiba', state_id: 'state-pr', name: 'Curitiba', slug: 'curitiba', ibge_code: '4106902', latitude: -25.4284, longitude: -49.2733, population: 1773733, capital: true, region: 'Sul' },
 ];
 
 export const DEMO_CATEGORIES: Category[] = [
