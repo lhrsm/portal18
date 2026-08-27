@@ -108,15 +108,15 @@ async function runPhase12aForensics() {
       verify: async () => {
         const origEnv = process.env.NODE_ENV;
         const origKyc = process.env.KYC_PROVIDER;
-        
+
         try {
-          process.env.NODE_ENV = 'production';
-          process.env.KYC_PROVIDER = 'unconfigured';
+          (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
+          (process.env as Record<string, string | undefined>).KYC_PROVIDER = 'unconfigured';
           const res = await verificationService.startVerificationSession();
           return res.success === false && res.status === 'unavailable';
         } finally {
-          process.env.NODE_ENV = origEnv;
-          process.env.KYC_PROVIDER = origKyc;
+          (process.env as Record<string, string | undefined>).NODE_ENV = origEnv;
+          (process.env as Record<string, string | undefined>).KYC_PROVIDER = origKyc;
         }
       },
     },
