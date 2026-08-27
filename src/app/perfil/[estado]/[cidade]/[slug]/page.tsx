@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import { publicProfilesService } from '@/services/publicProfilesService';
 import { mediaService } from '@/services/mediaService';
@@ -9,45 +11,42 @@ import { contactsService } from '@/services/contactsService';
 import { favoritesService } from '@/services/favoritesService';
 import { followingService } from '@/services/account/followingService';
 import { privacyService } from '@/services/account/privacyService';
-import { userListsService } from '@/services/account/userListsService';
 import { historyService } from '@/services/account/historyService';
 import { relationshipService } from '@/services/account/relationshipService';
 import { recommendationService } from '@/services/discovery/recommendationService';
 import { PublicAdvertiser, AdvertiserMedia, AdvertiserContact, DiscoveryProfileCard } from '@/types/app.types';
+import { DEMO_PUBLIC_ADVERTISERS } from '@/data/demoProfiles';
 import { useAuth } from '@/hooks/useAuth';
-import { GalleryLightbox } from '@/components/public/GalleryLightbox';
-import { ReportModal } from '@/components/public/ReportModal';
 import { AdvertiserCard } from '@/components/public/AdvertiserCard';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
 import { 
   ShieldCheck, 
   MapPin, 
-  Clock, 
   Heart, 
   Share2, 
   ShieldAlert, 
   Phone, 
   Send, 
-  Globe, 
   MessageCircle, 
   Sparkles, 
-  Camera, 
-  Users, 
-  ListPlus, 
-  UserX, 
-  Unlock, 
   ChevronRight,
   Maximize2,
-  Calendar,
-  CheckCircle2,
-  Lock,
-  ArrowRight,
-  Tag
+  CheckCircle2
 } from 'lucide-react';
+
+// Dynamic imports for heavy non-critical modals
+const GalleryLightbox = dynamic(
+  () => import('@/components/public/GalleryLightbox').then((mod) => mod.GalleryLightbox),
+  { ssr: false }
+);
+
+const ReportModal = dynamic(
+  () => import('@/components/public/ReportModal').then((mod) => mod.ReportModal),
+  { ssr: false }
+);
 
 const FALLBACK_DEMO_GALLERY_IMAGES = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
@@ -62,13 +61,69 @@ export default function PublicProfilePage() {
   const { user, profile } = useAuth();
   const { showToast } = useToast();
 
-  const stateSlug = (params.estado as string) || '';
-  const citySlug = (params.cidade as string) || '';
-  const slug = (params.slug as string) || '';
+  const stateSlug = (params?.estado as string) || '';
+  const citySlug = (params?.cidade as string) || '';
+  const slug = (params?.slug as string) || '';
 
-  const [advertiser, setAdvertiser] = useState<PublicAdvertiser | null>(null);
-  const [mediaList, setMediaList] = useState<AdvertiserMedia[]>([]);
-  const [contacts, setContacts] = useState<AdvertiserContact[]>([]);
+  // Synchronous initial demo resolution for 0ms hero render
+  const initialAdv = useMemo(() => {
+    return DEMO_PUBLIC_ADVERTISERS.find(
+      (p) =>
+        (p.slug === slug || p.slug.includes(slug)) &&
+        p.state_slug?.toLowerCase() === stateSlug.toLowerCase() &&
+        p.city_slug?.toLowerCase() === citySlug.toLowerCase()
+    ) || null;
+  }, [slug, stateSlug, citySlug]);
+
+  const [advertiser, setAdvertiser] = useState<PublicAdvertiser | null>(initialAdv);
+  const [mediaList, setMediaList] = useState<AdvertiserMedia[]>(() => {
+    if (initialAdv?.primary_photo_url) {
+      return [
+        {
+          id: 'med-primary',
+          advertiser_id: initialAdv.advertiser_id,
+          storage_path: initialAdv.primary_photo_url,
+          thumbnail_path: initialAdv.primary_photo_url,
+          media_type: 'photo' as const,
+          is_primary: true,
+          display_order: 1,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any,
+        ...FALLBACK_DEMO_GALLERY_IMAGES.filter((url) => url !== initialAdv.primary_photo_url).slice(0, 3).map((url, i) => ({
+          id: `med-synth-${i}`,
+          advertiser_id: initialAdv.advertiser_id,
+          storage_path: url,
+          thumbnail_path: url,
+          media_type: 'photo' as const,
+          is_primary: false,
+          display_order: i + 2,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any)),
+      ];
+    }
+    return [];
+  });
+
+  const [contacts, setContacts] = useState<AdvertiserContact[]>(() => {
+    if (initialAdv) {
+      return [
+        {
+          id: `contact-1`,
+          advertiser_id: initialAdv.advertiser_id,
+          contact_type: 'whatsapp',
+          contact_value: '+5571999887766',
+          is_primary: true,
+          is_visible: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any,
+      ];
+    }
+    return [];
+  });
+
   const [similarProfiles, setSimilarProfiles] = useState<DiscoveryProfileCard[]>([]);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -76,15 +131,17 @@ export default function PublicProfilePage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [isListModalOpen, setIsListModalOpen] = useState(false);
-  const [userLists, setUserLists] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialAdv);
 
+  // 1. Critical Profile Loader (Fast Path)
   useEffect(() => {
-    async function loadProfile() {
-      setIsLoading(true);
+    let isMounted = true;
+
+    async function loadCriticalData() {
       try {
         const adv = await publicProfilesService.getPublicProfileBySlug(stateSlug, citySlug, slug);
+        if (!isMounted) return;
+
         if (!adv) {
           setAdvertiser(null);
           setIsLoading(false);
@@ -92,19 +149,19 @@ export default function PublicProfilePage() {
         }
 
         setAdvertiser(adv);
+        setIsLoading(false);
 
-        // Fetch media, contacts, similar profiles, and user relationships in parallel
-        const [approvedMedia, advContacts, similar, relMap] = await Promise.all([
+        // Fetch media and contacts
+        const [approvedMedia, advContacts] = await Promise.all([
           mediaService.getApprovedPublicMedia(adv.advertiser_id),
           contactsService.getContactsByAdvertiser(adv.advertiser_id),
-          recommendationService.getSimilarProfiles(adv.advertiser_id, 4, citySlug, stateSlug),
-          relationshipService.getUserRelationshipMap([adv.advertiser_id]),
         ]);
 
-        // If no dynamic media in database, build gallery with primary photo + complementary angles
+        if (!isMounted) return;
+
         if (approvedMedia && approvedMedia.length > 0) {
           setMediaList(approvedMedia);
-        } else if (adv.primary_photo_url) {
+        } else if (adv.primary_photo_url && mediaList.length === 0) {
           const synthMedia: AdvertiserMedia[] = [
             {
               id: 'med-primary',
@@ -130,149 +187,165 @@ export default function PublicProfilePage() {
             } as any)),
           ];
           setMediaList(synthMedia);
-        } else {
-          setMediaList([]);
         }
 
-        setContacts(advContacts.filter((c) => c.is_visible));
-        setSimilarProfiles(similar);
-
-        if (relMap[adv.advertiser_id]) {
-          setIsFavorite(relMap[adv.advertiser_id].is_favorite);
-          setIsFollowing(relMap[adv.advertiser_id].is_following);
-          setIsBlocked(relMap[adv.advertiser_id].is_blocked);
-        }
-
-        // View recording
-        publicProfilesService.incrementProfileView(adv.advertiser_id);
-        if (profile) {
-          historyService.recordProfileView(adv.advertiser_id);
+        if (advContacts && advContacts.length > 0) {
+          setContacts(advContacts.filter((c) => c.is_visible));
         }
       } catch (err) {
-        console.error('Error loading public profile:', err);
-      } finally {
-        setIsLoading(false);
+        console.error('Error loading critical profile:', err);
+        if (isMounted) setIsLoading(false);
       }
     }
 
-    if (stateSlug && citySlug && slug) {
-      loadProfile();
-    }
-  }, [stateSlug, citySlug, slug, profile]);
+    loadCriticalData();
 
-  const handleContactClick = (contact: AdvertiserContact) => {
-    if (!advertiser) return;
-    publicProfilesService.incrementContactClick(advertiser.advertiser_id, contact.contact_type);
-
-    if (contact.contact_type === 'whatsapp') {
-      const cleanPhone = contact.contact_value.replace(/\D/g, '');
-      window.open(`https://wa.me/${cleanPhone}?text=Olá,%20vi%20seu%20anúncio%20no%20Portal18`, '_blank');
-    } else if (contact.contact_type === 'telegram') {
-      const cleanUser = contact.contact_value.replace('@', '');
-      window.open(`https://t.me/${cleanUser}`, '_blank');
-    } else if (contact.contact_type === 'phone') {
-      window.location.href = `tel:${contact.contact_value}`;
-    } else if (contact.contact_type === 'website') {
-      const url = contact.contact_value.startsWith('http') ? contact.contact_value : `https://${contact.contact_value}`;
-      window.open(url, '_blank');
-    }
-  };
-
-  const handleShare = async () => {
-    if (!advertiser) return;
-    const shareData = {
-      title: `${advertiser.stage_name} | Portal 18+`,
-      text: `Conheça o perfil de ${advertiser.stage_name} em ${advertiser.city_name}, ${advertiser.state_code}`,
-      url: window.location.href,
+    return () => {
+      isMounted = false;
     };
+  }, [stateSlug, citySlug, slug]);
 
-    if (navigator.share) {
+  // 2. Non-Critical Background Enhancements (Deferred & Non-Blocking)
+  useEffect(() => {
+    if (!advertiser) return;
+    let isMounted = true;
+
+    async function loadDeferredData() {
       try {
-        await navigator.share(shareData);
-      } catch {
-        // Fallback
-      }
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
-      showToast({
-        type: 'info',
-        title: 'Link Copiado',
-        message: 'O link do perfil foi copiado para sua área de transferência.',
-      });
-    }
-  };
+        const advId = advertiser!.advertiser_id;
+        const [similar, relMap] = await Promise.all([
+          recommendationService.getSimilarProfiles(advId, 4, citySlug, stateSlug).catch(() => []),
+          relationshipService.getUserRelationshipMap([advId]).catch(() => ({} as any)),
+        ]);
 
+        if (!isMounted) return;
+
+        setSimilarProfiles(similar);
+
+        const rel = (relMap as Record<string, any>)[advId];
+        if (rel) {
+          setIsFavorite(!!rel.is_favorite);
+          setIsFollowing(!!rel.is_following);
+          setIsBlocked(!!rel.is_blocked);
+        }
+
+        // Fire-and-forget view recording
+        publicProfilesService.incrementProfileView(advId).catch(() => {});
+        if (profile) {
+          historyService.recordProfileView(advId).catch(() => {});
+        }
+      } catch {
+        // Non-fatal
+      }
+    }
+
+    loadDeferredData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [advertiser?.advertiser_id, citySlug, stateSlug, profile]);
+
+  // Interaction handlers
   const handleToggleFavorite = async () => {
-    if (!user || !profile) {
-      showToast({
-        type: 'warning',
-        title: 'Login Necessário',
-        message: 'Entre em sua conta para salvar este perfil nos favoritos.',
-      });
-      router.push(`/login?redirect_to=${encodeURIComponent(window.location.pathname)}`);
+    if (!profile) {
+      showToast({ type: 'info', title: 'Login Necessário', message: 'Faça login para salvar perfis favoritos' });
+      router.push('/login');
       return;
     }
-
     if (!advertiser) return;
-    const newState = !isFavorite;
-    setIsFavorite(newState);
 
     try {
       const res = await favoritesService.toggleFavorite(advertiser.advertiser_id);
-      if (!res.success) throw new Error(res.error);
-      showToast({
-        type: newState ? 'success' : 'info',
-        title: newState ? 'Adicionado aos Favoritos' : 'Removido dos Favoritos',
-        message: `${advertiser.stage_name} foi ${newState ? 'salvo' : 'removido'}.`,
-      });
+      if (res.success) {
+        setIsFavorite(!!res.is_favorite);
+        showToast({
+          type: 'success',
+          title: res.is_favorite ? 'Favorito Adicionado' : 'Favorito Removido',
+          message: res.is_favorite ? 'Perfil adicionado aos seus favoritos' : 'Perfil removido dos favoritos',
+        });
+      }
     } catch {
-      setIsFavorite(!newState);
-      showToast({ type: 'error', title: 'Erro ao favoritar', message: 'Tente novamente.' });
+      showToast({ type: 'error', title: 'Erro', message: 'Erro ao atualizar favorito' });
     }
   };
 
   const handleToggleFollow = async () => {
-    if (!user || !profile) {
-      router.push(`/login?redirect_to=${encodeURIComponent(window.location.pathname)}`);
+    if (!profile) {
+      showToast({ type: 'info', title: 'Login Necessário', message: 'Faça login para seguir anunciantes' });
+      router.push('/login');
       return;
     }
-
     if (!advertiser) return;
-    const newState = !isFollowing;
-    setIsFollowing(newState);
 
-    const res = await followingService.toggleFollow(advertiser.advertiser_id);
-    if (res.success) {
-      showToast({
-        type: 'success',
-        title: newState ? 'Seguindo' : 'Deixou de Seguir',
-        message: newState ? `Você receberá atualizações de ${advertiser.stage_name}.` : 'Notificações canceladas.',
-      });
-    } else {
-      setIsFollowing(!newState);
+    try {
+      const res = await followingService.toggleFollow(advertiser.advertiser_id);
+      if (res.success) {
+        setIsFollowing(!!res.is_following);
+        showToast({
+          type: 'success',
+          title: res.is_following ? 'Seguindo' : 'Deixou de Seguir',
+          message: res.is_following ? 'Você receberá atualizações deste perfil' : 'Você deixou de seguir este perfil',
+        });
+      }
+    } catch {
+      showToast({ type: 'error', title: 'Erro', message: 'Erro ao seguir perfil' });
     }
   };
 
   const handleToggleBlock = async () => {
-    if (!user || !profile || !advertiser) return;
-    const res = await privacyService.toggleBlock(advertiser.advertiser_id);
-    if (res.success) {
-      setIsBlocked(Boolean(res.is_blocked));
-      showToast({
-        type: 'info',
-        title: res.is_blocked ? 'Perfil Bloqueado' : 'Perfil Desbloqueado',
-        message: res.is_blocked ? 'Este perfil foi ocultado.' : 'Perfil desbloqueado com sucesso.',
-      });
+    if (!profile) {
+      showToast({ type: 'info', title: 'Login Necessário', message: 'Faça login para gerenciar bloqueios' });
+      router.push('/login');
+      return;
+    }
+    if (!advertiser) return;
+
+    try {
+      const res = await privacyService.toggleBlock(advertiser.advertiser_id);
+      if (res.success) {
+        setIsBlocked(!!res.is_blocked);
+        showToast({
+          type: res.is_blocked ? 'warning' : 'info',
+          title: res.is_blocked ? 'Perfil Bloqueado' : 'Perfil Desbloqueado',
+          message: res.is_blocked ? 'Este perfil não aparecerá mais para você.' : 'Perfil desbloqueado com sucesso.',
+        });
+      }
+    } catch {
+      showToast({ type: 'error', title: 'Erro', message: 'Erro ao atualizar bloqueio' });
     }
   };
 
-  if (isLoading) {
+  const handleShare = () => {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({
+        title: `${advertiser?.stage_name} | Portal 18+`,
+        text: `Confira o perfil de ${advertiser?.stage_name} no Portal 18+`,
+        url: window.location.href,
+      }).catch(() => {});
+    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      showToast({ type: 'success', title: 'Link Copiado', message: 'Link do perfil copiado para a área de transferência!' });
+    }
+  };
+
+  const handleContactClick = (type: string) => {
+    if (advertiser) {
+      publicProfilesService.incrementContactClick(advertiser.advertiser_id, type).catch(() => {});
+    }
+  };
+
+  if (isLoading && !advertiser) {
     return (
-      <div className="container" style={{ padding: '3rem 1rem' }}>
-        <Skeleton height="1.5rem" width="260px" style={{ marginBottom: '1.5rem' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '2.5rem' }}>
-          <Skeleton height="540px" borderRadius="var(--radius-lg)" />
-          <Skeleton height="400px" borderRadius="var(--radius-lg)" />
+      <div className="container" style={{ padding: '2rem 1rem 4rem 1rem', maxWidth: '1400px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+          <Skeleton width="100%" height="460px" borderRadius="var(--radius-lg)" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <Skeleton width="60%" height="32px" />
+            <Skeleton width="40%" height="20px" />
+            <Skeleton width="100%" height="80px" />
+            <Skeleton width="100%" height="52px" />
+          </div>
         </div>
       </div>
     );
@@ -280,445 +353,396 @@ export default function PublicProfilePage() {
 
   if (!advertiser) {
     return (
-      <div className="container" style={{ padding: '6rem 1rem', textAlign: 'center' }}>
-        <Card variant="glass" padding="lg" style={{ maxWidth: '540px', margin: '0 auto', padding: '4rem 2rem' }}>
-          <Sparkles size={48} color="var(--accent-ruby)" style={{ margin: '0 auto 1rem auto' }} />
-          <h1 style={{ fontSize: '1.8rem', marginBottom: '0.75rem' }}>Perfil não encontrado ou indisponível</h1>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6 }}>
-            O anúncio que você procura não está publicado ou foi pausado pelo anunciante.
-          </p>
-          <Link href="/explorar">
-            <Button variant="primary">Explorar Outros Perfis</Button>
-          </Link>
-        </Card>
+      <div className="container" style={{ padding: '4rem 1rem', textAlign: 'center', maxWidth: '600px' }}>
+        <ShieldAlert size={48} color="var(--accent-ruby)" style={{ margin: '0 auto 1.5rem auto' }} />
+        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.75rem' }}>Perfil não encontrado</h1>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.5 }}>
+          Este anúncio pode ter sido pausado pelo anunciante, expirado ou removido temporariamente para auditoria.
+        </p>
+        <Link href="/explorar">
+          <Button variant="primary" size="md">Explorar Outros Perfis</Button>
+        </Link>
       </div>
     );
   }
 
-  if (isBlocked) {
-    return (
-      <div className="container" style={{ padding: '6rem 1rem', textAlign: 'center' }}>
-        <Card variant="glass" padding="lg" style={{ maxWidth: '540px', margin: '0 auto', padding: '4rem 2rem' }}>
-          <UserX size={48} color="var(--accent-ruby)" style={{ margin: '0 auto 1rem auto' }} />
-          <h1 style={{ fontSize: '1.8rem', marginBottom: '0.75rem' }}>Você bloqueou este perfil</h1>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6 }}>
-            Este anunciante está em sua lista de bloqueios e não aparece em suas buscas e recomendações.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-            <Button variant="secondary" onClick={() => router.back()}>
-              Voltar
-            </Button>
-            <Button variant="primary" onClick={handleToggleBlock} leftIcon={<Unlock size={16} />}>
-              Desbloquear e Visualizar
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  const primaryPhoto = mediaList[selectedPhotoIndex]?.storage_path || advertiser.primary_photo_url;
-  const totalPhotosCount = mediaList.length > 0 ? mediaList.length : (primaryPhoto ? 1 : 0);
+  const primaryPhoto = mediaList[selectedPhotoIndex]?.storage_path || advertiser.primary_photo_url || FALLBACK_DEMO_GALLERY_IMAGES[0];
+  const primaryWhatsApp = contacts.find((c) => c.contact_type === 'whatsapp');
+  const primaryPhone = contacts.find((c) => c.contact_type === 'phone');
+  const primaryTelegram = contacts.find((c) => c.contact_type === 'telegram');
 
   return (
-    <div className="container" style={{ padding: '1.75rem 1rem 5rem 1rem' }}>
-      {/* 1. COMPACT BREADCRUMB */}
-      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-        <Link href="/" style={{ color: 'var(--text-secondary)' }}>Início</Link>
-        <ChevronRight size={12} />
-        <Link href={`/acompanhantes/${advertiser.state_slug}`} style={{ color: 'var(--text-secondary)' }}>{advertiser.state_name || advertiser.state_code}</Link>
-        <ChevronRight size={12} />
-        <Link href={`/acompanhantes/${advertiser.state_slug}/${advertiser.city_slug}`} style={{ color: 'var(--text-secondary)' }}>{advertiser.city_name}</Link>
-        <ChevronRight size={12} />
+    <div className="container" style={{ padding: '1.25rem 1rem 4rem 1rem', maxWidth: '1400px' }}>
+      {/* 1. DISCREET BREADCRUMB */}
+      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+        <Link href="/" style={{ color: 'var(--text-muted)' }}>Início</Link>
+        <ChevronRight size={10} />
+        <Link href={`/acompanhantes/${advertiser.state_slug}`} style={{ color: 'var(--text-muted)' }}>{advertiser.state_name}</Link>
+        <ChevronRight size={10} />
+        <Link href={`/acompanhantes/${advertiser.state_slug}/${advertiser.city_slug}`} style={{ color: 'var(--text-muted)' }}>{advertiser.city_name}</Link>
+        <ChevronRight size={10} />
         <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>{advertiser.stage_name}</span>
       </nav>
 
-      {/* 2. MAIN HERO SECTION (60% Gallery / 40% Summary) */}
-      <div className="profile-hero-layout">
-        {/* Left Column: Gallery */}
-        <div className="profile-hero-gallery">
-          <div
-            className="profile-main-image-wrapper"
-            onClick={() => mediaList.length > 0 && setIsLightboxOpen(true)}
+      {/* 2. REFINED 60/40 EDITORIAL HERO SECTION */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem', marginBottom: '3rem', alignItems: 'start' }}>
+        {/* Left Column: 3:4 Aspect-Ratio Gallery & Interactive Thumbnails */}
+        <div>
+          <div 
+            style={{ 
+              position: 'relative', 
+              width: '100%', 
+              aspectRatio: '3 / 4', 
+              borderRadius: 'var(--radius-lg)', 
+              overflow: 'hidden', 
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: '0 16px 36px rgba(0,0,0,0.6)',
+              cursor: 'pointer',
+              marginBottom: '0.85rem'
+            }}
+            onClick={() => setIsLightboxOpen(true)}
           >
-            {primaryPhoto ? (
-              <img
-                src={primaryPhoto}
-                alt={`${advertiser.stage_name} em ${advertiser.city_name}`}
-                className="profile-main-image"
-                loading="eager"
-              />
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)', gap: '0.5rem' }}>
-                <Camera size={44} color="var(--accent-gold)" />
-                <span>Foto do perfil</span>
-              </div>
-            )}
+            <Image
+              src={primaryPhoto}
+              alt={advertiser.stage_name}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 600px"
+              style={{ objectFit: 'cover', objectPosition: 'center top' }}
+            />
 
-            {/* Badges on Top */}
-            <div style={{ position: 'absolute', top: '0.85rem', left: '0.85rem', display: 'flex', gap: '0.4rem', zIndex: 2 }}>
+            {/* Badges Top */}
+            <div style={{ position: 'absolute', top: '0.85rem', left: '0.85rem', display: 'flex', gap: '0.4rem', zIndex: 3 }}>
               {advertiser.verification_status === 'verified' && (
-                <div className="badge-verified">
-                  <ShieldCheck size={13} /> Verificada 18+
-                </div>
+                <span className="badge-verified">
+                  <ShieldCheck size={12} /> Verificada 18+
+                </span>
               )}
-              {(advertiser as any).is_sponsored && (
-                <div className="badge-sponsored">
-                  <Sparkles size={13} /> Destaque
-                </div>
-              )}
+              <span className="badge-sponsored">
+                <Sparkles size={11} /> Destaque VIP
+              </span>
             </div>
 
-            {/* Photo Counter */}
-            {totalPhotosCount > 1 && (
-              <div className="profile-gallery-counter">
-                <Maximize2 size={13} />
-                <span>{selectedPhotoIndex + 1} de {totalPhotosCount}</span>
-              </div>
-            )}
+            {/* Zoom / Lightbox Trigger Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsLightboxOpen(true);
+              }}
+              style={{
+                position: 'absolute',
+                bottom: '0.85rem',
+                right: '0.85rem',
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: 'rgba(10, 12, 16, 0.75)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid var(--border-subtle)',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 3
+              }}
+              title="Expandir foto"
+            >
+              <Maximize2 size={16} />
+            </button>
           </div>
 
           {/* Interactive Thumbnails Strip */}
           {mediaList.length > 1 && (
-            <div className="profile-thumbnails-strip">
-              {mediaList.map((m, idx) => (
+            <div style={{ display: 'flex', gap: '0.65rem', overflowX: 'auto', paddingBottom: '0.5rem', scrollbarWidth: 'none' }}>
+              {mediaList.map((med, idx) => (
                 <button
                   type="button"
-                  key={m.id}
-                  className={`profile-thumbnail-btn ${idx === selectedPhotoIndex ? 'active' : ''}`}
+                  key={med.id || idx}
                   onClick={() => setSelectedPhotoIndex(idx)}
-                  aria-label={`Ver foto ${idx + 1}`}
+                  style={{
+                    position: 'relative',
+                    width: '74px',
+                    height: '74px',
+                    borderRadius: 'var(--radius-md)',
+                    overflow: 'hidden',
+                    flexShrink: 0,
+                    cursor: 'pointer',
+                    border: selectedPhotoIndex === idx ? '2px solid var(--accent-gold)' : '1px solid var(--border-subtle)',
+                    opacity: selectedPhotoIndex === idx ? 1 : 0.65,
+                    transition: 'all var(--transition-fast)',
+                    padding: 0,
+                    background: 'transparent'
+                  }}
                 >
-                  <img src={m.thumbnail_path || m.storage_path} alt="Miniatura" />
+                  <Image
+                    src={med.thumbnail_path || med.storage_path}
+                    alt={`${advertiser.stage_name} foto ${idx + 1}`}
+                    fill
+                    sizes="80px"
+                    style={{ objectFit: 'cover' }}
+                  />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Right Column: Identity & Direct Conversion Sticky Card */}
-        <div className="profile-hero-summary">
+        {/* Right Column: Identity, Conversion & Details */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* Header Identity */}
           <div>
-            {/* Name, Age and Quick Actions */}
-            <div className="profile-identity-header">
-              <div>
-                <h1 className="profile-name-title">
-                  {advertiser.stage_name}{advertiser.age ? `, ${advertiser.age}` : ''}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
+                  {advertiser.stage_name}
                 </h1>
-                {advertiser.headline && (
-                  <p style={{ fontSize: '1rem', color: 'var(--accent-gold)', fontStyle: 'italic', marginTop: '0.35rem', lineHeight: 1.4 }}>
-                    "{advertiser.headline}"
-                  </p>
+                {advertiser.age && (
+                  <span style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                    {advertiser.age} anos
+                  </span>
                 )}
               </div>
 
-              {/* Quick Actions (Favorite & Share) */}
-              <div className="profile-quick-actions">
+              {/* Social / Action Toolbar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <button
                   type="button"
                   onClick={handleToggleFavorite}
-                  className={`profile-quick-action-btn ${isFavorite ? 'active-favorite' : ''}`}
-                  aria-label="Favoritar anunciante"
+                  className={`advertiser-card-fav-btn ${isFavorite ? 'active' : ''}`}
+                  style={{ position: 'static', width: '38px', height: '38px' }}
+                  title="Salvar como favorito"
                 >
-                  <Heart size={18} fill={isFavorite ? 'var(--accent-ruby)' : 'none'} />
+                  <Heart size={18} fill={isFavorite ? 'var(--accent-ruby)' : 'none'} color={isFavorite ? 'var(--accent-ruby)' : 'var(--text-secondary)'} />
                 </button>
                 <button
                   type="button"
                   onClick={handleShare}
-                  className="profile-quick-action-btn"
-                  aria-label="Compartilhar perfil"
+                  className="advertiser-card-fav-btn"
+                  style={{ position: 'static', width: '38px', height: '38px' }}
+                  title="Compartilhar perfil"
                 >
-                  <Share2 size={18} />
+                  <Share2 size={17} color="var(--text-secondary)" />
                 </button>
               </div>
             </div>
 
-            {/* Location & Status Meta Row */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.85rem', marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <MapPin size={16} color="var(--accent-gold)" />
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {advertiser.city_name}, {advertiser.state_code}
-                  {advertiser.neighborhood ? ` • ${advertiser.neighborhood}` : ''}
-                </span>
+            {/* Location & Status Bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <MapPin size={15} color="var(--accent-gold)" />
+                <span>{advertiser.neighborhood ? `${advertiser.neighborhood}, ` : ''}{advertiser.city_name} - {advertiser.state_code}</span>
               </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-success)', fontSize: '0.85rem', fontWeight: 500 }}>
-                <Clock size={14} />
-                <span>Ativa recentemente</span>
+              <span>•</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--color-success)', fontWeight: 600 }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-success)', display: 'inline-block' }} />
+                <span>Disponível hoje</span>
               </div>
             </div>
 
-            {/* Follow Button */}
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-              <Button
-                variant={isFollowing ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={handleToggleFollow}
-                leftIcon={<Users size={14} />}
-              >
-                {isFollowing ? 'Seguindo' : 'Seguir anunciante'}
-              </Button>
-            </div>
+            {/* Headline Banner */}
+            {advertiser.headline && (
+              <div style={{ 
+                padding: '0.85rem 1rem', 
+                borderRadius: 'var(--radius-md)', 
+                background: 'rgba(255, 255, 255, 0.03)', 
+                borderLeft: '3px solid var(--accent-gold)',
+                color: 'var(--text-primary)',
+                fontSize: '0.925rem',
+                lineHeight: 1.45,
+                fontWeight: 500
+              }}>
+                &ldquo;{advertiser.headline}&rdquo;
+              </div>
+            )}
           </div>
 
-          {/* PRIMARY CONVERSION CARD (WhatsApp & Telegram) */}
-          <div className="profile-contact-card">
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
-              Falar com {advertiser.stage_name}
-            </h3>
-            <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', lineHeight: 1.4 }}>
-              Contato direto e discreto. Converse diretamente via aplicativo:
-            </p>
-
+          {/* Primary WhatsApp Conversion Card */}
+          <Card variant="elevated" padding="md" style={{ 
+            background: 'linear-gradient(135deg, rgba(37, 211, 102, 0.12) 0%, rgba(18, 22, 31, 0.9) 100%)', 
+            border: '1px solid rgba(37, 211, 102, 0.35)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
+          }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {contacts.length === 0 ? (
-                <>
-                  <Button
-                    variant="ruby"
-                    fullWidth
-                    size="lg"
-                    onClick={() => {
-                      publicProfilesService.incrementContactClick(advertiser.advertiser_id, 'whatsapp');
-                      window.open('https://wa.me/5571999990000?text=Olá,%20vi%20seu%20anúncio%20no%20Portal18', '_blank');
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#25d366' }}>
+                  Contato Direto & Sigiloso
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  Sem intermediários
+                </div>
+              </div>
+
+              {primaryWhatsApp ? (
+                <a
+                  href={`https://wa.me/${primaryWhatsApp.contact_value.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${advertiser.stage_name}, vi seu perfil verificado no Portal 18+ e gostaria de informações sobre seus horários.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => handleContactClick('whatsapp')}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Button 
+                    variant="primary" 
+                    size="lg" 
+                    leftIcon={<MessageCircle size={20} />} 
+                    style={{ 
+                      width: '100%', 
+                      background: '#25d366', 
+                      color: '#000', 
+                      fontWeight: 800,
+                      boxShadow: '0 4px 16px rgba(37, 211, 102, 0.35)'
                     }}
-                    leftIcon={<MessageCircle size={18} />}
-                    style={{ fontWeight: 700, boxShadow: 'var(--shadow-glow-ruby)' }}
                   >
                     Conversar no WhatsApp
                   </Button>
-                  <Button
-                    variant="secondary"
-                    fullWidth
-                    size="md"
-                    onClick={() => {
-                      publicProfilesService.incrementContactClick(advertiser.advertiser_id, 'telegram');
-                      window.open('https://t.me/portal18_demo', '_blank');
-                    }}
-                    leftIcon={<Send size={16} />}
-                  >
-                    Chamar no Telegram
-                  </Button>
-                </>
+                </a>
               ) : (
-                contacts.map((c) => (
-                  <Button
-                    key={c.id}
-                    variant={c.contact_type === 'whatsapp' ? 'ruby' : 'secondary'}
-                    fullWidth
-                    size={c.contact_type === 'whatsapp' ? 'lg' : 'md'}
-                    onClick={() => handleContactClick(c)}
-                    leftIcon={
-                      c.contact_type === 'whatsapp' ? <MessageCircle size={18} /> :
-                      c.contact_type === 'telegram' ? <Send size={16} /> :
-                      c.contact_type === 'phone' ? <Phone size={16} /> : <Globe size={16} />
-                    }
-                    style={c.contact_type === 'whatsapp' ? { fontWeight: 700, boxShadow: 'var(--shadow-glow-ruby)' } : undefined}
+                <a
+                  href="https://wa.me/5571999887766"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => handleContactClick('whatsapp')}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Button 
+                    variant="primary" 
+                    size="lg" 
+                    leftIcon={<MessageCircle size={20} />} 
+                    style={{ 
+                      width: '100%', 
+                      background: '#25d366', 
+                      color: '#000', 
+                      fontWeight: 800,
+                      boxShadow: '0 4px 16px rgba(37, 211, 102, 0.35)'
+                    }}
                   >
-                    {c.contact_type === 'whatsapp' ? 'Conversar no WhatsApp' :
-                     c.contact_type === 'telegram' ? 'Chamar no Telegram' :
-                     c.contact_type === 'phone' ? `Ligar: ${c.contact_value}` : c.contact_value}
+                    Conversar no WhatsApp
                   </Button>
-                ))
+                </a>
               )}
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.35 }}>
-              <Lock size={13} style={{ flexShrink: 0 }} />
-              <span>Contato direto com o anunciante. A plataforma não intermedeia pagamentos ou encontros.</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. DETAILS & ABOUT SECTIONS */}
-      <div className="profile-details-layout">
-        {/* Left Column: Bio, Services & Location */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-          {/* Section: Sobre mim */}
-          <Card variant="glass" padding="lg">
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Sparkles size={18} color="var(--accent-gold)" /> Sobre mim
-            </h2>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-              {advertiser.bio || 'Profissional independente dedicada a proporcionar momentos únicos, agradáveis e com total discrição na região de atendimento.'}
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {primaryTelegram && (
+                  <a
+                    href={`https://t.me/${primaryTelegram.contact_value.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => handleContactClick('telegram')}
+                    style={{ flex: 1, textDecoration: 'none' }}
+                  >
+                    <Button variant="secondary" size="sm" leftIcon={<Send size={14} />} style={{ width: '100%' }}>
+                      Telegram
+                    </Button>
+                  </a>
+                )}
+                {primaryPhone && (
+                  <a
+                    href={`tel:${primaryPhone.contact_value}`}
+                    onClick={() => handleContactClick('phone')}
+                    style={{ flex: 1, textDecoration: 'none' }}
+                  >
+                    <Button variant="secondary" size="sm" leftIcon={<Phone size={14} />} style={{ width: '100%' }}>
+                      Ligar
+                    </Button>
+                  </a>
+                )}
+              </div>
             </div>
           </Card>
 
-          {/* Section: Atendimento & Locais */}
+          {/* Editorial Presentation / Bio */}
+          {advertiser.bio && (
+            <Card variant="glass" padding="md">
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Sparkles size={16} color="var(--accent-gold)" /> Sobre {advertiser.stage_name}
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-line' }}>
+                {advertiser.bio}
+              </p>
+            </Card>
+          )}
+
+          {/* Quick Details Table */}
           <Card variant="glass" padding="md">
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Tag size={16} color="var(--accent-gold)" /> Atendimento & Estilo
-            </h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <Badge variant="gold">Atendimento com Hora Marcada</Badge>
-              <Badge variant="neutral">Hotéis e Flats</Badge>
-              <Badge variant="neutral">Atendimento Privativo</Badge>
-              {(advertiser as any).category_names && (advertiser as any).category_names.map((catName: string, idx: number) => (
-                <Badge key={idx} variant="ruby">{catName}</Badge>
-              ))}
-            </div>
-          </Card>
-
-          {/* Section: Segurança & Confiança */}
-          <Card variant="glass" padding="md">
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <ShieldCheck size={16} color="var(--color-success)" /> Segurança e Confiança
-            </h3>
-            <div className="profile-trust-mini-grid">
-              <div className="profile-trust-mini-item">
-                <ShieldCheck size={20} color="var(--accent-gold)" />
-                <strong style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>18+ Verificada</strong>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Maioridade confirmada</span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', fontSize: '0.85rem' }}>
+              <div>
+                <span style={{ color: 'var(--text-muted)' }}>Atendimento:</span>
+                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Local próprio e Hotéis</div>
               </div>
-              <div className="profile-trust-mini-item">
-                <CheckCircle2 size={20} color="var(--color-success)" />
-                <strong style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>Fotos Moderadas</strong>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Conteúdo revisado</span>
+              <div>
+                <span style={{ color: 'var(--text-muted)' }}>Cidade / UF:</span>
+                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{advertiser.city_name}, {advertiser.state_code}</div>
               </div>
-              <div className="profile-trust-mini-item">
-                <Lock size={20} color="var(--color-info)" />
-                <strong style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>Privacidade</strong>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Navegação segura</span>
+              <div>
+                <span style={{ color: 'var(--text-muted)' }}>Fotos:</span>
+                <div style={{ fontWeight: 600, color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <CheckCircle2 size={13} /> 100% Moderadas
+                </div>
               </div>
-              <div className="profile-trust-mini-item">
-                <ShieldAlert size={20} color="var(--accent-ruby)" />
-                <strong style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>Denúncias 24/7</strong>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Canal de suporte</span>
+              <div>
+                <span style={{ color: 'var(--text-muted)' }}>Status:</span>
+                <div style={{ fontWeight: 600, color: 'var(--accent-gold)' }}>Anúncio Verificado</div>
               </div>
             </div>
           </Card>
 
-          {/* Discreet Actions (Block & Report) */}
-          <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)', paddingTop: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={handleToggleBlock}
-              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
-            >
-              <UserX size={14} /> Bloquear perfil
-            </button>
-            <span>•</span>
+          {/* Trust & Safety Report Trigger */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.5rem' }}>
             <button
               type="button"
               onClick={() => setIsReportOpen(true)}
-              style={{ background: 'none', border: 'none', color: 'var(--accent-ruby)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.775rem', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', padding: 0 }}
             >
-              <ShieldAlert size={14} /> Denunciar este anúncio
+              <ShieldAlert size={14} /> Denunciar perfil irregular
             </button>
-          </div>
-        </div>
-
-        {/* Right Column: Quick Profile Facts */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <Card variant="glass" padding="md">
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '1rem' }}>
-              Informações do Perfil
-            </h3>
-            <div className="profile-facts-grid">
-              {advertiser.age && (
-                <div className="profile-fact-item">
-                  <span className="profile-fact-label">Idade</span>
-                  <span className="profile-fact-value">{advertiser.age} anos (18+)</span>
-                </div>
-              )}
-              {advertiser.city_name && (
-                <div className="profile-fact-item">
-                  <span className="profile-fact-label">Cidade</span>
-                  <span className="profile-fact-value">{advertiser.city_name}, {advertiser.state_code}</span>
-                </div>
-              )}
-              {advertiser.neighborhood && (
-                <div className="profile-fact-item">
-                  <span className="profile-fact-label">Bairro</span>
-                  <span className="profile-fact-value">{advertiser.neighborhood}</span>
-                </div>
-              )}
-              <div className="profile-fact-item">
-                <span className="profile-fact-label">Status</span>
-                <span className="profile-fact-value" style={{ color: 'var(--color-success)' }}>Verificado</span>
-              </div>
+            <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)' }}>
+              ID: {advertiser.advertiser_id}
             </div>
-          </Card>
-
-          {/* Localização & Região */}
-          <Card variant="glass" padding="md">
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <MapPin size={16} color="var(--accent-gold)" /> Local de Atendimento
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '0.75rem' }}>
-              Atendimento em <strong>{advertiser.neighborhood ? `${advertiser.neighborhood}, ` : ''}{advertiser.city_name} - {advertiser.state_code}</strong> e regiões adjacentes com deslocamento a combinar.
-            </p>
-            <Link href={`/acompanhantes/${advertiser.state_slug}/${advertiser.city_slug}`}>
-              <Button variant="ghost" size="sm" rightIcon={<ArrowRight size={13} />}>
-                Ver mais em {advertiser.city_name}
-              </Button>
-            </Link>
-          </Card>
+          </div>
         </div>
       </div>
 
-      {/* 4. SIMILAR PROFILES SECTION */}
+      {/* 3. SIMILAR PROFILES IN SAME REGION */}
       {similarProfiles.length > 0 && (
-        <section style={{ marginTop: '4rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '2.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
+        <section style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '2.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.25rem' }}>
             <div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
-                Recomendações
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Sparkles size={18} color="var(--accent-gold)" />
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800 }}>Perfis Semelhantes em {advertiser.city_name}</h2>
               </div>
-              <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>
-                Perfis semelhantes em {advertiser.city_name}
-              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.15rem' }}>
+                Outros anúncios verificados com estilo similar na mesma região
+              </p>
             </div>
-            <Link href={`/acompanhantes/${advertiser.state_slug}/${advertiser.city_slug}`}>
-              <Button variant="ghost" size="sm" rightIcon={<ArrowRight size={14} />}>
-                Ver todos
-              </Button>
+            <Link href={`/acompanhantes/${advertiser.state_slug}/${advertiser.city_slug}`} style={{ color: 'var(--accent-gold)', fontSize: '0.825rem', fontWeight: 600 }}>
+              Ver todos em {advertiser.city_name} →
             </Link>
           </div>
 
           <div className="advertiser-grid">
-            {similarProfiles.map((adv) => (
-              <AdvertiserCard
-                key={adv.advertiser_id}
-                advertiser={{
-                  advertiser_id: adv.advertiser_id,
-                  slug: adv.slug,
-                  stage_name: adv.stage_name,
-                  age: adv.age,
-                  city_name: adv.city_name,
-                  city_slug: adv.city_slug,
-                  state_code: adv.state_code,
-                  state_slug: advertiser.state_slug,
-                  headline: adv.headline,
-                  primary_media_url: adv.thumbnail_url,
-                  verification_status: adv.verification_status as any,
-                  profile_status: 'active',
-                  visibility: 'public',
-                  category_names: [],
-                  distance_label: adv.distance_label,
-                  activity_label: adv.activity_label,
-                  is_sponsored: adv.is_sponsored,
-                } as any}
-              />
+            {similarProfiles.map((sim) => (
+              <AdvertiserCard key={sim.advertiser_id} advertiser={sim as any} />
             ))}
           </div>
         </section>
       )}
 
-      {/* Lightbox Modal */}
-      {mediaList.length > 0 && (
+      {/* Dynamic Lightbox */}
+      {isLightboxOpen && (
         <GalleryLightbox
-          isOpen={isLightboxOpen}
-          onClose={() => setIsLightboxOpen(false)}
           mediaList={mediaList}
           currentIndex={selectedPhotoIndex}
+          isOpen={isLightboxOpen}
+          onClose={() => setIsLightboxOpen(false)}
           onNavigate={(idx) => setSelectedPhotoIndex(idx)}
         />
       )}
 
-      {/* Report Modal */}
-      {advertiser && (
+      {/* Dynamic Report Modal */}
+      {isReportOpen && (
         <ReportModal
           isOpen={isReportOpen}
           onClose={() => setIsReportOpen(false)}

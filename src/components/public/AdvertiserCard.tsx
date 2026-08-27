@@ -184,7 +184,7 @@ export function AdvertiserCard({
   return (
     <>
       <div className="advertiser-card-container" onClick={handleCardClick}>
-        <Link href={profileUrl} className="advertiser-card-link">
+        <Link href={profileUrl} prefetch={true} className="advertiser-card-link">
           <div className="advertiser-card-media-wrapper">
             {(() => {
               const rawPhotoUrl = advertiser.primary_photo_url || (advertiser as any).primary_media_url || (advertiser as any).thumbnail_url;

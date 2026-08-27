@@ -3,19 +3,47 @@ import { AdvertiserContact, ContactType } from '@/types/app.types';
 
 export const contactsService = {
   async getContactsByAdvertiser(advertiserId: string): Promise<AdvertiserContact[]> {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from('advertiser_contacts')
-      .select('*')
-      .eq('advertiser_id', advertiserId)
-      .order('is_primary', { ascending: false })
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      console.error('Error fetching advertiser contacts:', error);
-      return [];
+    if (advertiserId.startsWith('demo-')) {
+      return [
+        {
+          id: `demo-contact-${advertiserId}-1`,
+          advertiser_id: advertiserId,
+          contact_type: 'whatsapp',
+          contact_value: '+5571999887766',
+          is_primary: true,
+          is_visible: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as AdvertiserContact,
+        {
+          id: `demo-contact-${advertiserId}-2`,
+          advertiser_id: advertiserId,
+          contact_type: 'telegram',
+          contact_value: '@portal18_vip',
+          is_primary: false,
+          is_visible: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as AdvertiserContact,
+      ];
     }
-    return (data as AdvertiserContact[]) || [];
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('advertiser_contacts')
+        .select('*')
+        .eq('advertiser_id', advertiserId)
+        .order('is_primary', { ascending: false })
+        .order('created_at', { ascending: true });
+
+      if (!error && data) {
+        return (data as AdvertiserContact[]) || [];
+      }
+    } catch {
+      // Fallback
+    }
+    return [];
   },
 
   async addContact(

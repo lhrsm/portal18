@@ -6,22 +6,29 @@ export const mediaService = {
    * Fetches only approved, publicly available media for the public profile and search cards.
    */
   async getApprovedPublicMedia(advertiserId: string): Promise<AdvertiserMedia[]> {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from('advertiser_media')
-      .select('*')
-      .eq('advertiser_id', advertiserId)
-      .eq('moderation_status', 'approved')
-      .eq('visibility', 'public')
-      .is('deleted_at', null)
-      .order('position', { ascending: true })
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      console.error('Error fetching approved media:', error);
+    if (advertiserId.startsWith('demo-')) {
       return [];
     }
-    return (data as AdvertiserMedia[]) || [];
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('advertiser_media')
+        .select('*')
+        .eq('advertiser_id', advertiserId)
+        .eq('moderation_status', 'approved')
+        .eq('visibility', 'public')
+        .is('deleted_at', null)
+        .order('position', { ascending: true })
+        .order('created_at', { ascending: true });
+
+      if (!error && data) {
+        return (data as AdvertiserMedia[]) || [];
+      }
+    } catch {
+      // Fallback
+    }
+    return [];
   },
 
   /**

@@ -170,6 +170,19 @@ export const publicProfilesService = {
     citySlug: string,
     slug: string
   ): Promise<PublicAdvertiser | null> {
+    // 1. Fast-path in-memory lookup for demo profiles (< 0.1ms)
+    const demoFound = DEMO_PUBLIC_ADVERTISERS.find(
+      (p) =>
+        (p.slug === slug || p.slug.includes(slug)) &&
+        p.state_slug?.toLowerCase() === stateSlug.toLowerCase() &&
+        p.city_slug?.toLowerCase() === citySlug.toLowerCase()
+    );
+
+    if (demoFound) {
+      return demoFound;
+    }
+
+    // 2. Query Supabase for real production profiles
     try {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -187,14 +200,7 @@ export const publicProfilesService = {
       // Fallback
     }
 
-    const demoFound = DEMO_PUBLIC_ADVERTISERS.find(
-      (p) =>
-        (p.slug === slug || p.slug.includes(slug)) &&
-        p.state_slug?.toLowerCase() === stateSlug.toLowerCase() &&
-        p.city_slug?.toLowerCase() === citySlug.toLowerCase()
-    );
-
-    return demoFound || null;
+    return null;
   },
 
   async getRecommendedAdvertisers(limit = 6): Promise<PublicAdvertiser[]> {
