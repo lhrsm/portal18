@@ -14,77 +14,93 @@ import {
   Sparkles, 
   Navigation, 
   Tag, 
-  ShieldCheck, 
   Megaphone, 
-  ChevronRight,
-  Flame
+  ChevronRight
 } from 'lucide-react';
 
 interface CityPageProps {
-  params: {
+  params: Promise<{
+    estado: string;
+    cidade: string;
+  }> | {
     estado: string;
     cidade: string;
   };
-  searchParams?: {
+  searchParams?: Promise<{
+    bairro?: string;
+    categoria?: string;
+  }> | {
     bairro?: string;
     categoria?: string;
   };
 }
 
 export async function generateMetadata({ params }: CityPageProps): Promise<Metadata> {
+  const resolvedParams = await Promise.resolve(params);
+  const estadoParam = resolvedParams?.estado ? String(resolvedParams.estado).toLowerCase() : '';
+  const cidadeParam = resolvedParams?.cidade ? String(resolvedParams.cidade).toLowerCase() : '';
+
   const states = await locationService.getStates();
-  const state = states.find((s) => s.slug === params.estado.toLowerCase() || s.code.toLowerCase() === params.estado.toLowerCase());
+  const state = states.find((s) => s.slug === estadoParam || s.code.toLowerCase() === estadoParam);
 
   if (!state) {
     return { title: 'Localização não encontrada | Portal 18+' };
   }
 
-  const formattedCity = params.cidade.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const formattedCity = cidadeParam.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
   return {
     title: `Acompanhantes em ${formattedCity}, ${state.code} | Portal 18+`,
     description: `Descubra acompanhantes e profissionais independentes em ${formattedCity}, ${state.name}. Fotos moderadas, maioridade estrita e contatos diretos.`,
     alternates: {
-      canonical: `/acompanhantes/${state.slug}/${params.cidade.toLowerCase()}`,
+      canonical: `/acompanhantes/${state.slug}/${cidadeParam}`,
     },
   };
 }
 
 export default async function CityDirectoryPage({ params, searchParams }: CityPageProps) {
+  const resolvedParams = await Promise.resolve(params);
+  const resolvedSearchParams = await Promise.resolve(searchParams);
+
+  const estadoParam = resolvedParams?.estado ? String(resolvedParams.estado).toLowerCase() : '';
+  const cidadeParam = resolvedParams?.cidade ? String(resolvedParams.cidade).toLowerCase() : '';
+  const bairroParam = resolvedSearchParams?.bairro ? String(resolvedSearchParams.bairro) : undefined;
+  const categoriaParam = resolvedSearchParams?.categoria ? String(resolvedSearchParams.categoria) : undefined;
+
   const states = await locationService.getStates();
-  const state = states.find((s) => s.slug === params.estado.toLowerCase() || s.code.toLowerCase() === params.estado.toLowerCase());
+  const state = states.find((s) => s.slug === estadoParam || s.code.toLowerCase() === estadoParam);
 
   if (!state) {
     notFound();
   }
 
   const cities = await locationService.getCitiesByState(state.id);
-  const currentCity = cities.find((c) => c.slug === params.cidade.toLowerCase());
+  const currentCity = cities.find((c) => c.slug === cidadeParam || c.name.toLowerCase() === cidadeParam);
 
   const [profilesRes, categories, nearbyCities] = await Promise.all([
     publicProfilesService.getPublicAdvertisers({
       state: state.slug,
-      city: params.cidade,
-      category: searchParams?.categoria,
+      city: cidadeParam,
+      category: categoriaParam,
       limit: 36,
     }),
     locationService.getCategories(),
-    currentCity ? searchService.getNearbyCities(currentCity.id, 60) : Promise.resolve([]),
+    currentCity ? searchService.getNearbyCities(currentCity.id, 60).catch(() => []) : Promise.resolve([]),
   ]);
 
-  let profiles = profilesRes.data;
+  let profiles = profilesRes?.data || [];
 
   // Filter by neighborhood if parameter present
-  if (searchParams?.bairro) {
-    const b = searchParams.bairro.toLowerCase();
+  if (bairroParam) {
+    const b = bairroParam.toLowerCase();
     profiles = profiles.filter((p) => p.neighborhood && p.neighborhood.toLowerCase() === b);
   }
 
-  const cityName = currentCity?.name || params.cidade.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  const otherNearby = nearbyCities.filter((nc) => nc.city_slug !== params.cidade.toLowerCase() && nc.active_advertisers_count > 0);
+  const cityName = currentCity?.name || cidadeParam.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const otherNearby = (nearbyCities || []).filter((nc) => nc.city_slug !== cidadeParam && nc.active_advertisers_count > 0);
 
   // Extract distinct neighborhoods from current city profiles
-  const allCityProfiles = profilesRes.data;
+  const allCityProfiles = profilesRes?.data || [];
   const distinctNeighborhoods = Array.from(
     new Set(allCityProfiles.map((p) => p.neighborhood).filter(Boolean) as string[])
   ).sort();
@@ -98,10 +114,10 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
         <Link href={`/acompanhantes/${state.slug}`} style={{ color: 'var(--text-secondary)' }}>{state.name}</Link>
         <ChevronRight size={12} />
         <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>{cityName}</span>
-        {searchParams?.bairro && (
+        {bairroParam && (
           <>
             <ChevronRight size={12} />
-            <span style={{ color: 'var(--text-primary)' }}>{searchParams.bairro}</span>
+            <span style={{ color: 'var(--text-primary)' }}>{bairroParam}</span>
           </>
         )}
       </nav>
@@ -121,7 +137,7 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
         </p>
       </div>
 
-      {/* 3. NEIGHBORHOOD CHIPS (Bairros de Salvador e cidades principais) */}
+      {/* 3. NEIGHBORHOOD CHIPS (Bairros da cidade) */}
       {distinctNeighborhoods.length > 0 && (
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -130,18 +146,18 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
           <div className="filter-chips-wrapper">
             <div className="filter-chips-container">
               <Link
-                href={`/acompanhantes/${state.slug}/${params.cidade}`}
-                className={`filter-chip-item ${!searchParams?.bairro ? 'active' : ''}`}
+                href={`/acompanhantes/${state.slug}/${cidadeParam}`}
+                className={`filter-chip-item ${!bairroParam ? 'active' : ''}`}
               >
                 Todos os bairros ({allCityProfiles.length})
               </Link>
               {distinctNeighborhoods.map((bairro) => {
                 const count = allCityProfiles.filter((p) => p.neighborhood === bairro).length;
-                const isActive = searchParams?.bairro?.toLowerCase() === bairro.toLowerCase();
+                const isActive = bairroParam?.toLowerCase() === bairro.toLowerCase();
                 return (
                   <Link
                     key={bairro}
-                    href={`/acompanhantes/${state.slug}/${params.cidade}?bairro=${encodeURIComponent(bairro)}`}
+                    href={`/acompanhantes/${state.slug}/${cidadeParam}?bairro=${encodeURIComponent(bairro)}`}
                     className={`filter-chip-item ${isActive ? 'active' : ''}`}
                   >
                     {bairro} ({count})
@@ -158,17 +174,17 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
         <div className="filter-chips-wrapper">
           <div className="filter-chips-container">
             <Link
-              href={`/acompanhantes/${state.slug}/${params.cidade}`}
-              className={`filter-chip-item ${!searchParams?.categoria ? 'active' : ''}`}
+              href={`/acompanhantes/${state.slug}/${cidadeParam}`}
+              className={`filter-chip-item ${!categoriaParam ? 'active' : ''}`}
             >
               <Tag size={12} /> Todas as categorias
             </Link>
             {categories.map((cat) => {
-              const isActive = searchParams?.categoria === cat.slug;
+              const isActive = categoriaParam === cat.slug;
               return (
                 <Link
                   key={cat.id}
-                  href={`/acompanhantes/${state.slug}/${params.cidade}?categoria=${cat.slug}`}
+                  href={`/acompanhantes/${state.slug}/${cidadeParam}?categoria=${cat.slug}`}
                   className={`filter-chip-item ${isActive ? 'active' : ''}`}
                 >
                   {cat.name}
@@ -188,7 +204,7 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
               Experimente remover os filtros de bairro ou categoria para ver todos os perfis em {cityName}.
             </p>
-            <Link href={`/acompanhantes/${state.slug}/${params.cidade}`}>
+            <Link href={`/acompanhantes/${state.slug}/${cidadeParam}`}>
               <Button variant="secondary">Ver todos em {cityName}</Button>
             </Link>
           </Card>

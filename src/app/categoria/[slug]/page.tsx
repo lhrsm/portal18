@@ -11,14 +11,19 @@ import { Button } from '@/components/ui/Button';
 import { Tag, Sparkles } from 'lucide-react';
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
+    slug: string;
+  }> | {
     slug: string;
   };
 }
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+  const resolvedParams = await Promise.resolve(params);
+  const categorySlug = resolvedParams?.slug ? String(resolvedParams.slug).toLowerCase() : '';
+
   const categories = await locationService.getCategories();
-  const category = categories.find((c) => c.slug === params.slug.toLowerCase());
+  const category = categories.find((c) => c.slug === categorySlug);
 
   if (!category) {
     return { title: 'Categoria não encontrada | Portal 18+' };
@@ -34,8 +39,11 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
+  const resolvedParams = await Promise.resolve(params);
+  const categorySlug = resolvedParams?.slug ? String(resolvedParams.slug).toLowerCase() : '';
+
   const categories = await locationService.getCategories();
-  const category = categories.find((c) => c.slug === params.slug.toLowerCase());
+  const category = categories.find((c) => c.slug === categorySlug);
 
   if (!category) {
     notFound();
@@ -46,7 +54,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     limit: 30,
   });
 
-  const profiles = profilesRes.data;
+  const profiles = profilesRes?.data || [];
 
   return (
     <div className="container" style={{ padding: '3rem 1rem 5rem 1rem' }}>
@@ -61,29 +69,29 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
       {/* Header */}
       <div style={{ marginBottom: '2.5rem' }}>
-        <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.5rem' }}>
-          <Badge variant="gold">CATEGORIA</Badge>
-          <Badge variant="neutral">{profiles.length} {profiles.length === 1 ? 'perfil' : 'perfis'}</Badge>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
+          <Badge variant="ruby"><Tag size={12} /> CATEGORIA</Badge>
+          <Badge variant="neutral">{profiles.length} profissionais</Badge>
         </div>
-        <h1 style={{ fontSize: '2.4rem', marginBottom: '0.5rem' }}>{category.name}</h1>
-        {category.description && (
-          <p style={{ color: 'var(--text-secondary)', maxWidth: '640px' }}>
-            {category.description}
-          </p>
-        )}
+        <h1 style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 800, marginBottom: '0.5rem' }}>
+          {category.name}
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '720px', lineHeight: 1.6 }}>
+          {category.description || `Encontre os melhores anúncios de ${category.name} com total privacidade, maioridade verificada e contato direto via WhatsApp.`}
+        </p>
       </div>
 
       {/* Profiles Grid */}
-      <div>
+      <div style={{ marginBottom: '3.5rem' }}>
         {profiles.length === 0 ? (
           <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
             <Sparkles size={40} color="var(--accent-gold)" style={{ margin: '0 auto 1rem auto' }} />
-            <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>Nenhum perfil ativo nesta categoria no momento</h3>
+            <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>Nenhum anúncio nesta categoria ainda</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              Seja o(a) primeiro(a) anunciante a divulgar nesta categoria.
+              Seja a primeira profissional a anunciar na categoria {category.name}.
             </p>
             <Link href="/advertiser/start">
-              <Button variant="ruby">Anunciar nesta Categoria</Button>
+              <Button variant="primary">Criar Meu Anúncio</Button>
             </Link>
           </Card>
         ) : (

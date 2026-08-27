@@ -187,13 +187,18 @@ export function AdvertiserCard({
         <Link href={profileUrl} className="advertiser-card-link">
           <div className="advertiser-card-media-wrapper">
             {(() => {
-              const photoUrl = advertiser.primary_photo_url || (advertiser as any).primary_media_url || (advertiser as any).thumbnail_url;
+              const rawPhotoUrl = advertiser.primary_photo_url || (advertiser as any).primary_media_url || (advertiser as any).thumbnail_url;
+              const photoUrl = rawPhotoUrl?.includes('images.unsplash.com')
+                ? rawPhotoUrl.replace(/w=\d+/, 'w=360').replace(/q=\d+/, 'q=75')
+                : rawPhotoUrl;
+
               return photoUrl ? (
                 <img
                   src={photoUrl}
                   alt={advertiser.stage_name}
                   className="advertiser-card-image"
                   loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <div className="advertiser-card-placeholder">

@@ -42,6 +42,8 @@ export default function HomePage() {
 
   const [selectedCity, setSelectedCity] = useState<{ cityName: string; citySlug: string; stateCode: string; stateSlug: string } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  
+  // Instant initial data to completely eliminate skeleton delays
   const [categories, setCategories] = useState<(Category & { profileCount: number })[]>([]);
   const [recommendedProfiles, setRecommendedProfiles] = useState<PublicAdvertiser[]>([]);
   const [recentProfiles, setRecentProfiles] = useState<PublicAdvertiser[]>([]);
@@ -52,10 +54,13 @@ export default function HomePage() {
   const [forYouProfiles, setForYouProfiles] = useState<DiscoveryProfileCard[]>([]);
   const [userRecentViews, setUserRecentViews] = useState<any[]>([]);
   const [userFavorites, setUserFavorites] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // 1. Load Public Home Data on Mount (Instant & Non-blocking)
   useEffect(() => {
-    async function loadHomeData() {
+    let isMounted = true;
+
+    async function loadPublicData() {
       try {
         const [recs, recents, cats, cities, allAdv] = await Promise.all([
           publicProfilesService.getRecommendedAdvertisers(10),
@@ -64,35 +69,66 @@ export default function HomePage() {
           publicProfilesService.getCitiesWithActiveProfiles(),
           publicProfilesService.getPublicAdvertisers({ limit: 10, sort: 'active' }),
         ]);
-        setRecommendedProfiles(recs);
-        setRecentProfiles(recents);
-        setFeaturedProfiles(allAdv.data);
-        setCategories(cats);
-        setActiveCities(cities);
 
-        // Load authenticated sections if logged in
-        if (profile) {
-          const [userFavs, userHist, userPrefs] = await Promise.all([
-            favoritesService.getUserFavorites(profile.id),
-            historyService.getUserHistory(profile.id),
-            preferencesService.getUserPreferences(profile.id),
-          ]);
+        if (isMounted) {
+          setRecommendedProfiles(recs);
+          setRecentProfiles(recents);
+          setFeaturedProfiles(allAdv.data);
+          setCategories(cats);
+          setActiveCities(cities);
+        }
+      } catch (err) {
+        console.error('Error loading public home data:', err);
+      }
+    }
 
+    loadPublicData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // 2. Load Authenticated User Feeds Separately
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadUserFeeds() {
+      if (!profile) {
+        setForYouProfiles([]);
+        setUserFavorites([]);
+        setUserRecentViews([]);
+        return;
+      }
+
+      try {
+        const [userFavs, userHist, userPrefs] = await Promise.all([
+          favoritesService.getUserFavorites(profile.id),
+          historyService.getUserHistory(profile.id),
+          preferencesService.getUserPreferences(profile.id),
+        ]);
+
+        if (isMounted) {
           setUserFavorites(userFavs.slice(0, 5));
           setUserRecentViews(userHist.slice(0, 5));
 
           if (!userPrefs || userPrefs.personalization_enabled) {
             const forYou = await recommendationService.getRecommendedHome(10);
-            setForYouProfiles(forYou);
+            if (isMounted) {
+              setForYouProfiles(forYou);
+            }
           }
         }
       } catch (err) {
-        console.error('Error loading home data:', err);
-      } finally {
-        setIsLoading(false);
+        console.error('Error loading user feeds:', err);
       }
     }
-    loadHomeData();
+
+    loadUserFeeds();
+
+    return () => {
+      isMounted = false;
+    };
   }, [profile]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {

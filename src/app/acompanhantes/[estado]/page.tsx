@@ -11,14 +11,19 @@ import { Button } from '@/components/ui/Button';
 import { MapPin, Sparkles, ArrowRight } from 'lucide-react';
 
 interface StatePageProps {
-  params: {
+  params: Promise<{
+    estado: string;
+  }> | {
     estado: string;
   };
 }
 
 export async function generateMetadata({ params }: StatePageProps): Promise<Metadata> {
+  const resolvedParams = await Promise.resolve(params);
+  const estadoParam = resolvedParams?.estado ? String(resolvedParams.estado).toLowerCase() : '';
+
   const states = await locationService.getStates();
-  const state = states.find((s) => s.slug === params.estado.toLowerCase() || s.code.toLowerCase() === params.estado.toLowerCase());
+  const state = states.find((s) => s.slug === estadoParam || s.code.toLowerCase() === estadoParam);
 
   if (!state) {
     return { title: 'Estado não encontrado | Portal 18+' };
@@ -34,8 +39,11 @@ export async function generateMetadata({ params }: StatePageProps): Promise<Meta
 }
 
 export default async function StateDirectoryPage({ params }: StatePageProps) {
+  const resolvedParams = await Promise.resolve(params);
+  const estadoParam = resolvedParams?.estado ? String(resolvedParams.estado).toLowerCase() : '';
+
   const states = await locationService.getStates();
-  const state = states.find((s) => s.slug === params.estado.toLowerCase() || s.code.toLowerCase() === params.estado.toLowerCase());
+  const state = states.find((s) => s.slug === estadoParam || s.code.toLowerCase() === estadoParam);
 
   if (!state) {
     notFound();
@@ -46,7 +54,7 @@ export default async function StateDirectoryPage({ params }: StatePageProps) {
     locationService.getCitiesByState(state.id),
   ]);
 
-  const profiles = profilesRes.data;
+  const profiles = profilesRes?.data || [];
 
   return (
     <div className="container" style={{ padding: '3rem 1rem 5rem 1rem' }}>
@@ -61,43 +69,34 @@ export default async function StateDirectoryPage({ params }: StatePageProps) {
 
       {/* Header */}
       <div style={{ marginBottom: '2.5rem' }}>
-        <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.5rem' }}>
-          <Badge variant="gold">ESTADO DE {state.code}</Badge>
-          <Badge variant="neutral">{profiles.length} {profiles.length === 1 ? 'perfil ativo' : 'perfis ativos'}</Badge>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
+          <Badge variant="gold">{state.name.toUpperCase()} ({state.code})</Badge>
+          <Badge variant="neutral">{profiles.length} anunciantes</Badge>
         </div>
-        <h1 style={{ fontSize: '2.4rem', marginBottom: '0.5rem' }}>Acompanhantes em {state.name}</h1>
-        <p style={{ color: 'var(--text-secondary)', maxWidth: '640px' }}>
-          Explore anúncios de profissionais independentes com fotos verificadas e atendimento no estado de {state.name}.
+        <h1 style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 800, marginBottom: '0.5rem' }}>
+          Acompanhantes em {state.name}
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '720px', lineHeight: 1.6 }}>
+          Explore anunciantes e acompanhantes independentes no estado de {state.name}. Escolha sua cidade para refinar a busca com total sigilo.
         </p>
       </div>
 
-      {/* Cities in this state */}
+      {/* Cities Selector */}
       {citiesData.length > 0 && (
         <div style={{ marginBottom: '3rem' }}>
-          <h2 style={{ fontSize: '1.35rem', marginBottom: '1rem' }}>Cidades em {state.name}</h2>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
-            {citiesData.slice(0, 15).map((city) => (
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <MapPin size={18} color="var(--accent-gold)" /> Cidades em {state.name}
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' }}>
+            {citiesData.map((city) => (
               <Link
                 key={city.id}
                 href={`/acompanhantes/${state.slug}/${city.slug}`}
-                style={{ textDecoration: 'none' }}
+                className="discovery-pill-card"
+                style={{ justifyContent: 'space-between', padding: '0.75rem 1rem' }}
               >
-                <div
-                  style={{
-                    padding: '0.5rem 0.9rem',
-                    background: 'var(--bg-tertiary)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-subtle)',
-                    fontSize: '0.85rem',
-                    color: 'var(--text-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                  }}
-                >
-                  <MapPin size={12} color="var(--accent-gold)" />
-                  <span>{city.name}</span>
-                </div>
+                <span>{city.name}</span>
+                <ArrowRight size={14} color="var(--text-muted)" />
               </Link>
             ))}
           </div>
@@ -105,18 +104,19 @@ export default async function StateDirectoryPage({ params }: StatePageProps) {
       )}
 
       {/* Profiles Grid */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.25rem' }}>Todos os Perfis em {state.name}</h2>
-
+      <div style={{ marginBottom: '3.5rem' }}>
+        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '1.25rem' }}>
+          Anúncios recentes em {state.name}
+        </h2>
         {profiles.length === 0 ? (
           <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
             <Sparkles size={40} color="var(--accent-gold)" style={{ margin: '0 auto 1rem auto' }} />
-            <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>Nenhum perfil ativo neste estado no momento</h3>
+            <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>Nenhum anúncio cadastrado neste estado</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              Seja o primeiro(a) anunciante a se cadastrar em {state.name}.
+              Seja o primeiro a anunciar seus serviços profissionais em {state.name}.
             </p>
             <Link href="/advertiser/start">
-              <Button variant="ruby">Quero Anunciar em {state.name}</Button>
+              <Button variant="primary">Criar Meu Anúncio</Button>
             </Link>
           </Card>
         ) : (

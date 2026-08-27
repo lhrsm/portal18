@@ -157,6 +157,41 @@ export async function runCompetitiveUXVerification(): Promise<UXCheckResult[]> {
     details: `SSA: ${salvadorAdv.data.length}, SP: ${spAdv.data.length}, RJ: ${rjAdv.data.length}, Verif: ${verifiedAdv.data.length}, Massagistas: ${massagistasAdv.data.length}, VIP: ${executivasAdv.data.length}`,
   });
 
+  // 9. CITY DIRECTORY MULTI-REGION RUNTIME RESOLUTION (Phase 24D)
+  const [rjCityRes, spCityRes, ssaCityRes] = await Promise.all([
+    publicProfilesService.getPublicAdvertisers({ state: 'rio-de-janeiro', city: 'rio-de-janeiro', limit: 30 }),
+    publicProfilesService.getPublicAdvertisers({ state: 'sao-paulo', city: 'sao-paulo', limit: 30 }),
+    publicProfilesService.getPublicAdvertisers({ state: 'bahia', city: 'salvador', limit: 30 }),
+  ]);
+
+  const cityRoutesPass = rjCityRes.data.length === 8 && spCityRes.data.length === 10 && ssaCityRes.data.length === 24;
+
+  results.push({
+    id: 'UX-CITY-ROUTES-01',
+    category: 'CITY DIRECTORY 24D',
+    name: 'Multi-city route profile counts (RJ, SP, Salvador)',
+    expected: 'RJ: 8 profiles, SP: 10 profiles, SSA: 24 profiles',
+    passed: cityRoutesPass,
+    details: `RJ: ${rjCityRes.data.length}, SP: ${spCityRes.data.length}, SSA: ${ssaCityRes.data.length}`,
+  });
+
+  // 10. CATEGORY DIRECTORY RUNTIME RESOLUTION (Phase 24D)
+  const [massagistasRes, executivasRes] = await Promise.all([
+    publicProfilesService.getPublicAdvertisers({ category: 'massagistas', limit: 30 }),
+    publicProfilesService.getPublicAdvertisers({ category: 'executivas-vip', limit: 30 }),
+  ]);
+
+  const catRoutesPass = massagistasRes.data.length >= 10 && executivasRes.data.length >= 10;
+
+  results.push({
+    id: 'UX-CATEGORY-ROUTES-01',
+    category: 'CATEGORY DIRECTORY 24D',
+    name: 'Canonical category route profile populations',
+    expected: 'Massagistas >= 10 profiles, Executivas VIP >= 10 profiles',
+    passed: catRoutesPass,
+    details: `Massagistas: ${massagistasRes.data.length}, Executivas VIP: ${executivasRes.data.length}`,
+  });
+
   return results;
 }
 
