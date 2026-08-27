@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
+import { GoogleButton } from '@/components/auth/GoogleButton';
 import { useToast } from '@/hooks/useToast';
 import { Mail, Lock, LogIn } from 'lucide-react';
 
@@ -24,6 +25,8 @@ export function LoginForm() {
 
   // Synchronous lock against double submit
   const isSubmittingRef = useRef(false);
+
+  const redirectTo = searchParams.get('redirect_to') || '/account';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +58,7 @@ export function LoginForm() {
       });
 
       if (error) {
-        // Generic error message preventing account enumeration (Section 13)
+        // Generic error message preventing account enumeration
         setServerError('E-mail ou senha inválidos.');
         return;
       }
@@ -67,7 +70,6 @@ export function LoginForm() {
           message: 'Sessão iniciada com segurança.',
         });
 
-        const redirectTo = searchParams.get('redirect_to') || '/account';
         router.push(redirectTo);
         router.refresh();
       }
@@ -81,65 +83,100 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-      {serverError && (
-        <Alert type="error" title="Acesso negado">
-          {serverError}
-        </Alert>
-      )}
-
-      <FormField label="E-mail" required error={errors.email}>
-        <Input
-          type="email"
-          placeholder="seuemail@exemplo.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          error={!!errors.email}
-          leftIcon={<Mail size={18} />}
-          autoComplete="email"
+    <div style={{ width: '100%' }}>
+      {/* 1. GOOGLE OAUTH PRIMARY ACTION */}
+      <div style={{ marginBottom: '1.25rem' }}>
+        <GoogleButton
+          intent="user"
+          nextRoute={redirectTo}
+          label="Continuar com Google"
           disabled={isLoading}
-          required
         />
-      </FormField>
-
-      <FormField label="Senha" required error={errors.password}>
-        <Input
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          error={!!errors.password}
-          leftIcon={<Lock size={18} />}
-          autoComplete="current-password"
-          disabled={isLoading}
-          required
-        />
-      </FormField>
-
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.25rem' }}>
-        <Link href="/forgot-password" style={{ fontSize: '0.85rem', color: 'var(--accent-gold)' }}>
-          Esqueci minha senha
-        </Link>
       </div>
 
-      <Button
-        type="submit"
-        variant="primary"
-        fullWidth
-        size="lg"
-        isLoading={isLoading}
-        disabled={isLoading}
-        leftIcon={<LogIn size={18} />}
+      {/* 2. DIVIDER */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          margin: '1.25rem 0',
+          color: 'var(--text-muted)',
+          fontSize: '0.8rem',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+        }}
       >
-        Entrar
-      </Button>
-
-      <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-        Ainda não tem conta?{' '}
-        <Link href="/register" style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>
-          Criar conta
-        </Link>
+        <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+        <span>ou com e-mail</span>
+        <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
       </div>
-    </form>
+
+      {/* 3. EMAIL/PASSWORD FORM */}
+      <form onSubmit={handleSubmit} noValidate>
+        {serverError && (
+          <Alert type="error" title="Acesso negado">
+            {serverError}
+          </Alert>
+        )}
+
+        <FormField label="E-mail" required error={errors.email}>
+          <Input
+            type="email"
+            placeholder="seuemail@exemplo.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={!!errors.email}
+            leftIcon={<Mail size={18} />}
+            autoComplete="email"
+            inputMode="email"
+            disabled={isLoading}
+            required
+          />
+        </FormField>
+
+        <FormField label="Senha" required error={errors.password}>
+          <Input
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={!!errors.password}
+            leftIcon={<Lock size={18} />}
+            autoComplete="current-password"
+            disabled={isLoading}
+            required
+          />
+        </FormField>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.25rem' }}>
+          <Link
+            href="/forgot-password"
+            style={{ fontSize: '0.85rem', color: 'var(--accent-gold)', textDecoration: 'none' }}
+          >
+            Esqueci minha senha
+          </Link>
+        </div>
+
+        <Button
+          type="submit"
+          variant="primary"
+          fullWidth
+          size="lg"
+          isLoading={isLoading}
+          disabled={isLoading}
+          leftIcon={<LogIn size={18} />}
+        >
+          Entrar
+        </Button>
+
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          Ainda não tem conta?{' '}
+          <Link href="/register" style={{ color: 'var(--accent-gold)', fontWeight: 600, textDecoration: 'none' }}>
+            Criar conta
+          </Link>
+        </div>
+      </form>
+    </div>
   );
 }

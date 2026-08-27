@@ -1,22 +1,29 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { RegisterSchema } from '@/lib/validation/auth';
 import { consentService } from '@/services/consentService';
+import { advertisersService } from '@/services/advertisersService';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
 import { PasswordStrength } from '@/components/ui/PasswordStrength';
+import { GoogleButton } from '@/components/auth/GoogleButton';
 import { useToast } from '@/hooks/useToast';
-import { Mail, Lock, User, Sparkles } from 'lucide-react';
+import { Mail, Lock, User, Sparkles, Megaphone, Heart, ShieldCheck } from 'lucide-react';
 
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
+
+  const initialType = searchParams.get('type') === 'advertiser' ? 'advertiser' : 'user';
+  const [accountType, setAccountType] = useState<'user' | 'advertiser'>(initialType);
+
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -64,6 +71,9 @@ export function RegisterForm() {
 
     try {
       const supabase = createClient();
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const redirectUrl = `${origin}/auth/callback?intent=${accountType}&next=${accountType === 'advertiser' ? '/advertiser/onboarding' : '/account'}`;
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -71,7 +81,7 @@ export function RegisterForm() {
           data: {
             display_name: displayName,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: redirectUrl,
         },
       });
 
@@ -97,17 +107,24 @@ export function RegisterForm() {
           ]);
         }
 
+        // If registering as advertiser, convert account via RPC
+        if (accountType === 'advertiser') {
+          await advertisersService.becomeAdvertiser(true, true).catch(() => {});
+        }
+
         showToast({
           type: 'success',
-          title: 'Cadastro realizado!',
-          message: 'Sua conta foi criada com sucesso.',
+          title: 'Cadastro realizado com sucesso!',
+          message: accountType === 'advertiser' ? 'Bem-vindo(a)! Configurando seu anúncio...' : 'Sua conta foi criada com sucesso.',
         });
 
-        setSuccessMessage('Conta criada com sucesso! Redirecionando para sua conta...');
+        const targetDestination = accountType === 'advertiser' ? '/advertiser/onboarding' : '/account';
+        setSuccessMessage('Conta criada com sucesso! Redirecionando...');
+        
         setTimeout(() => {
-          router.push('/account');
+          router.push(targetDestination);
           router.refresh();
-        }, 1000);
+        }, 800);
       }
     } catch (err) {
       setServerError('Ocorreu um erro inesperado durante o cadastro. Tente novamente.');
@@ -119,124 +136,259 @@ export function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-      {serverError && (
-        <Alert type="error" title="Erro no cadastro">
-          {serverError}
-        </Alert>
-      )}
-
-      {successMessage && (
-        <Alert type="success" title="Sucesso">
-          {successMessage}
-        </Alert>
-      )}
-
-      <FormField label="Nome de Exibição" required error={errors.displayName}>
-        <Input
-          type="text"
-          placeholder="Ex: Carlos ou Sofia"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          error={!!errors.displayName}
-          leftIcon={<User size={18} />}
-          disabled={isLoading}
-          required
-        />
-      </FormField>
-
-      <FormField label="E-mail" required error={errors.email}>
-        <Input
-          type="email"
-          placeholder="seuemail@exemplo.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          error={!!errors.email}
-          leftIcon={<Mail size={18} />}
-          autoComplete="email"
-          disabled={isLoading}
-          required
-        />
-      </FormField>
-
-      <FormField label="Senha" required error={errors.password}>
-        <Input
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          error={!!errors.password}
-          leftIcon={<Lock size={18} />}
-          autoComplete="new-password"
-          disabled={isLoading}
-          required
-        />
-        <PasswordStrength password={password} />
-      </FormField>
-
-      <FormField label="Confirmar Senha" required error={errors.confirmPassword}>
-        <Input
-          type="password"
-          placeholder="••••••••"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          error={!!errors.confirmPassword}
-          leftIcon={<Lock size={18} />}
-          autoComplete="new-password"
-          disabled={isLoading}
-          required
-        />
-      </FormField>
-
-      {/* Mandatory Checkboxes */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', margin: '1.25rem 0' }}>
-        <label className="checkbox-field">
-          <input
-            type="checkbox"
-            className="checkbox-input"
-            checked={isAdult}
-            onChange={(e) => setIsAdult(e.target.checked)}
-            disabled={isLoading}
-          />
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Confirmo que tenho <strong>18 anos ou mais</strong>.
-          </span>
-        </label>
-        {errors.isAdult && <span className="form-error">⚠️ {errors.isAdult}</span>}
-
-        <label className="checkbox-field">
-          <input
-            type="checkbox"
-            className="checkbox-input"
-            checked={acceptTerms}
-            onChange={(e) => setAcceptTerms(e.target.checked)}
-            disabled={isLoading}
-          />
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Li e aceito os <strong>Termos de Uso</strong> e a <strong>Política de Privacidade</strong>.
-          </span>
-        </label>
-        {errors.acceptTerms && <span className="form-error">⚠️ {errors.acceptTerms}</span>}
-      </div>
-
-      <Button
-        type="submit"
-        variant="primary"
-        fullWidth
-        size="lg"
-        isLoading={isLoading}
-        disabled={isLoading}
-        leftIcon={<Sparkles size={18} />}
+    <div style={{ width: '100%' }}>
+      {/* 1. TRACK SELECTOR (SEGMENTED CONTROL) */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '0.5rem',
+          padding: '0.35rem',
+          background: 'rgba(255, 255, 255, 0.04)',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border-subtle)',
+          marginBottom: '1.5rem',
+        }}
       >
-        Criar conta
-      </Button>
+        <button
+          type="button"
+          onClick={() => setAccountType('user')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.4rem',
+            padding: '0.65rem 0.5rem',
+            borderRadius: 'var(--radius-sm)',
+            border: 'none',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            background: accountType === 'user' ? 'var(--bg-secondary)' : 'transparent',
+            color: accountType === 'user' ? '#fff' : 'var(--text-muted)',
+            boxShadow: accountType === 'user' ? '0 2px 8px rgba(0,0,0,0.4)' : 'none',
+            transition: 'all var(--transition-fast)',
+          }}
+        >
+          <Heart size={15} color={accountType === 'user' ? 'var(--accent-ruby)' : 'currentColor'} />
+          <span>Quero Explorar</span>
+        </button>
 
-      <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-        Já possui uma conta?{' '}
-        <Link href="/login" style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>
-          Entrar
-        </Link>
+        <button
+          type="button"
+          onClick={() => setAccountType('advertiser')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.4rem',
+            padding: '0.65rem 0.5rem',
+            borderRadius: 'var(--radius-sm)',
+            border: 'none',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            background: accountType === 'advertiser' ? 'var(--bg-secondary)' : 'transparent',
+            color: accountType === 'advertiser' ? '#fff' : 'var(--text-muted)',
+            boxShadow: accountType === 'advertiser' ? '0 2px 8px rgba(0,0,0,0.4)' : 'none',
+            transition: 'all var(--transition-fast)',
+          }}
+        >
+          <Megaphone size={15} color={accountType === 'advertiser' ? 'var(--accent-gold)' : 'currentColor'} />
+          <span>Quero Anunciar</span>
+        </button>
       </div>
-    </form>
+
+      {/* Account Type Description Badge */}
+      <div
+        style={{
+          padding: '0.75rem 0.85rem',
+          borderRadius: 'var(--radius-sm)',
+          background: accountType === 'advertiser' ? 'rgba(212, 175, 55, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+          borderLeft: accountType === 'advertiser' ? '3px solid var(--accent-gold)' : '3px solid var(--text-muted)',
+          fontSize: '0.8rem',
+          color: 'var(--text-secondary)',
+          lineHeight: 1.45,
+          marginBottom: '1.25rem',
+        }}
+      >
+        {accountType === 'advertiser' ? (
+          <div>
+            <strong style={{ color: 'var(--accent-gold)', display: 'block', marginBottom: '0.15rem' }}>Perfil Profissional 18+</strong>
+            Crie sua conta para divulgar fotos, contatos de atendimento e gerenciar seu anúncio.
+          </div>
+        ) : (
+          <div>
+            <strong style={{ color: '#fff', display: 'block', marginBottom: '0.15rem' }}>Conta Pessoal</strong>
+            Salve acompanhantes favoritos, organize listas e personalize sua busca com discrição.
+          </div>
+        )}
+      </div>
+
+      {/* 2. GOOGLE OAUTH ACTION */}
+      <div style={{ marginBottom: '1.25rem' }}>
+        <GoogleButton
+          intent={accountType}
+          nextRoute={accountType === 'advertiser' ? '/advertiser/onboarding' : '/account'}
+          label={accountType === 'advertiser' ? 'Criar conta profissional com Google' : 'Criar conta com Google'}
+          disabled={isLoading}
+        />
+      </div>
+
+      {/* 3. DIVIDER */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          margin: '1.25rem 0',
+          color: 'var(--text-muted)',
+          fontSize: '0.8rem',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+        }}
+      >
+        <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+        <span>ou com e-mail</span>
+        <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+      </div>
+
+      {/* 4. EMAIL/PASSWORD REGISTRATION FORM */}
+      <form onSubmit={handleSubmit} noValidate>
+        {serverError && (
+          <Alert type="error" title="Erro no cadastro">
+            {serverError}
+          </Alert>
+        )}
+
+        {successMessage && (
+          <Alert type="success" title="Sucesso">
+            {successMessage}
+          </Alert>
+        )}
+
+        <FormField label={accountType === 'advertiser' ? 'Nome Artístico / Profissional' : 'Nome de Exibição'} required error={errors.displayName}>
+          <Input
+            type="text"
+            placeholder={accountType === 'advertiser' ? 'Ex: Isabela Martins' : 'Ex: Carlos'}
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            error={!!errors.displayName}
+            leftIcon={<User size={18} />}
+            disabled={isLoading}
+            required
+          />
+        </FormField>
+
+        <FormField label="E-mail" required error={errors.email}>
+          <Input
+            type="email"
+            placeholder="seuemail@exemplo.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={!!errors.email}
+            leftIcon={<Mail size={18} />}
+            autoComplete="email"
+            inputMode="email"
+            disabled={isLoading}
+            required
+          />
+        </FormField>
+
+        <FormField label="Senha" required error={errors.password}>
+          <Input
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={!!errors.password}
+            leftIcon={<Lock size={18} />}
+            autoComplete="new-password"
+            disabled={isLoading}
+            required
+          />
+        </FormField>
+
+        {password && (
+          <div style={{ marginBottom: '1rem' }}>
+            <PasswordStrength password={password} />
+          </div>
+        )}
+
+        <FormField label="Confirmar Senha" required error={errors.confirmPassword}>
+          <Input
+            type="password"
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            error={!!errors.confirmPassword}
+            leftIcon={<Lock size={18} />}
+            autoComplete="new-password"
+            disabled={isLoading}
+            required
+          />
+        </FormField>
+
+        {/* Legal Consent Checkboxes */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', margin: '1.25rem 0' }}>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <input
+              type="checkbox"
+              checked={isAdult}
+              onChange={(e) => setIsAdult(e.target.checked)}
+              disabled={isLoading}
+              style={{ marginTop: '0.2rem', accentColor: 'var(--accent-gold)', width: '16px', height: '16px' }}
+              required
+            />
+            <span>
+              Declaro que sou <strong>maior de 18 anos</strong> de idade e civilmente capaz perante as leis brasileiras.
+            </span>
+          </label>
+          {errors.isAdult && <div style={{ color: 'var(--accent-ruby)', fontSize: '0.8rem' }}>{errors.isAdult}</div>}
+
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <input
+              type="checkbox"
+              checked={acceptTerms}
+              onChange={(e) => setAcceptTerms(e.target.checked)}
+              disabled={isLoading}
+              style={{ marginTop: '0.2rem', accentColor: 'var(--accent-gold)', width: '16px', height: '16px' }}
+              required
+            />
+            <span>
+              Li e concordo com os{' '}
+              <Link href="/trust/terms" target="_blank" style={{ color: 'var(--accent-gold)', textDecoration: 'underline' }}>
+                Termos de Uso
+              </Link>{' '}
+              e a{' '}
+              <Link href="/trust/privacy" target="_blank" style={{ color: 'var(--accent-gold)', textDecoration: 'underline' }}>
+                Política de Privacidade
+              </Link>
+              .
+            </span>
+          </label>
+          {errors.acceptTerms && <div style={{ color: 'var(--accent-ruby)', fontSize: '0.8rem' }}>{errors.acceptTerms}</div>}
+        </div>
+
+        <Button
+          type="submit"
+          variant="primary"
+          fullWidth
+          size="lg"
+          isLoading={isLoading}
+          disabled={isLoading}
+          leftIcon={<Sparkles size={18} />}
+        >
+          {accountType === 'advertiser' ? 'Criar Perfil de Anunciante' : 'Criar Minha Conta'}
+        </Button>
+
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          Já possui uma conta?{' '}
+          <Link href="/login" style={{ color: 'var(--accent-gold)', fontWeight: 600, textDecoration: 'none' }}>
+            Entrar
+          </Link>
+        </div>
+      </form>
+    </div>
   );
 }
