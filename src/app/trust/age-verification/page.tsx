@@ -54,9 +54,9 @@ export default function TrustAgeVerificationPage() {
 
         <Card variant="glass" padding="md" style={{ border: '1px solid var(--border-subtle)' }}>
           <UserCheck size={28} color="var(--accent-ruby)" style={{ marginBottom: '0.75rem' }} />
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.35rem' }}>Reutilização Inteligente</h3>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.35rem' }}>Reutilização de Credencial</h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 }}>
-            Em acessos futuros, seu provedor pode reconhecer sua credencial válida sem exigir novos processos se ainda estiver vigente.
+            Quando houver uma credencial válida emitida pelo provedor, a verificação poderá ser reutilizada conforme as regras operacionais vigentes.
           </p>
         </Card>
       </div>
@@ -89,10 +89,10 @@ export default function TrustAgeVerificationPage() {
 
         <Card variant="glass" padding="lg">
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.75rem' }}>
-            3. Como funciona a reutilização com Google no provedor?
+            3. Como funciona a reutilização de credenciais no provedor?
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.925rem', lineHeight: 1.6, margin: 0 }}>
-            Caso você já tenha verificado sua maioridade anteriormente junto ao provedor, ao selecionar a opção &ldquo;Já Sou Verificado&rdquo;, o provedor utiliza sua conta (como Google ou e-mail) para localizar sua credencial existente e liberar seu acesso instantaneamente, dispensando novas fotos enquanto sua credencial permanecer válida.
+            Caso você já tenha verificado sua maioridade anteriormente junto ao provedor credenciado, ao selecionar a opção &ldquo;Já Sou Verificado&rdquo;, o provedor utiliza seus métodos de autenticação de conta para localizar sua credencial existente e retornar a confirmação técnica de maioridade (18+), conforme as regras de vigência e segurança do provedor.
           </p>
         </Card>
 
