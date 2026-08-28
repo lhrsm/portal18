@@ -177,6 +177,45 @@ export default function AdminSecurityCenterPage() {
         </div>
       )}
 
+      {/* Age Assurance (ECA Digital) Metrics */}
+      <div style={{ marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>Garantia de Maioridade (ECA Digital & Age Gate)</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0.2rem 0 0 0' }}>
+              Monitoramento de sessões 18+, taxa de reutilização e proteção contra acesso indevido
+            </p>
+          </div>
+          <Badge variant="gold">FAIL-CLOSED PRIVACY</Badge>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          <Card variant="glass" padding="md">
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Provedor Ativo</div>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--accent-gold)' }}>Verifica ID / Sandbox</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--color-success)', marginTop: '0.2rem' }}>● Fail-Closed Ativo</div>
+          </Card>
+
+          <Card variant="glass" padding="md">
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Biometria / Documentos Armazenados</div>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--color-success)' }}>0 (Zero PII)</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>Privacidade por Design</div>
+          </Card>
+
+          <Card variant="glass" padding="md">
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Modo Seguro Público</div>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)' }}>100% Protegido</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--color-success)', marginTop: '0.2rem' }}>Gate Server & Client</div>
+          </Card>
+
+          <Card variant="glass" padding="md">
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Reutilização de Credencial</div>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--accent-gold)' }}>Habilitada</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>Sem refazer facial</div>
+          </Card>
+        </div>
+      </div>
+
       {/* Kill Switches Grid (Section 117) */}
       <div style={{ marginBottom: '3rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>

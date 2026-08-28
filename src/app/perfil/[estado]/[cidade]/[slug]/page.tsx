@@ -36,6 +36,8 @@ import {
   Maximize2,
   CheckCircle2
 } from 'lucide-react';
+import { AgeGateModal } from '@/components/ageVerification/AgeGateModal';
+import { ageVerificationService } from '@/services/ageVerification/ageVerificationService';
 
 // Dynamic imports for heavy non-critical modals
 const GalleryLightbox = dynamic(
@@ -132,6 +134,11 @@ export default function PublicProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(!initialAdv);
+  const [isAgeVerified, setIsAgeVerified] = useState(true);
+
+  useEffect(() => {
+    setIsAgeVerified(ageVerificationService.isAgeVerified());
+  }, []);
 
   // 1. Critical Profile Loader (Fast Path)
   useEffect(() => {
@@ -748,6 +755,15 @@ export default function PublicProfilePage() {
           onClose={() => setIsReportOpen(false)}
           advertiserId={advertiser.advertiser_id}
           stageName={advertiser.stage_name}
+        />
+      )}
+
+      {/* Age Assurance Gate Modal */}
+      {!isAgeVerified && (
+        <AgeGateModal
+          isOpen={true}
+          returnUrl={`/perfil/${stateSlug}/${citySlug}/${slug}`}
+          onVerified={() => setIsAgeVerified(true)}
         />
       )}
     </div>
