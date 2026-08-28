@@ -1,8 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { advertisersService } from '@/services/advertisersService';
+import { mediaService } from '@/services/mediaService';
+import { contactsService } from '@/services/contactsService';
+import { completenessService } from '@/services/completenessService';
+import { AdvertiserProfile, CompletenessResult } from '@/types/app.types';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -19,11 +24,37 @@ import {
   Sliders, 
   Shield, 
   Megaphone, 
-  ArrowRight 
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  Clock
 } from 'lucide-react';
 
 export default function AccountPage() {
   const { user, profile, roles, isLoading, isAdvertiser } = useAuth();
+  const [advertiser, setAdvertiser] = useState<AdvertiserProfile | null>(null);
+  const [completeness, setCompleteness] = useState<CompletenessResult | null>(null);
+
+  useEffect(() => {
+    async function loadAdvertiserStatus() {
+      if (profile && isAdvertiser) {
+        const adv = await advertisersService.getOwnAdvertiserProfile(profile.id);
+        if (adv) {
+          setAdvertiser(adv);
+          const [media, contacts, catIds] = await Promise.all([
+            mediaService.getAdvertiserMedia(adv.id),
+            contactsService.getContactsByAdvertiser(adv.id),
+            advertisersService.getAdvertiserCategoryIds(adv.id),
+          ]);
+          const comp = completenessService.calculateProfileCompleteness(adv, media, contacts, catIds.length);
+          setCompleteness(comp);
+        }
+      }
+    }
+    if (!isLoading) {
+      loadAdvertiserStatus();
+    }
+  }, [profile, isAdvertiser, isLoading]);
 
   if (isLoading) {
     return (
@@ -38,37 +69,80 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="container" style={{ padding: '3rem 1rem' }}>
+    <div className="container" style={{ padding: '3rem 1rem 5rem 1rem', maxWidth: '1020px' }}>
       {/* Top Header */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', gap: '1rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', gap: '1rem' }}>
         <div>
           <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.4rem' }}>
             <Badge variant="gold">ÁREA DO USUÁRIO</Badge>
             <Badge variant="neutral">{profile?.account_type || 'user'}</Badge>
           </div>
-          <h1 style={{ fontSize: '2.2rem' }}>Minha Conta</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Gerencie suas preferências, dados pessoais, listas e histórico privado</p>
+          <h1 style={{ fontSize: 'clamp(2rem, 3.5vw, 2.5rem)', fontWeight: 800, margin: 0 }}>
+            Minha Conta
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>
+            Gerencie suas preferências, dados pessoais, listas e histórico privado
+          </p>
         </div>
 
-        {!isAdvertiser && (
+        {!isAdvertiser ? (
           <Link href="/advertiser/start">
-            <Button variant="ruby" leftIcon={<Megaphone size={16} />}>
+            <Button variant="ruby" size="md" leftIcon={<Megaphone size={16} />}>
               Quero Anunciar
+            </Button>
+          </Link>
+        ) : (
+          <Link href="/advertiser">
+            <Button variant="primary" size="md" leftIcon={<Sparkles size={16} />}>
+              Painel do Anunciante
             </Button>
           </Link>
         )}
       </div>
 
+      {/* ADVERTISER ONBOARDING RESUME BANNER (If advertiser with draft or incomplete profile) */}
+      {isAdvertiser && advertiser && (advertiser.profile_status === 'draft' || !advertiser.onboarding_completed) && (
+        <Card
+          variant="glass"
+          padding="md"
+          style={{
+            border: '1px solid var(--accent-gold)',
+            background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%)',
+            marginBottom: '2rem',
+          }}
+        >
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1.25rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                <Clock size={18} color="var(--accent-gold)" />
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--accent-gold)' }}>
+                  Seu Perfil Profissional está em Configuração ({completeness?.score || 0}% completo)
+                </h3>
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0 }}>
+                {completeryMissingText(completeness)}
+              </p>
+            </div>
+
+            <Link href="/advertiser/onboarding">
+              <Button variant="ruby" size="sm" rightIcon={<ArrowRight size={14} />}>
+                Continuar Onboarding
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
       {/* Main Profile Summary Card */}
-      <Card variant="glass" padding="lg" style={{ marginBottom: '2rem' }}>
+      <Card variant="glass" padding="lg" style={{ marginBottom: '2rem', border: '1px solid var(--border-subtle)' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
             <Avatar src={profile?.avatar_path} fallback={profile?.display_name || user?.email || 'U'} size="xl" />
             <div>
-              <h2 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.2rem 0' }}>
                 {profile?.display_name || 'Usuário do Portal'}
               </h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{user?.email}</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>{user?.email}</p>
               <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.6rem' }}>
                 {roles.length > 0 ? (
                   roles.map((r, i) => (
@@ -97,11 +171,11 @@ export default function AccountPage() {
       {/* Section Cards Grid (Sections 3 & 4) */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
         {/* Card 1: Favoritos */}
-        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid var(--border-subtle)' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
               <Heart size={22} color="var(--accent-ruby)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Favoritos</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>Favoritos</h3>
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
               Acesse e gerencie seus anúncios salvos com remoção individual ou em lote.
@@ -115,11 +189,11 @@ export default function AccountPage() {
         </Card>
 
         {/* Card 2: Perfis Seguidos */}
-        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid var(--border-subtle)' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
               <Users size={22} color="var(--accent-gold)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Perfis Seguidos</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>Perfis Seguidos</h3>
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
               Acompanhe novidades, mídias recém-aprovadas e notificações de perfis que você segue.
@@ -133,11 +207,11 @@ export default function AccountPage() {
         </Card>
 
         {/* Card 3: Histórico de Visualizações */}
-        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid var(--border-subtle)' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
               <History size={22} color="var(--color-info)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Visualizados Recentemente</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>Visualizados Recentemente</h3>
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
               Consulte seu histórico de navegação privado, com opção de limpeza total ou exclusão individual.
@@ -151,11 +225,11 @@ export default function AccountPage() {
         </Card>
 
         {/* Card 4: Listas Personalizadas */}
-        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid var(--border-subtle)' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
               <ListFilter size={22} color="var(--accent-gold)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Listas</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>Listas</h3>
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
               Organize seus anúncios em coleções particulares como &quot;Viagem Salvador&quot; ou &quot;Quero ver depois&quot;.
@@ -169,11 +243,11 @@ export default function AccountPage() {
         </Card>
 
         {/* Card 5: Centro de Notificações */}
-        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid var(--border-subtle)' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
               <Bell size={22} color="var(--color-warning)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Notificações</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>Notificações</h3>
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
               Alertas de segurança, atualizações de perfis seguidos e comunicados da plataforma.
@@ -187,11 +261,11 @@ export default function AccountPage() {
         </Card>
 
         {/* Card 6: Preferências & Personalização */}
-        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid var(--border-subtle)' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
               <Sliders size={22} color="var(--color-info)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Preferências</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>Preferências</h3>
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
               Defina sua cidade padrão, filtros favoritos e personalize suas recomendações.
@@ -205,11 +279,11 @@ export default function AccountPage() {
         </Card>
 
         {/* Card 7: Privacidade & Bloqueios */}
-        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid var(--border-subtle)' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
               <Shield size={22} color="var(--color-success)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Privacidade</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>Privacidade</h3>
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
               Gerencie histórico de navegação, perfis bloqueados, consentimentos e exportação LGPD.
@@ -223,11 +297,11 @@ export default function AccountPage() {
         </Card>
 
         {/* Card 8: Segurança */}
-        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Card variant="glass" padding="lg" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid var(--border-subtle)' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
               <Key size={22} color="var(--color-info)" />
-              <h3 style={{ fontSize: '1.2rem' }}>Segurança</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>Segurança</h3>
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
               Altere sua senha de acesso, veja o status da sessão e criptografia.
@@ -242,4 +316,13 @@ export default function AccountPage() {
       </div>
     </div>
   );
+}
+
+function completeryMissingText(completeness: CompletenessResult | null): string {
+  if (!completeness || completeness.score === 0) return 'Complete as informações do seu anúncio para publicar.';
+  const pending = completeness.items.filter((i) => !i.completed);
+  if (pending.length > 0) {
+    return `Próximo passo: ${pending[0].label}.`;
+  }
+  return 'Seu perfil está pronto para envio para análise!';
 }

@@ -2,33 +2,28 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { advertisersService } from '@/services/advertisersService';
 import { mediaService } from '@/services/mediaService';
 import { contactsService } from '@/services/contactsService';
-import { AdvertiserProfile, AdvertiserMedia, AdvertiserContact } from '@/types/app.types';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { locationService } from '@/services/locationService';
+import { AdvertiserProfile, AdvertiserMedia, AdvertiserContact, Category, BrazilState, BrazilCity } from '@/types/app.types';
+import { OnboardingPreviewCard } from '@/components/advertiser/OnboardingPreviewCard';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  ShieldCheck, 
-  MapPin, 
-  Clock, 
-  Eye, 
-  ArrowLeft, 
-  Camera, 
-  Phone, 
-  Send, 
-  MessageCircle, 
-  Globe 
-} from 'lucide-react';
+import { ArrowLeft, Edit3, Send } from 'lucide-react';
 
 export default function AdvertiserProfilePreviewPage() {
+  const router = useRouter();
   const { profile, isLoading: authLoading } = useAuth();
   const [advertiser, setAdvertiser] = useState<AdvertiserProfile | null>(null);
   const [mediaList, setMediaList] = useState<AdvertiserMedia[]>([]);
   const [contacts, setContacts] = useState<AdvertiserContact[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [states, setStates] = useState<BrazilState[]>([]);
+  const [cities, setCities] = useState<BrazilCity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -37,12 +32,24 @@ export default function AdvertiserProfilePreviewPage() {
         const adv = await advertisersService.getOwnAdvertiserProfile(profile.id);
         if (adv) {
           setAdvertiser(adv);
-          const [media, advContacts] = await Promise.all([
+          const [media, advContacts, cats, catIds, statesData] = await Promise.all([
             mediaService.getAdvertiserMedia(adv.id),
             contactsService.getContactsByAdvertiser(adv.id),
+            locationService.getCategories(),
+            advertisersService.getAdvertiserCategoryIds(adv.id),
+            locationService.getStates(),
           ]);
+
           setMediaList(media);
           setContacts(advContacts);
+          setCategories(cats);
+          setSelectedCategoryIds(catIds);
+          setStates(statesData);
+
+          if (adv.state_id) {
+            const citiesData = await locationService.getCitiesByState(adv.state_id);
+            setCities(citiesData);
+          }
         }
       }
       setIsLoading(false);
@@ -54,106 +61,60 @@ export default function AdvertiserProfilePreviewPage() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="container" style={{ padding: '3rem 1rem' }}>
+      <div className="container" style={{ padding: '3rem 1rem', maxWidth: '840px' }}>
         <Skeleton height="3rem" width="300px" style={{ marginBottom: '1.5rem' }} />
-        <Skeleton height="400px" />
+        <Skeleton height="420px" />
       </div>
     );
   }
 
   if (!advertiser) {
     return (
-      <div className="container" style={{ padding: '4rem 1rem', textAlign: 'center' }}>
+      <div className="container" style={{ padding: '4rem 1rem', textAlign: 'center', maxWidth: '600px' }}>
         <h2>Perfil de anunciante não encontrado.</h2>
+        <p style={{ color: 'var(--text-secondary)', margin: '1rem 0' }}>
+          Você ainda não possui um cadastro de anunciante ativo.
+        </p>
         <Link href="/advertiser/start">
-          <Button variant="primary" style={{ marginTop: '1rem' }}>Criar Perfil</Button>
+          <Button variant="primary">Criar Perfil Profissional</Button>
         </Link>
       </div>
     );
   }
 
+  const selectedState = states.find((s) => s.id === advertiser.state_id);
+  const selectedCity = cities.find((c) => c.id === advertiser.city_id);
+
   return (
-    <div className="container" style={{ padding: '2.5rem 1rem 5rem 1rem' }}>
-      {/* Top Preview Banner */}
-      <div style={{ background: 'rgba(229, 185, 92, 0.15)', border: '1px solid var(--accent-gold)', borderRadius: 'var(--radius-md)', padding: '0.75rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Eye size={18} color="var(--accent-gold)" />
-          <span style={{ fontWeight: 600, color: 'var(--accent-gold)', fontSize: '0.9rem' }}>
-            Modo de Pré-visualização do Anunciante (Não público / Não indexável)
-          </span>
-        </div>
-        <Link href="/advertiser/onboarding">
-          <Button variant="secondary" size="sm">Editar no Onboarding</Button>
+    <div className="container" style={{ padding: '2.5rem 1rem 5rem 1rem', maxWidth: '840px' }}>
+      {/* Top Header Actions */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <Link href="/advertiser" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.9rem' }}>
+          <ArrowLeft size={16} /> Voltar ao Painel
         </Link>
-      </div>
 
-      <div className="profile-layout-grid">
-        {/* Gallery Preview */}
-        <div className="profile-gallery-column">
-          <div className="profile-main-photo-container">
-            {mediaList[0] ? (
-              <img src={mediaList[0].storage_path} alt={advertiser.stage_name} className="profile-main-photo" />
-            ) : (
-              <div className="profile-photo-placeholder">
-                <Camera size={48} color="var(--accent-gold)" />
-                <span>Nenhuma foto enviada</span>
-              </div>
-            )}
-            <div className="badge-verified profile-verified-badge">
-              Status: {advertiser.profile_status}
-            </div>
-          </div>
-        </div>
-
-        {/* Info Preview */}
-        <div className="profile-info-column">
-          <div>
-            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.5rem' }}>
-              <Badge variant="gold">PREVIEW</Badge>
-              <Badge variant={advertiser.profile_status === 'approved' ? 'success' : 'warning'}>
-                {advertiser.profile_status}
-              </Badge>
-            </div>
-            <h1 style={{ fontSize: '2.4rem', fontWeight: 800, marginBottom: '0.25rem' }}>
-              {advertiser.stage_name}
-            </h1>
-            {advertiser.headline && (
-              <p style={{ fontSize: '1.05rem', color: 'var(--accent-gold)', fontStyle: 'italic', marginBottom: '1rem' }}>
-                {advertiser.headline}
-              </p>
-            )}
-          </div>
-
-          {/* Contacts Preview */}
-          <Card variant="glass" padding="md">
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Canais de Contato Cadastrados</h3>
-            {contacts.length === 0 ? (
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Nenhum contato cadastrado ainda.</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                {contacts.map((c) => (
-                  <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0.9rem', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', fontSize: '0.85rem' }}>
-                    <span><strong>{c.contact_type.toUpperCase()}:</strong> {c.contact_value}</span>
-                    <Badge variant={c.is_visible ? 'success' : 'neutral'}>
-                      {c.is_visible ? 'Visível' : 'Oculto'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          {/* Bio Preview */}
-          {advertiser.bio && (
-            <Card variant="glass" padding="md">
-              <h3 style={{ fontSize: '1.15rem', marginBottom: '0.75rem' }}>Sobre</h3>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: '0.95rem', whiteSpace: 'pre-line' }}>
-                {advertiser.bio}
-              </p>
-            </Card>
-          )}
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link href="/advertiser/onboarding">
+            <Button variant="secondary" size="sm" leftIcon={<Edit3 size={14} />}>
+              Editar no Onboarding
+            </Button>
+          </Link>
         </div>
       </div>
+
+      {/* Live Preview Card */}
+      <OnboardingPreviewCard
+        advertiser={advertiser}
+        mediaList={mediaList}
+        contacts={contacts}
+        categories={categories}
+        selectedCategoryIds={selectedCategoryIds}
+        stateName={selectedState?.name}
+        cityName={selectedCity?.name}
+        onEditSection={(step) => {
+          router.push(`/advertiser/onboarding`);
+        }}
+      />
     </div>
   );
 }

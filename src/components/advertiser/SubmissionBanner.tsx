@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Link from 'next/link';
 import { AdvertiserProfile, CompletenessResult } from '@/types/app.types';
 import { advertisersService } from '@/services/advertisersService';
 import { Card } from '@/components/ui/Card';
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Alert } from '@/components/ui/Alert';
 import { useToast } from '@/hooks/useToast';
-import { Send, Clock, CheckCircle2, AlertTriangle, ShieldCheck, Sparkles } from 'lucide-react';
+import { Send, Clock, CheckCircle2, AlertTriangle, ShieldCheck, Sparkles, ArrowRight } from 'lucide-react';
 
 export interface SubmissionBannerProps {
   advertiser: AdvertiserProfile;
@@ -105,15 +106,22 @@ export function SubmissionBanner({ advertiser, completeness, onStatusChange }: S
             </div>
           </div>
         </div>
-        <Button
-          variant="ruby"
-          size="sm"
-          onClick={handleSubmitForReview}
-          isLoading={isSubmitting}
-          disabled={!completeness.isReadyForSubmission}
-        >
-          Reenviar para Análise
-        </Button>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <Link href="/advertiser/onboarding">
+            <Button variant="secondary" size="sm" rightIcon={<ArrowRight size={14} />}>
+              Ajustar no Onboarding
+            </Button>
+          </Link>
+          <Button
+            variant="ruby"
+            size="sm"
+            onClick={handleSubmitForReview}
+            isLoading={isSubmitting}
+            disabled={!completeness.isReadyForSubmission}
+          >
+            Reenviar para Análise
+          </Button>
+        </div>
       </Card>
     );
   }
@@ -125,23 +133,31 @@ export function SubmissionBanner({ advertiser, completeness, onStatusChange }: S
         <div style={{ maxWidth: '540px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
             <Sparkles size={18} color="var(--accent-gold)" />
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Pronto para publicar seu anúncio?</h3>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0 }}>Pronto para publicar seu anúncio?</h3>
           </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
             Após preencher os dados obrigatórios e galeria, envie seu perfil para a equipe de moderação.
           </p>
         </div>
 
-        <Button
-          variant="ruby"
-          size="md"
-          onClick={handleSubmitForReview}
-          isLoading={isSubmitting}
-          disabled={!completeness.isReadyForSubmission || isSubmitting}
-          leftIcon={<Send size={16} />}
-        >
-          Enviar perfil para análise
-        </Button>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <Link href="/advertiser/onboarding">
+            <Button variant="secondary" size="md" rightIcon={<ArrowRight size={14} />}>
+              Abrir Onboarding Guiado
+            </Button>
+          </Link>
+
+          <Button
+            variant="ruby"
+            size="md"
+            onClick={handleSubmitForReview}
+            isLoading={isSubmitting}
+            disabled={!completeness.isReadyForSubmission || isSubmitting}
+            leftIcon={<Send size={16} />}
+          >
+            Enviar para análise
+          </Button>
+        </div>
       </div>
 
       {errorMsg && (

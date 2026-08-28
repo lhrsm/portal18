@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { RegisterSchema } from '@/lib/validation/auth';
 import { consentService } from '@/services/consentService';
 import { advertisersService } from '@/services/advertisersService';
+import { onboardingAnalytics } from '@/services/telemetry/onboardingAnalytics';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
@@ -14,7 +15,7 @@ import { Alert } from '@/components/ui/Alert';
 import { PasswordStrength } from '@/components/ui/PasswordStrength';
 import { GoogleButton } from '@/components/auth/GoogleButton';
 import { useToast } from '@/hooks/useToast';
-import { Mail, Lock, User, Sparkles, Megaphone, Heart, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, User, Sparkles, Megaphone, Heart, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export function RegisterForm() {
   const router = useRouter();
@@ -110,21 +111,22 @@ export function RegisterForm() {
         // If registering as advertiser, convert account via RPC
         if (accountType === 'advertiser') {
           await advertisersService.becomeAdvertiser(true, true).catch(() => {});
+          onboardingAnalytics.trackEvent('onboarding_started', { step: 1, totalSteps: 8 });
         }
 
         showToast({
           type: 'success',
           title: 'Cadastro realizado com sucesso!',
-          message: accountType === 'advertiser' ? 'Bem-vindo(a)! Configurando seu anúncio...' : 'Sua conta foi criada com sucesso.',
+          message: accountType === 'advertiser' ? 'Bem-vindo(a)! Iniciando configuração do anúncio...' : 'Sua conta foi criada com sucesso.',
         });
 
         const targetDestination = accountType === 'advertiser' ? '/advertiser/onboarding' : '/account';
         setSuccessMessage('Conta criada com sucesso! Redirecionando...');
-        
+
         setTimeout(() => {
           router.push(targetDestination);
           router.refresh();
-        }, 800);
+        }, 600);
       }
     } catch (err) {
       setServerError('Ocorreu um erro inesperado durante o cadastro. Tente novamente.');
@@ -147,7 +149,7 @@ export function RegisterForm() {
           background: 'rgba(255, 255, 255, 0.04)',
           borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border-subtle)',
-          marginBottom: '1.5rem',
+          marginBottom: '1.25rem',
         }}
       >
         <button
@@ -157,20 +159,21 @@ export function RegisterForm() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.4rem',
-            padding: '0.65rem 0.5rem',
+            gap: '0.5rem',
+            padding: '0.75rem 0.5rem',
             borderRadius: 'var(--radius-sm)',
             border: 'none',
-            fontSize: '0.85rem',
+            fontSize: '0.9rem',
             fontWeight: 700,
             cursor: 'pointer',
             background: accountType === 'user' ? 'var(--bg-secondary)' : 'transparent',
             color: accountType === 'user' ? '#fff' : 'var(--text-muted)',
             boxShadow: accountType === 'user' ? '0 2px 8px rgba(0,0,0,0.4)' : 'none',
+            borderBottom: accountType === 'user' ? '2px solid var(--accent-ruby)' : '2px solid transparent',
             transition: 'all var(--transition-fast)',
           }}
         >
-          <Heart size={15} color={accountType === 'user' ? 'var(--accent-ruby)' : 'currentColor'} />
+          <Heart size={16} color={accountType === 'user' ? 'var(--accent-ruby)' : 'currentColor'} />
           <span>Quero Explorar</span>
         </button>
 
@@ -181,20 +184,21 @@ export function RegisterForm() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.4rem',
-            padding: '0.65rem 0.5rem',
+            gap: '0.5rem',
+            padding: '0.75rem 0.5rem',
             borderRadius: 'var(--radius-sm)',
             border: 'none',
-            fontSize: '0.85rem',
+            fontSize: '0.9rem',
             fontWeight: 700,
             cursor: 'pointer',
             background: accountType === 'advertiser' ? 'var(--bg-secondary)' : 'transparent',
             color: accountType === 'advertiser' ? '#fff' : 'var(--text-muted)',
             boxShadow: accountType === 'advertiser' ? '0 2px 8px rgba(0,0,0,0.4)' : 'none',
+            borderBottom: accountType === 'advertiser' ? '2px solid var(--accent-gold)' : '2px solid transparent',
             transition: 'all var(--transition-fast)',
           }}
         >
-          <Megaphone size={15} color={accountType === 'advertiser' ? 'var(--accent-gold)' : 'currentColor'} />
+          <Megaphone size={16} color={accountType === 'advertiser' ? 'var(--accent-gold)' : 'currentColor'} />
           <span>Quero Anunciar</span>
         </button>
       </div>
@@ -202,11 +206,11 @@ export function RegisterForm() {
       {/* Account Type Description Badge */}
       <div
         style={{
-          padding: '0.75rem 0.85rem',
+          padding: '0.75rem 0.9rem',
           borderRadius: 'var(--radius-sm)',
           background: accountType === 'advertiser' ? 'rgba(212, 175, 55, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-          borderLeft: accountType === 'advertiser' ? '3px solid var(--accent-gold)' : '3px solid var(--text-muted)',
-          fontSize: '0.8rem',
+          borderLeft: accountType === 'advertiser' ? '3px solid var(--accent-gold)' : '3px solid var(--accent-ruby)',
+          fontSize: '0.825rem',
           color: 'var(--text-secondary)',
           lineHeight: 1.45,
           marginBottom: '1.25rem',
@@ -214,23 +218,27 @@ export function RegisterForm() {
       >
         {accountType === 'advertiser' ? (
           <div>
-            <strong style={{ color: 'var(--accent-gold)', display: 'block', marginBottom: '0.15rem' }}>Perfil Profissional 18+</strong>
-            Crie sua conta para divulgar fotos, contatos de atendimento e gerenciar seu anúncio.
+            <strong style={{ color: 'var(--accent-gold)', display: 'block', marginBottom: '0.2rem' }}>
+              Cadastro Profissional 18+
+            </strong>
+            Crie seu perfil profissional com fotos em alta resolução, WhatsApp direto e selo de verificação oficial.
           </div>
         ) : (
           <div>
-            <strong style={{ color: '#fff', display: 'block', marginBottom: '0.15rem' }}>Conta Pessoal</strong>
-            Salve acompanhantes favoritos, organize listas e personalize sua busca com discrição.
+            <strong style={{ color: '#fff', display: 'block', marginBottom: '0.2rem' }}>
+              Conta de Visitante
+            </strong>
+            Salve acompanhantes favoritos, organize listas privadas e personalize suas buscas na sua cidade.
           </div>
         )}
       </div>
 
-      {/* 2. GOOGLE OAUTH ACTION */}
+      {/* 2. GOOGLE OAUTH ACTION (Top Priority) */}
       <div style={{ marginBottom: '1.25rem' }}>
         <GoogleButton
           intent={accountType}
           nextRoute={accountType === 'advertiser' ? '/advertiser/onboarding' : '/account'}
-          label={accountType === 'advertiser' ? 'Criar conta profissional com Google' : 'Criar conta com Google'}
+          label={accountType === 'advertiser' ? 'Continuar com Google (Profissional)' : 'Continuar com Google'}
           disabled={isLoading}
         />
       </div>
@@ -256,18 +264,22 @@ export function RegisterForm() {
       {/* 4. EMAIL/PASSWORD REGISTRATION FORM */}
       <form onSubmit={handleSubmit} noValidate>
         {serverError && (
-          <Alert type="error" title="Erro no cadastro">
+          <Alert type="error" title="Erro no cadastro" style={{ marginBottom: '1rem' }}>
             {serverError}
           </Alert>
         )}
 
         {successMessage && (
-          <Alert type="success" title="Sucesso">
+          <Alert type="success" title="Sucesso" style={{ marginBottom: '1rem' }}>
             {successMessage}
           </Alert>
         )}
 
-        <FormField label={accountType === 'advertiser' ? 'Nome Artístico / Profissional' : 'Nome de Exibição'} required error={errors.displayName}>
+        <FormField
+          label={accountType === 'advertiser' ? 'Nome de Exibição / Artístico' : 'Nome de Exibição'}
+          required
+          error={errors.displayName}
+        >
           <Input
             type="text"
             placeholder={accountType === 'advertiser' ? 'Ex: Isabela Martins' : 'Ex: Carlos'}
@@ -337,7 +349,7 @@ export function RegisterForm() {
               checked={isAdult}
               onChange={(e) => setIsAdult(e.target.checked)}
               disabled={isLoading}
-              style={{ marginTop: '0.2rem', accentColor: 'var(--accent-gold)', width: '16px', height: '16px' }}
+              style={{ marginTop: '0.2rem', accentColor: 'var(--accent-gold)', width: '18px', height: '18px', cursor: 'pointer' }}
               required
             />
             <span>
@@ -352,7 +364,7 @@ export function RegisterForm() {
               checked={acceptTerms}
               onChange={(e) => setAcceptTerms(e.target.checked)}
               disabled={isLoading}
-              style={{ marginTop: '0.2rem', accentColor: 'var(--accent-gold)', width: '16px', height: '16px' }}
+              style={{ marginTop: '0.2rem', accentColor: 'var(--accent-gold)', width: '18px', height: '18px', cursor: 'pointer' }}
               required
             />
             <span>
@@ -377,7 +389,7 @@ export function RegisterForm() {
           size="lg"
           isLoading={isLoading}
           disabled={isLoading}
-          leftIcon={<Sparkles size={18} />}
+          leftIcon={accountType === 'advertiser' ? <Megaphone size={18} /> : <Sparkles size={18} />}
         >
           {accountType === 'advertiser' ? 'Criar Perfil de Anunciante' : 'Criar Minha Conta'}
         </Button>
