@@ -29,8 +29,6 @@ export default function PublicPlansPage() {
 
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedInterval, setSelectedInterval] = useState<'monthly' | 'annual'>('monthly');
-  const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -52,24 +50,11 @@ export default function PublicPlansPage() {
       return;
     }
 
-    setProcessingPlanId(plan.id);
-    try {
-      const res = await billingService.createCheckout('subscription', plan.id);
-      if (res.success && res.redirectUrl) {
-        router.push(res.redirectUrl);
-      } else {
-        showToast({
-          type: 'error',
-          title: 'Não foi possível iniciar checkout',
-          message: res.error || 'Tente novamente mais tarde.',
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      showToast({ type: 'error', title: 'Erro de Pagamento', message: 'Falha ao processar checkout.' });
-    } finally {
-      setProcessingPlanId(null);
-    }
+    showToast({
+      type: 'info',
+      title: 'Planos em Fase de Homologação',
+      message: `O plano ${plan.name} estará disponível para contratação em breve. No momento, todos os recursos básicos e de verificação estão 100% liberados gratuitamente!`,
+    });
   };
 
   const formatPrice = (cents: number) => {
@@ -160,10 +145,9 @@ export default function PublicPlansPage() {
                   size="md"
                   fullWidth
                   onClick={() => handleSelectPlan(plan)}
-                  isLoading={processingPlanId === plan.id}
                   rightIcon={<ArrowRight size={16} />}
                 >
-                  Contratar {plan.name}
+                  Disponível em Breve
                 </Button>
               </Card>
             );

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { advertisersService } from '@/services/advertisersService';
 import { AdvertiserProfile, Visibility } from '@/types/app.types';
@@ -8,10 +9,21 @@ import { AdvertiserLayout } from '@/components/advertiser/AdvertiserLayout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Alert } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { Settings, Eye, EyeOff, PauseCircle, ShieldAlert, Check } from 'lucide-react';
+import { 
+  Settings, 
+  Eye, 
+  EyeOff, 
+  PauseCircle, 
+  ShieldCheck, 
+  Check, 
+  Shield, 
+  Key, 
+  Bell, 
+  User, 
+  ArrowRight 
+} from 'lucide-react';
 
 export default function AdvertiserSettingsPage() {
   const { profile, isLoading: authLoading } = useAuth();
@@ -65,8 +77,8 @@ export default function AdvertiserSettingsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="container" style={{ padding: '3rem 1rem' }}>
-        <Skeleton height="3rem" width="300px" style={{ marginBottom: '1.5rem' }} />
+      <div className="container" style={{ padding: '3rem 1rem', maxWidth: '840px' }}>
+        <Skeleton height="3.5rem" width="300px" style={{ marginBottom: '1.5rem' }} />
         <Skeleton height="300px" />
       </div>
     );
@@ -76,17 +88,17 @@ export default function AdvertiserSettingsPage() {
     <AdvertiserLayout advertiser={advertiser}>
       {/* Top Header */}
       <div style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 800 }}>Configurações do Anúncio</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          Gerencie a visibilidade do seu perfil e preferências de exibição
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0 }}>Configurações do Anúncio</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0.25rem 0 0 0' }}>
+          Gerencie a visibilidade do seu perfil, pausa de atendimento e preferências gerais
         </p>
       </div>
 
-      {/* Visibility Control Card (Requirement 76) */}
-      <Card variant="glass" padding="lg" style={{ marginBottom: '1.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+      {/* Visibility Control Card */}
+      <Card variant="glass" padding="lg" style={{ marginBottom: '1.75rem', border: '1px solid var(--border-subtle)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
           <Eye size={20} color="var(--accent-gold)" />
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Visibilidade Pública do Anúncio</h3>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Visibilidade Pública do Anúncio</h3>
         </div>
 
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
@@ -102,7 +114,7 @@ export default function AdvertiserSettingsPage() {
               alignItems: 'center',
               padding: '1rem',
               borderRadius: 'var(--radius-md)',
-              background: visibility === 'public' ? 'rgba(229, 185, 92, 0.12)' : 'var(--bg-tertiary)',
+              background: visibility === 'public' ? 'rgba(212, 175, 55, 0.12)' : 'var(--bg-tertiary)',
               border: `1px solid ${visibility === 'public' ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
               cursor: 'pointer',
             }}
@@ -142,17 +154,53 @@ export default function AdvertiserSettingsPage() {
         </div>
       </Card>
 
-      {/* Temporary Pause / Account Actions (Requirement 77) */}
-      <Card variant="glass" padding="lg">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-          <PauseCircle size={20} color="var(--accent-ruby)" />
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Pausa de Atendimento</h3>
-        </div>
+      {/* Account, Privacy & Security Shortcuts */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
+        <Card variant="glass" padding="md" style={{ border: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <Shield size={18} color="var(--color-success)" />
+            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Privacidade & Bloqueios</h4>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '1rem' }}>
+            Gerencie perfis bloqueados e exportação de dados LGPD.
+          </p>
+          <Link href="/account/privacy" style={{ textDecoration: 'none' }}>
+            <Button variant="secondary" size="sm" fullWidth rightIcon={<ArrowRight size={14} />}>
+              Opções de Privacidade
+            </Button>
+          </Link>
+        </Card>
 
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
-          Se for viajar ou desejar pausar temporariamente seus atendimentos, você pode alternar a visibilidade para privado acima a qualquer momento sem perder suas fotos aprovadas.
-        </p>
-      </Card>
+        <Card variant="glass" padding="md" style={{ border: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <Key size={18} color="var(--color-info)" />
+            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Segurança & Senha</h4>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '1rem' }}>
+            Altere sua senha de acesso e monitore sessões ativas.
+          </p>
+          <Link href="/account/security" style={{ textDecoration: 'none' }}>
+            <Button variant="secondary" size="sm" fullWidth rightIcon={<ArrowRight size={14} />}>
+              Gerenciar Segurança
+            </Button>
+          </Link>
+        </Card>
+
+        <Card variant="glass" padding="md" style={{ border: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <Bell size={18} color="var(--color-warning)" />
+            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Notificações</h4>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '1rem' }}>
+            Configure alertas sobre mensagens, moderações e novidades.
+          </p>
+          <Link href="/account/notifications" style={{ textDecoration: 'none' }}>
+            <Button variant="secondary" size="sm" fullWidth rightIcon={<ArrowRight size={14} />}>
+              Central de Notificações
+            </Button>
+          </Link>
+        </Card>
+      </div>
     </AdvertiserLayout>
   );
 }

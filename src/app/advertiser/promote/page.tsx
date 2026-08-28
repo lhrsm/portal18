@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { billingService } from '@/services/billingService';
 import { PromotionProduct, AdvertiserCampaign } from '@/types/app.types';
 import { Card } from '@/components/ui/Card';
@@ -13,25 +12,20 @@ import { useToast } from '@/hooks/useToast';
 import { 
   Zap, 
   Sparkles, 
-  MapPin, 
-  Tag, 
   Clock, 
   TrendingUp, 
-  ArrowRight, 
   ArrowLeft, 
-  CheckCircle2, 
   Eye, 
-  MousePointerClick 
+  MousePointerClick,
+  Info 
 } from 'lucide-react';
 
 export default function AdvertiserPromotePage() {
-  const router = useRouter();
   const { showToast } = useToast();
 
   const [products, setProducts] = useState<PromotionProduct[]>([]);
   const [campaigns, setCampaigns] = useState<(AdvertiserCampaign & { promotion_products?: PromotionProduct })[]>([]);
   const [loading, setLoading] = useState(true);
-  const [purchasingId, setPurchasingId] = useState<string | null>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -49,25 +43,12 @@ export default function AdvertiserPromotePage() {
     loadData();
   }, []);
 
-  const handleBuyPromotion = async (product: PromotionProduct) => {
-    setPurchasingId(product.id);
-    try {
-      const res = await billingService.createCheckout(product.type as any, product.id);
-      if (res.success && res.redirectUrl) {
-        router.push(res.redirectUrl);
-      } else {
-        showToast({
-          type: 'error',
-          title: 'Não foi possível iniciar compra',
-          message: res.error || 'Tente novamente em instantes.',
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      showToast({ type: 'error', title: 'Erro de Pagamento', message: 'Falha ao processar checkout.' });
-    } finally {
-      setPurchasingId(null);
-    }
+  const handleProductInterest = (product: PromotionProduct) => {
+    showToast({
+      type: 'info',
+      title: 'Destaques em Breve!',
+      message: `O módulo de impulsionamento (${product.name}) está em homologação e será ativado em breve para todos os anunciantes.`,
+    });
   };
 
   const formatPrice = (cents: number) => {
@@ -92,7 +73,7 @@ export default function AdvertiserPromotePage() {
         <Link href="/advertiser" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.9rem' }}>
           <ArrowLeft size={16} /> Painel do Anunciante
         </Link>
-        <Badge variant="gold"><Sparkles size={12} /> ALTA CONVERSÃO</Badge>
+        <Badge variant="gold"><Sparkles size={12} /> RECURSO EM HOMOLOGAÇÃO</Badge>
       </div>
 
       <div style={{ marginBottom: '2rem' }}>
@@ -103,6 +84,16 @@ export default function AdvertiserPromotePage() {
           Coloque seu perfil nas primeiras posições de busca e multiplique os contatos de clientes
         </p>
       </div>
+
+      {/* Production Notice Card */}
+      <Card variant="glass" padding="md" style={{ background: 'rgba(212, 175, 55, 0.06)', border: '1px solid rgba(212, 175, 55, 0.25)', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Info size={20} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+          <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            <strong style={{ color: 'var(--accent-gold)' }}>Módulo Comercial em Preparação:</strong> Os pacotes de destaque abaixo estarão disponíveis para contratação direta em breve. Perfis verificados já contam com prioridade orgânica nas buscas.
+          </div>
+        </div>
+      </Card>
 
       {/* Active Campaigns Banner if any */}
       {activeCampaigns.length > 0 && (
@@ -130,7 +121,7 @@ export default function AdvertiserPromotePage() {
         </Card>
       )}
 
-      {/* Products Catalog (Section 44 & 45) */}
+      {/* Products Catalog */}
       <h2 style={{ fontSize: '1.35rem', fontWeight: 700, marginBottom: '1.25rem' }}>
         Produtos de Destaque Disponíveis
       </h2>
@@ -162,13 +153,12 @@ export default function AdvertiserPromotePage() {
               </div>
 
               <Button
-                variant="primary"
+                variant="secondary"
                 size="sm"
-                onClick={() => handleBuyPromotion(prod)}
-                isLoading={purchasingId === prod.id}
+                onClick={() => handleProductInterest(prod)}
                 leftIcon={<Zap size={14} />}
               >
-                Contratar
+                Disponível em Breve
               </Button>
             </div>
           </Card>
