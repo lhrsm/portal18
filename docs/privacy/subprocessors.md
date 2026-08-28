@@ -13,7 +13,8 @@ Abaixo estão listados os fornecedores terceirizados que realizam o tratamento d
 
 | Suboperador | Finalidade do Tratamento | Categorias de Dados Tratados | Região de Hospedagem | Retenção / DPA |
 | :--- | :--- | :--- | :--- | :--- |
-| **Sumsub (Sum and Substance Ltd)** | Verificação de identidade (KYC), Prova de Vida (Liveness) e Verificação de Idade 18+ | Documento de identificação com foto (RG/CNH/CIN), selfie biométrica, data de nascimento e CPF | União Europeia / EUA | Retenção conforme contrato de conformidade e DPA formal |
+| **Verifica ID (Provedor Homologado)** | Garantia de Maioridade 18+ de Visitantes (ECA Digital) e Reutilização de Credenciais | Sinal de maioridade (18+), hash opaco e referência de credencial (Zero armazenamento de biometria no Portal) | Brasil | DPA formalizado com estrita minimização de dados |
+| **Sumsub (Sum and Substance Ltd)** | Verificação de identidade de anunciantes (KYC), Prova de Vida (Liveness) e Fallback de Idade | Documento de identificação com foto (RG/CNH/CIN), selfie biométrica, data de nascimento e CPF de anunciantes | União Europeia / EUA | Retenção conforme contrato de conformidade e DPA formal |
 | **Supabase Inc.** | Banco de dados transacional, Autenticação de usuários e Armazenamento seguro de objetos | Identificadores de usuário, e-mail, credenciais criptografadas, metadados de perfil e logs | América do Sul / EUA | DPA formalizado com criptografia em repouso AES-256 |
 | **Vercel Inc.** | Hospedagem da aplicação frontend e funções serverless / Edge | Logs de requisição, endereços IP (anonimizados para métricas) e dados de tráfego | Global Edge / Brasil | DPA formalizado |
 | **Provedor de E-mail (Resend / SendGrid)** | Disparo de e-mails transacionais e de segurança (recuperação de senha, confirmações) | Endereço de e-mail e nome de exibição (assuntos e conteúdos estritamente neutros) | EUA / Global | DPA formalizado |

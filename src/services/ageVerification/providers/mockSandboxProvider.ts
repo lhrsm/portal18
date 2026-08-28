@@ -5,6 +5,8 @@ export class MockSandboxAgeVerificationProvider implements AgeVerificationProvid
   readonly name = 'mock_sandbox';
   readonly isConfigured = true;
 
+  private revokedSubjects: Set<string> = new Set();
+
   async initiateVerification(options: InitiateVerificationOptions): Promise<InitiateVerificationResponse> {
     const sessionId = `sandbox-session-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const state = options.state || `state-${Date.now()}`;
@@ -23,7 +25,13 @@ export class MockSandboxAgeVerificationProvider implements AgeVerificationProvid
   }
 
   async validateCallback(params: ValidateCallbackParams): Promise<AgeVerificationResult> {
+    if (params.code?.includes('down') || params.state?.includes('down')) {
+      throw new Error('503 Service Unavailable: Provider network timeout');
+    }
+
     const isUnderage = params.code?.includes('underage');
+    const isExpired = params.code?.includes('expired');
+    const isRevoked = params.code?.includes('revoked');
     const isReturning = params.code?.includes('returning') || params.state?.includes('returning');
 
     if (isUnderage) {
@@ -35,6 +43,31 @@ export class MockSandboxAgeVerificationProvider implements AgeVerificationProvid
         assuranceLevel: 'high',
         verifiedAt: new Date().toISOString(),
         error: 'Idade informada inferior a 18 anos.',
+      };
+    }
+
+    if (isExpired) {
+      return {
+        verified: false,
+        ageBand: 'unknown',
+        provider: this.name,
+        providerSubjectHash: 'sandbox-hash-expired',
+        assuranceLevel: 'low',
+        verifiedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+        expiresAt: new Date(Date.now() - 30 * 86400000).toISOString(),
+        error: 'Credencial de maioridade expirada. Revalidação necessária.',
+      };
+    }
+
+    if (isRevoked) {
+      return {
+        verified: false,
+        ageBand: 'unknown',
+        provider: this.name,
+        providerSubjectHash: 'sandbox-hash-revoked',
+        assuranceLevel: 'low',
+        verifiedAt: new Date().toISOString(),
+        error: 'Credencial revogada pelo usuário ou provedor.',
       };
     }
 
@@ -55,6 +88,18 @@ export class MockSandboxAgeVerificationProvider implements AgeVerificationProvid
   }
 
   async checkCredentialStatus(providerSubjectHash: string): Promise<AgeVerificationResult> {
+    if (this.revokedSubjects.has(providerSubjectHash)) {
+      return {
+        verified: false,
+        ageBand: 'unknown',
+        provider: this.name,
+        providerSubjectHash,
+        assuranceLevel: 'low',
+        verifiedAt: new Date().toISOString(),
+        error: 'Credencial revogada.',
+      };
+    }
+
     return {
       verified: true,
       ageBand: '18_plus',
@@ -66,5 +111,10 @@ export class MockSandboxAgeVerificationProvider implements AgeVerificationProvid
       credentialReference: `reused-cred-${providerSubjectHash}`,
       isReused: true,
     };
+  }
+
+  async revokeCredential(providerSubjectHash: string): Promise<boolean> {
+    this.revokedSubjects.add(providerSubjectHash);
+    return true;
   }
 }

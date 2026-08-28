@@ -2,6 +2,7 @@ import { AgeVerificationProvider } from './provider';
 import { UnconfiguredAgeVerificationProvider } from './providers/unconfiguredProvider';
 import { MockSandboxAgeVerificationProvider } from './providers/mockSandboxProvider';
 import { VerificaIdAgeVerificationProvider } from './providers/verificaIdProvider';
+import { SumsubAgeVerificationProvider } from './providers/sumsubAgeProvider';
 
 export class AgeVerificationFactory {
   private static instance: AgeVerificationProvider | null = null;
@@ -21,6 +22,10 @@ export class AgeVerificationFactory {
       case 'verifica_id':
       case 'verificaid':
         this.instance = new VerificaIdAgeVerificationProvider();
+        break;
+      case 'sumsub_age':
+      case 'sumsub':
+        this.instance = new SumsubAgeVerificationProvider();
         break;
       default:
         this.instance = new UnconfiguredAgeVerificationProvider();
