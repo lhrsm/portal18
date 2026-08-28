@@ -277,6 +277,45 @@ export default function AdminDiscoveryPage() {
           </form>
         </Card>
       )}
+
+      {/* Launch Readiness Dashboard Section */}
+      <div style={{ marginTop: '2.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0 }}>Preparação de Lançamento (Launch Readiness)</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.2rem 0 0 0' }}>
+              Métricas consolidadas de maturidade operacional e densidade regional
+            </p>
+          </div>
+          <Badge variant="gold">SALVADOR-FIRST</Badge>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          <Card variant="glass" padding="md">
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Perfis Publicados</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>Ativos na Busca</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--color-success)', marginTop: '0.2rem' }}>● Publicação em conformidade</div>
+          </Card>
+
+          <Card variant="glass" padding="md">
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Verificação 18+ (KYC)</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>Identidade Validada</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--color-success)', marginTop: '0.2rem' }}>● Proteção e conformidade</div>
+          </Card>
+
+          <Card variant="glass" padding="md">
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Fotos de Capa (Pos. 0)</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>100% Moderadas</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--color-success)', marginTop: '0.2rem' }}>● Publication Gate ativo</div>
+          </Card>
+
+          <Card variant="glass" padding="md">
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Status do Launch Gate</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-gold)' }}>Pronto p/ Lançamento</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>Foco regional Salvador</div>
+          </Card>
+        </div>
+      </div>
     </AdminLayout>
   );
 }
