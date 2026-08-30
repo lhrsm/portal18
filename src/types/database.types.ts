@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -516,10 +516,12 @@ export type Database = {
           review_feedback: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          service_modalities: string[] | null
           slug: string
           stage_name: string
           state_id: string | null
           submitted_at: string | null
+          target_audience: string[] | null
           updated_at: string
           verification_status: string
           visibility: string
@@ -550,10 +552,12 @@ export type Database = {
           review_feedback?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          service_modalities?: string[] | null
           slug: string
           stage_name: string
           state_id?: string | null
           submitted_at?: string | null
+          target_audience?: string[] | null
           updated_at?: string
           verification_status?: string
           visibility?: string
@@ -584,10 +588,12 @@ export type Database = {
           review_feedback?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          service_modalities?: string[] | null
           slug?: string
           stage_name?: string
           state_id?: string | null
           submitted_at?: string | null
+          target_audience?: string[] | null
           updated_at?: string
           verification_status?: string
           visibility?: string
@@ -3590,12 +3596,14 @@ export type Database = {
           primary_photo_url: string | null
           profile_id: string | null
           profile_status: string | null
+          service_modalities: string[] | null
           slug: string | null
           stage_name: string | null
           state_code: string | null
           state_id: string | null
           state_name: string | null
           state_slug: string | null
+          target_audience: string[] | null
           updated_at: string | null
           verification_status: string | null
           visibility: string | null

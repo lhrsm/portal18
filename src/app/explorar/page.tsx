@@ -50,6 +50,9 @@ function ExploreContent() {
   const originCityIdParam = searchParams.get('origem') || '';
   const radiusParam = parseInt(searchParams.get('raio') || '50', 10);
   const categoryParam = searchParams.get('categoria') || '';
+  const genderParam = searchParams.get('genero') || searchParams.get('identidade') || '';
+  const targetAudienceParam = searchParams.get('atende') || '';
+  const serviceModalityParam = searchParams.get('modalidade') || searchParams.get('local') || '';
   const verifiedParam = searchParams.get('verificado') === 'true';
   const videoParam = searchParams.get('video') === 'true';
   const activityParam = searchParams.get('atividade') || '';
@@ -100,6 +103,9 @@ function ExploreContent() {
         originCityId: originCityIdParam || undefined,
         radiusKm: radiusParam,
         categorySlug: categoryParam || undefined,
+        gender: genderParam || undefined,
+        targetAudience: targetAudienceParam || undefined,
+        serviceModality: serviceModalityParam || undefined,
         verifiedOnly: verifiedParam || undefined,
         withVideo: videoParam || undefined,
         activityFilter: activityParam || undefined,
@@ -121,7 +127,7 @@ function ExploreContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [queryParam, stateParam, cityParam, originCityIdParam, radiusParam, categoryParam, verifiedParam, videoParam, activityParam, page]);
+  }, [queryParam, stateParam, cityParam, originCityIdParam, radiusParam, categoryParam, genderParam, targetAudienceParam, serviceModalityParam, verifiedParam, videoParam, activityParam, page]);
 
   useEffect(() => {
     loadProfiles();
@@ -190,6 +196,9 @@ function ExploreContent() {
     Boolean(cityParam),
     Boolean(originCityIdParam),
     Boolean(categoryParam),
+    Boolean(genderParam && genderParam !== 'todos'),
+    Boolean(targetAudienceParam && targetAudienceParam !== 'todos'),
+    Boolean(serviceModalityParam),
     Boolean(activityParam),
     verifiedParam,
     videoParam,
@@ -307,19 +316,19 @@ function ExploreContent() {
                 </div>
               )}
 
-              {/* Filter 3: Proximity Radius (Sections 10 & 19) */}
+              {/* Filter 3: Quem você procura? (Phase 26C) */}
               <div>
-                <label className="form-label" style={{ fontSize: '0.8rem' }}>Raio de Proximidade</label>
+                <label className="form-label" style={{ fontSize: '0.8rem' }}>Quem você procura?</label>
                 <select
                   className="input"
-                  value={radiusParam.toString()}
-                  onChange={(e) => updateFilter('raio', e.target.value)}
+                  value={genderParam || 'todos'}
+                  onChange={(e) => updateFilter('genero', e.target.value === 'todos' ? null : e.target.value)}
                 >
-                  <option value="10">Até 10 km</option>
-                  <option value="25">Até 25 km</option>
-                  <option value="50">Até 50 km (Padrão)</option>
-                  <option value="100">Até 100 km</option>
-                  <option value="200">Até 200 km (Regional)</option>
+                  <option value="todos">Todos os Perfis</option>
+                  <option value="mulheres">Mulheres</option>
+                  <option value="homens">Homens</option>
+                  <option value="travestis_trans">Travestis & Trans</option>
+                  <option value="nao_binario_outros">Não binário / Outros</option>
                 </select>
               </div>
 
@@ -337,6 +346,54 @@ function ExploreContent() {
                       {cat.name}
                     </option>
                   ))}
+                </select>
+              </div>
+
+              {/* Filter 5: Quem atende? (Phase 26C) */}
+              <div>
+                <label className="form-label" style={{ fontSize: '0.8rem' }}>Quem atende?</label>
+                <select
+                  className="input"
+                  value={targetAudienceParam || 'todos'}
+                  onChange={(e) => updateFilter('atende', e.target.value === 'todos' ? null : e.target.value)}
+                >
+                  <option value="todos">Todos os Públicos</option>
+                  <option value="homens">Homens</option>
+                  <option value="mulheres">Mulheres</option>
+                  <option value="casais">Casais</option>
+                  <option value="lgbtqia">Público LGBTQIA+</option>
+                </select>
+              </div>
+
+              {/* Filter 6: Modalidade / Local (Phase 26C) */}
+              <div>
+                <label className="form-label" style={{ fontSize: '0.8rem' }}>Modalidade / Local</label>
+                <select
+                  className="input"
+                  value={serviceModalityParam}
+                  onChange={(e) => updateFilter('modalidade', e.target.value || null)}
+                >
+                  <option value="">Todas as Modalidades</option>
+                  <option value="local_proprio">Local Próprio</option>
+                  <option value="hotel_motel">Hotéis / Motéis</option>
+                  <option value="domicilio">A Domicílio</option>
+                  <option value="viagem">Disponível para Viagem</option>
+                </select>
+              </div>
+
+              {/* Filter 7: Proximity Radius (Sections 10 & 19) */}
+              <div>
+                <label className="form-label" style={{ fontSize: '0.8rem' }}>Raio de Proximidade</label>
+                <select
+                  className="input"
+                  value={radiusParam.toString()}
+                  onChange={(e) => updateFilter('raio', e.target.value)}
+                >
+                  <option value="10">Até 10 km</option>
+                  <option value="25">Até 25 km</option>
+                  <option value="50">Até 50 km (Padrão)</option>
+                  <option value="100">Até 100 km</option>
+                  <option value="200">Até 200 km (Regional)</option>
                 </select>
               </div>
 
@@ -485,16 +542,17 @@ function ExploreContent() {
           )}
 
           <div>
-            <label className="form-label">Raio de Proximidade</label>
+            <label className="form-label">Quem você procura?</label>
             <select
               className="input"
-              value={radiusParam.toString()}
-              onChange={(e) => updateFilter('raio', e.target.value)}
+              value={genderParam || 'todos'}
+              onChange={(e) => updateFilter('genero', e.target.value === 'todos' ? null : e.target.value)}
             >
-              <option value="10">Até 10 km</option>
-              <option value="25">Até 25 km</option>
-              <option value="50">Até 50 km</option>
-              <option value="100">Até 100 km</option>
+              <option value="todos">Todos os Perfis</option>
+              <option value="mulheres">Mulheres</option>
+              <option value="homens">Homens</option>
+              <option value="travestis_trans">Travestis & Trans</option>
+              <option value="nao_binario_outros">Não binário / Outros</option>
             </select>
           </div>
 
@@ -511,6 +569,50 @@ function ExploreContent() {
                   {cat.name}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="form-label">Quem atende?</label>
+            <select
+              className="input"
+              value={targetAudienceParam || 'todos'}
+              onChange={(e) => updateFilter('atende', e.target.value === 'todos' ? null : e.target.value)}
+            >
+              <option value="todos">Todos os Públicos</option>
+              <option value="homens">Homens</option>
+              <option value="mulheres">Mulheres</option>
+              <option value="casais">Casais</option>
+              <option value="lgbtqia">Público LGBTQIA+</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="form-label">Modalidade / Local</label>
+            <select
+              className="input"
+              value={serviceModalityParam}
+              onChange={(e) => updateFilter('modalidade', e.target.value || null)}
+            >
+              <option value="">Todas as Modalidades</option>
+              <option value="local_proprio">Local Próprio</option>
+              <option value="hotel_motel">Hotéis / Motéis</option>
+              <option value="domicilio">A Domicílio</option>
+              <option value="viagem">Disponível para Viagem</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="form-label">Raio de Proximidade</label>
+            <select
+              className="input"
+              value={radiusParam.toString()}
+              onChange={(e) => updateFilter('raio', e.target.value)}
+            >
+              <option value="10">Até 10 km</option>
+              <option value="25">Até 25 km</option>
+              <option value="50">Até 50 km</option>
+              <option value="100">Até 100 km</option>
             </select>
           </div>
 

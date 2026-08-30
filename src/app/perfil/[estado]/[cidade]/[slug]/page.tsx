@@ -675,12 +675,37 @@ export default function PublicProfilePage() {
           <Card variant="glass" padding="md">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', fontSize: '0.85rem' }}>
               <div>
-                <span style={{ color: 'var(--text-muted)' }}>Atendimento:</span>
-                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Local próprio e Hotéis</div>
+                <span style={{ color: 'var(--text-muted)' }}>Quem Atende:</span>
+                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {advertiser.target_audience && advertiser.target_audience.length > 0
+                    ? advertiser.target_audience
+                        .map((a) => {
+                          if (a === 'homens') return 'Homens';
+                          if (a === 'mulheres') return 'Mulheres';
+                          if (a === 'casais') return 'Casais';
+                          if (a === 'lgbtqia') return 'LGBTQIA+';
+                          if (a === 'todos') return 'Todos os Públicos';
+                          return a;
+                        })
+                        .join(', ')
+                    : 'Todos os Públicos'}
+                </div>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)' }}>Cidade / UF:</span>
-                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{advertiser.city_name}, {advertiser.state_code}</div>
+                <span style={{ color: 'var(--text-muted)' }}>Locais de Atendimento:</span>
+                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {advertiser.service_modalities && advertiser.service_modalities.length > 0
+                    ? advertiser.service_modalities
+                        .map((m) => {
+                          if (m === 'local_proprio') return 'Local Próprio';
+                          if (m === 'hotel_motel') return 'Hotéis / Motéis';
+                          if (m === 'domicilio') return 'A Domicílio';
+                          if (m === 'viagem') return 'Viagens';
+                          return m;
+                        })
+                        .join(', ')
+                    : 'Local próprio e Hotéis'}
+                </div>
               </div>
               <div>
                 <span style={{ color: 'var(--text-muted)' }}>Fotos:</span>

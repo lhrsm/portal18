@@ -77,12 +77,13 @@ export default function AdvertiserOnboardingPage() {
   // Form Fields State
   const [stageName, setStageName] = useState('');
   const [slug, setSlug] = useState('');
-  const [gender, setGender] = useState('feminino');
+  const [gender, setGender] = useState('mulheres');
   const [birthDate, setBirthDate] = useState('');
   const [stateId, setStateId] = useState('');
   const [cityId, setCityId] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [targetAudience, setTargetAudience] = useState<string[]>(['todos']);
   const [servicePlaces, setServicePlaces] = useState<string[]>(['local_proprio', 'hotel_motel']);
   const [headline, setHeadline] = useState('');
   const [bio, setBio] = useState('');
@@ -157,7 +158,20 @@ export default function AdvertiserOnboardingPage() {
 
           setStageName(adv.stage_name && adv.stage_name !== 'Novo Anunciante' ? adv.stage_name : '');
           setSlug(adv.slug || '');
-          setGender(adv.gender || 'feminino');
+          const rawGender = (adv.gender || 'mulheres').toLowerCase();
+          const normalizedGender =
+            rawGender === 'feminino' ? 'mulheres' :
+            rawGender === 'masculino' ? 'homens' :
+            rawGender === 'trans_travesti' ? 'travestis_trans' :
+            rawGender === 'casal_dupla' ? 'nao_binario_outros' :
+            rawGender;
+          setGender(normalizedGender);
+          if ((adv as any).target_audience && Array.isArray((adv as any).target_audience)) {
+            setTargetAudience((adv as any).target_audience);
+          }
+          if ((adv as any).service_modalities && Array.isArray((adv as any).service_modalities)) {
+            setServicePlaces((adv as any).service_modalities);
+          }
           setBirthDate(adv.birth_date || '');
           setStateId(adv.state_id || '');
           setCityId(adv.city_id || '');
@@ -265,6 +279,8 @@ export default function AdvertiserOnboardingPage() {
         neighborhood: neighborhood.trim() || null,
         headline: headline.trim() || null,
         bio: bio.trim() || null,
+        target_audience: targetAudience,
+        service_modalities: servicePlaces,
       };
 
       const [saveRes, catRes] = await Promise.all([
@@ -641,12 +657,12 @@ export default function AdvertiserOnboardingPage() {
               />
             </FormField>
 
-            <FormField label="Identidade / Gênero" required>
+            <FormField label="Como seu perfil deve aparecer nas buscas?" required hint="Essa informação ajuda visitantes a encontrar perfis compatíveis com suas preferências.">
               <Select value={gender} onChange={(e) => setGender(e.target.value)}>
-                <option value="feminino">Feminino</option>
-                <option value="masculino">Masculino</option>
-                <option value="trans_travesti">Trans / Travesti</option>
-                <option value="casal_dupla">Casal / Dupla</option>
+                <option value="mulheres">Mulheres</option>
+                <option value="homens">Homens</option>
+                <option value="travestis_trans">Travestis & Trans</option>
+                <option value="nao_binario_outros">Não binário / Outros</option>
               </Select>
             </FormField>
 
@@ -804,8 +820,61 @@ export default function AdvertiserOnboardingPage() {
               })}
             </div>
 
+            {/* Target Audience (Phase 26C) */}
+            <div style={{ marginBottom: '1.75rem' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.4rem' }}>Quem você atende?</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+                Indique seu público de atendimento para direcionar visitantes compatíveis com seu perfil.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
+                {[
+                  { id: 'homens', label: 'Homens' },
+                  { id: 'mulheres', label: 'Mulheres' },
+                  { id: 'casais', label: 'Casais' },
+                  { id: 'lgbtqia', label: 'Público LGBTQIA+' },
+                  { id: 'todos', label: 'Todos os Públicos' },
+                ].map((aud) => {
+                  const isChecked = targetAudience.includes(aud.id);
+                  return (
+                    <label
+                      key={aud.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.65rem 0.85rem',
+                        background: isChecked ? 'rgba(229, 185, 92, 0.1)' : 'var(--bg-tertiary)',
+                        borderRadius: 'var(--radius-sm)',
+                        border: `1px solid ${isChecked ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        transition: 'all var(--transition-fast)',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {
+                          setTargetAudience((prev) =>
+                            isChecked ? prev.filter((p) => p !== aud.id) : [...prev, aud.id]
+                          );
+                        }}
+                        style={{ accentColor: 'var(--accent-gold)' }}
+                      />
+                      <span style={{ fontWeight: isChecked ? 600 : 400, color: isChecked ? 'var(--accent-gold)' : 'var(--text-primary)' }}>
+                        {aud.label}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Attendance Modes */}
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.75rem' }}>Locais de Atendimento</h3>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.4rem' }}>Onde você atende?</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+              Selecione as modalidades e locais de atendimento disponíveis.
+            </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
               {[
                 { id: 'local_proprio', label: 'Local Próprio' },
@@ -822,11 +891,12 @@ export default function AdvertiserOnboardingPage() {
                       alignItems: 'center',
                       gap: '0.5rem',
                       padding: '0.65rem 0.85rem',
-                      background: isChecked ? 'rgba(255,255,255,0.05)' : 'var(--bg-tertiary)',
+                      background: isChecked ? 'rgba(229, 185, 92, 0.1)' : 'var(--bg-tertiary)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--border-subtle)',
+                      border: `1px solid ${isChecked ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
                       cursor: 'pointer',
                       fontSize: '0.85rem',
+                      transition: 'all var(--transition-fast)',
                     }}
                   >
                     <input
@@ -839,7 +909,9 @@ export default function AdvertiserOnboardingPage() {
                       }}
                       style={{ accentColor: 'var(--accent-gold)' }}
                     />
-                    <span>{place.label}</span>
+                    <span style={{ fontWeight: isChecked ? 600 : 400, color: isChecked ? 'var(--accent-gold)' : 'var(--text-primary)' }}>
+                      {place.label}
+                    </span>
                   </label>
                 );
               })}

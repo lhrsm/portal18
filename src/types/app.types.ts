@@ -124,6 +124,10 @@ export interface NearbyCity {
   active_advertisers_count: number;
 }
 
+export type DiscoveryIdentity = 'todos' | 'mulheres' | 'homens' | 'travestis_trans' | 'nao_binario_outros';
+export type TargetAudienceOption = 'todos' | 'homens' | 'mulheres' | 'casais' | 'lgbtqia';
+export type ServiceModalityOption = 'local_proprio' | 'hotel_motel' | 'domicilio' | 'viagem';
+
 export interface DiscoveryFilters {
   query?: string;
   stateCode?: string;
@@ -131,6 +135,10 @@ export interface DiscoveryFilters {
   originCityId?: string;
   radiusKm?: number;
   categorySlug?: string;
+  identity?: string;
+  gender?: string;
+  targetAudience?: string;
+  serviceModality?: string;
   verifiedOnly?: boolean;
   withVideo?: boolean;
   activityFilter?: string;
@@ -161,6 +169,9 @@ export type PublicAdvertiser = PublicAdvertiserRow & {
   advertiser_id: string;
   stage_name: string;
   slug: string;
+  gender?: string | null;
+  target_audience?: string[] | null;
+  service_modalities?: string[] | null;
 };
 
 // Runtime type guard for domain invariants
@@ -200,6 +211,10 @@ export interface ExploreFilters {
   state?: string;
   city?: string;
   category?: string;
+  gender?: string;
+  identity?: string;
+  targetAudience?: string;
+  serviceModality?: string;
   ageRange?: string; // '18-24', '25-34', '35-44', '45+'
   verified?: boolean;
   withPhoto?: boolean;
