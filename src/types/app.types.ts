@@ -144,7 +144,9 @@ export interface DiscoveryProfileCard {
   activity_label: string;
   distance_label: string;
   is_sponsored: boolean;
+  sponsored_placement_name?: string | null;
   organic_score: number;
+  rank_position?: number;
   authenticity_verified?: boolean;
 }
 
@@ -176,6 +178,7 @@ export interface DiscoveryFilters {
   verifiedOnly?: boolean;
   withVideo?: boolean;
   activityFilter?: string;
+  sortBy?: 'relevance' | 'recent' | 'active' | 'distance' | string;
   page?: number;
   limit?: number;
 }
@@ -208,6 +211,8 @@ export type PublicAdvertiser = PublicAdvertiserRow & {
   service_modalities?: string[] | null;
   authenticity_verified?: boolean | null;
   audio_presentation_url?: string | null;
+  is_sponsored?: boolean;
+  sponsored_placement_name?: string | null;
 };
 
 // Runtime type guard for domain invariants
@@ -731,4 +736,70 @@ export interface ReferralStats {
   rewarded_count: number;
   total_bonus_days_earned: number;
   active_bonus_days: number;
+}
+
+// ============================================================================
+// Phase 27C Models — Discovery Ranking, Sponsored Placement & Inventory Engine
+// ============================================================================
+
+export type InventoryPlacement =
+  | 'homepage_featured'
+  | 'city_top'
+  | 'category_top'
+  | 'search_boost'
+  | 'regional_featured';
+
+export type InventoryScopeType = 'global' | 'state' | 'city' | 'category' | 'city_category';
+
+export interface CommercialInventorySlot {
+  id: string;
+  placement: InventoryPlacement;
+  scope_type: InventoryScopeType;
+  scope_id?: string | null;
+  scope_name?: string | null;
+  max_slots: number;
+  max_sponsored_ratio: number;
+  is_active: boolean;
+  policy_version: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type DiscoveryEventType =
+  | 'organic_impression'
+  | 'sponsored_impression'
+  | 'organic_click'
+  | 'sponsored_click';
+
+export interface DiscoveryImpressionEvent {
+  id: string;
+  event_type: DiscoveryEventType;
+  advertiser_id: string;
+  campaign_id?: string | null;
+  placement: string;
+  city_slug?: string | null;
+  category_slug?: string | null;
+  session_dedupe_key: string;
+  policy_version: string;
+  created_at: string;
+}
+
+export interface RankingDiagnostics {
+  found: boolean;
+  advertiser_id?: string;
+  stage_name?: string;
+  is_eligible?: boolean;
+  ineligibility_reasons?: string[];
+  has_active_campaign?: boolean;
+  scores?: {
+    organic_score: number;
+    completeness_score: number;
+    verification_score: number;
+    freshness_score: number;
+    quality_score: number;
+    bayesian_ctr: number;
+    new_profile_boost: number;
+  };
+  policy_version?: string;
+  error?: string;
 }

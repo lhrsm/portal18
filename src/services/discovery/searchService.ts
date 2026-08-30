@@ -13,7 +13,7 @@ export const searchService = {
     const offset = (page - 1) * limit;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.rpc as any)('search_profiles_discovery', {
+    const { data, error } = await (supabase.rpc as any)('search_profiles_discovery_v2', {
       p_query: filters.query || null,
       p_state_code: filters.stateCode || null,
       p_city_slug: filters.citySlug || null,
@@ -23,6 +23,7 @@ export const searchService = {
       p_verified_only: Boolean(filters.verifiedOnly),
       p_with_video: Boolean(filters.withVideo),
       p_activity_filter: filters.activityFilter || null,
+      p_sort_by: filters.sortBy || 'relevance',
       p_limit: limit + 1, // Fetch +1 to check for hasMore without full count query
       p_offset: offset,
     });

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PublicAdvertiser } from '@/types/app.types';
@@ -10,6 +10,7 @@ import { followingService } from '@/services/account/followingService';
 import { privacyService } from '@/services/account/privacyService';
 import { userListsService } from '@/services/account/userListsService';
 import { historyService } from '@/services/account/historyService';
+import { discoveryRankingService } from '@/services/discovery/discoveryRankingService';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { ReportModal } from '@/components/public/ReportModal';
@@ -46,6 +47,8 @@ export function AdvertiserCard({
   const { user, profile } = useAuth();
   const { showToast } = useToast();
 
+  const cardRef = useRef<HTMLDivElement | null>(null);
+
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [isFollowing, setIsFollowing] = useState(initialFollowing);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -58,11 +61,49 @@ export function AdvertiserCard({
   const citySlug = advertiser.city_slug || 'geral';
   const profileUrl = `/perfil/${stateSlug}/${citySlug}/${advertiser.slug}`;
 
+  useEffect(() => {
+    if (!cardRef.current || typeof IntersectionObserver === 'undefined') return;
+
+    let timer: NodeJS.Timeout | null = null;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            timer = setTimeout(() => {
+              discoveryRankingService.recordDiscoveryEvent({
+                eventType: advertiser.is_sponsored ? 'sponsored_impression' : 'organic_impression',
+                advertiserId: advertiser.advertiser_id,
+                citySlug: advertiser.city_slug,
+              });
+            }, 1000);
+          } else if (timer) {
+            clearTimeout(timer);
+            timer = null;
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(cardRef.current);
+
+    return () => {
+      observer.disconnect();
+      if (timer) clearTimeout(timer);
+    };
+  }, [advertiser.advertiser_id, advertiser.is_sponsored, advertiser.city_slug]);
+
   const handleCardClick = () => {
     // Non-blocking history record
     if (profile) {
       historyService.recordProfileView(advertiser.advertiser_id);
     }
+    discoveryRankingService.recordDiscoveryEvent({
+      eventType: advertiser.is_sponsored ? 'sponsored_click' : 'organic_click',
+      advertiserId: advertiser.advertiser_id,
+      citySlug: advertiser.city_slug,
+    });
   };
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
@@ -199,7 +240,7 @@ export function AdvertiserCard({
 
   return (
     <>
-      <div className="advertiser-card-container" onClick={handleCardClick}>
+      <div ref={cardRef} className="advertiser-card-container" onClick={handleCardClick}>
         <Link href={profileUrl} prefetch={true} className="advertiser-card-link">
           <div className="advertiser-card-media-wrapper">
             {(() => {
