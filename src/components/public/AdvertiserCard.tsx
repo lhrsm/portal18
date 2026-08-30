@@ -59,7 +59,7 @@ export function AdvertiserCard({
   const profileUrl = `/perfil/${stateSlug}/${citySlug}/${advertiser.slug}`;
 
   const handleCardClick = () => {
-    // Non-blocking history record (Section 16 & 99)
+    // Non-blocking history record
     if (profile) {
       historyService.recordProfileView(advertiser.advertiser_id);
     }
@@ -103,6 +103,11 @@ export function AdvertiserCard({
     setIsMenuOpen(false);
 
     if (!user || !profile) {
+      showToast({
+        type: 'warning',
+        title: 'Acesso Necessário',
+        message: 'Entre em sua conta para seguir anunciantes.',
+      });
       router.push(`/login?redirect_to=${encodeURIComponent(profileUrl)}`);
       return;
     }
@@ -111,16 +116,17 @@ export function AdvertiserCard({
     const newState = !previousState;
     setIsFollowing(newState);
 
-    const res = await followingService.toggleFollow(advertiser.advertiser_id);
-    if (res.success) {
+    try {
+      const res = await followingService.toggleFollow(advertiser.advertiser_id);
+      if (!res.success) throw new Error(res.error);
       showToast({
-        type: 'success',
-        title: newState ? 'Seguindo' : 'Deixou de Seguir',
-        message: newState ? `Você receberá novidades de ${advertiser.stage_name}.` : 'Notificações canceladas.',
+        type: newState ? 'success' : 'info',
+        title: newState ? 'Seguindo Anunciante' : 'Deixou de Seguir',
+        message: newState ? `Você receberá atualizações de ${advertiser.stage_name}.` : `Você não segue mais ${advertiser.stage_name}.`,
       });
-    } else {
+    } catch {
       setIsFollowing(previousState);
-      showToast({ type: 'error', title: 'Erro', message: res.error });
+      showToast({ type: 'error', title: 'Erro ao seguir', message: 'Tente novamente.' });
     }
   };
 
@@ -130,24 +136,31 @@ export function AdvertiserCard({
     setIsMenuOpen(false);
 
     if (!user || !profile) {
+      showToast({ type: 'warning', title: 'Acesso Necessário', message: 'Entre em sua conta para criar e salvar em listas.' });
       router.push(`/login?redirect_to=${encodeURIComponent(profileUrl)}`);
       return;
     }
 
     setIsListModalOpen(true);
     setLoadingLists(true);
-    const lists = await userListsService.getUserLists(profile.id);
-    setUserLists(lists);
-    setLoadingLists(false);
+    try {
+      const lists = await userListsService.getUserLists(profile.id);
+      setUserLists(lists);
+    } catch {
+      showToast({ type: 'error', title: 'Erro ao carregar listas', message: 'Tente novamente.' });
+    } finally {
+      setLoadingLists(false);
+    }
   };
 
-  const handleAddToList = async (listId: string, listName: string) => {
-    const res = await userListsService.addToList(listId, advertiser.advertiser_id);
-    if (res.success) {
-      showToast({ type: 'success', title: 'Salvo na Lista', message: `Adicionado a "${listName}".` });
+  const handleAddToList = async (listId: string) => {
+    try {
+      const res = await userListsService.addToList(listId, advertiser.advertiser_id);
+      if (!res.success) throw new Error(res.error);
+      showToast({ type: 'success', title: 'Adicionado à Lista', message: `${advertiser.stage_name} adicionado com sucesso!` });
       setIsListModalOpen(false);
-    } else {
-      showToast({ type: 'error', title: 'Erro', message: res.error || 'Não foi possível adicionar.' });
+    } catch {
+      showToast({ type: 'error', title: 'Erro', message: 'Não foi possível adicionar à lista.' });
     }
   };
 
@@ -157,17 +170,20 @@ export function AdvertiserCard({
     setIsMenuOpen(false);
 
     if (!user || !profile) {
-      router.push(`/login?redirect_to=${encodeURIComponent(profileUrl)}`);
+      showToast({ type: 'warning', title: 'Acesso Necessário', message: 'Entre em sua conta para bloquear perfis.' });
       return;
     }
 
-    if (!confirm(`Deseja bloquear o perfil de "${advertiser.stage_name}"? Ele não aparecerá mais em suas buscas e recomendações.`)) {
-      return;
-    }
-
-    const res = await privacyService.toggleBlock(advertiser.advertiser_id);
-    if (res.success) {
-      showToast({ type: 'info', title: 'Perfil Bloqueado', message: 'O anúncio foi ocultado das suas recomendações.' });
+    try {
+      const res = await privacyService.toggleBlock(advertiser.advertiser_id);
+      if (!res.success) throw new Error(res.error);
+      showToast({
+        type: 'warning',
+        title: 'Perfil Bloqueado',
+        message: `${advertiser.stage_name} não aparecerá mais para você.`,
+      });
+    } catch {
+      showToast({ type: 'error', title: 'Erro ao bloquear', message: 'Tente novamente.' });
     }
   };
 
@@ -176,7 +192,7 @@ export function AdvertiserCard({
     e.stopPropagation();
     setIsMenuOpen(false);
 
-    if (!user || !profile) return;
+    if (!profile) return;
     await privacyService.hideRecommendation(profile.id, advertiser.advertiser_id, 'user_feedback');
     showToast({ type: 'info', title: 'Feedback Registrado', message: 'Mostraremos menos perfis como este.' });
   };
@@ -199,11 +215,12 @@ export function AdvertiserCard({
                   className="advertiser-card-image"
                   loading="lazy"
                   decoding="async"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 22vw"
                 />
               ) : (
                 <div className="advertiser-card-placeholder">
-                  <Sparkles size={36} color="var(--accent-gold)" />
-                  <span>Foto do perfil</span>
+                  <Sparkles size={32} color="var(--accent-gold)" />
+                  <span style={{ fontSize: '0.75rem', marginTop: '0.35rem' }}>Foto do perfil</span>
                 </div>
               );
             })()}
@@ -217,34 +234,36 @@ export function AdvertiserCard({
               )}
               {advertiser.verification_status === 'verified' && (
                 <span className="badge-verified">
-                  <ShieldCheck size={13} /> Verificado
+                  <ShieldCheck size={11} /> Verificado
                 </span>
               )}
             </div>
 
-            {/* Favorite Floating Button */}
+            {/* Favorite Floating Button (Touch target >= 40px) */}
             <button
               type="button"
               className={`advertiser-card-fav-btn ${isFavorite ? 'active' : ''}`}
               onClick={handleFavoriteClick}
               aria-label={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              style={{ width: '38px', height: '38px', padding: '6px' }}
             >
               <Heart size={18} fill={isFavorite ? 'var(--accent-ruby)' : 'none'} color={isFavorite ? 'var(--accent-ruby)' : '#fff'} />
             </button>
 
-            {/* Context Menu Button (Section 82 & 83) */}
+            {/* Context Menu Button (Touch target >= 40px) */}
             <button
               type="button"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }}
               style={{
                 position: 'absolute',
-                top: '0.6rem',
-                left: '0.6rem',
-                background: 'rgba(0,0,0,0.6)',
+                top: '0.45rem',
+                left: '0.45rem',
+                background: 'rgba(0,0,0,0.65)',
+                backdropFilter: 'blur(4px)',
                 border: 'none',
                 borderRadius: '50%',
-                width: '32px',
-                height: '32px',
+                width: '36px',
+                height: '36px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -264,7 +283,7 @@ export function AdvertiserCard({
                 style={{
                   position: 'absolute',
                   top: '2.5rem',
-                  left: '0.6rem',
+                  left: '0.45rem',
                   background: 'var(--bg-secondary)',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-md)',
@@ -273,14 +292,14 @@ export function AdvertiserCard({
                   flexDirection: 'column',
                   gap: '0.2rem',
                   zIndex: 20,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
                   minWidth: '170px',
                 }}
               >
                 <button
                   type="button"
                   onClick={handleFollowClick}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '40px' }}
                 >
                   <Users size={14} color="var(--accent-gold)" />
                   <span>{isFollowing ? 'Deixar de seguir' : 'Seguir anunciante'}</span>
@@ -289,7 +308,7 @@ export function AdvertiserCard({
                 <button
                   type="button"
                   onClick={handleOpenListModal}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '40px' }}
                 >
                   <ListPlus size={14} color="var(--accent-gold)" />
                   <span>Salvar em lista...</span>
@@ -298,7 +317,7 @@ export function AdvertiserCard({
                 <button
                   type="button"
                   onClick={handleNotInterestedClick}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '40px' }}
                 >
                   <EyeOff size={14} />
                   <span>Não tenho interesse</span>
@@ -307,7 +326,7 @@ export function AdvertiserCard({
                 <button
                   type="button"
                   onClick={handleBlockClick}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '40px' }}
                 >
                   <UserX size={14} color="var(--accent-ruby)" />
                   <span>Bloquear perfil</span>
@@ -316,7 +335,7 @@ export function AdvertiserCard({
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMenuOpen(false); setIsReportModalOpen(true); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--accent-ruby)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--accent-ruby)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '40px' }}
                 >
                   <ShieldAlert size={14} />
                   <span>Denunciar</span>
@@ -335,10 +354,10 @@ export function AdvertiserCard({
             </div>
 
             <div className="advertiser-card-location">
-              <MapPin size={14} color="var(--accent-gold)" />
+              <MapPin size={12} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
               <span>
                 {advertiser.city_name ? `${advertiser.city_name}, ${advertiser.state_code}` : 'Brasil'}
-                {(advertiser as any).distance_label ? ` • ${(advertiser as any).distance_label}` : (advertiser.neighborhood ? ` • ${advertiser.neighborhood}` : '')}
+                {(advertiser as any).distance_label ? ` · ${(advertiser as any).distance_label}` : (advertiser.neighborhood ? ` · ${advertiser.neighborhood}` : '')}
               </span>
             </div>
 
@@ -348,70 +367,93 @@ export function AdvertiserCard({
 
             <div className="advertiser-card-footer">
               <div className="advertiser-card-activity">
-                <Clock size={12} />
-                <span>{(advertiser as any).activity_label || 'Ativo recentemente'}</span>
+                <Clock size={11} style={{ flexShrink: 0 }} />
+                <span>{(advertiser as any).activity_label || 'Ativo hoje'}</span>
               </div>
               <span className="advertiser-card-cta">
-                Ver perfil <Eye size={13} />
+                Ver perfil <Eye size={12} />
               </span>
             </div>
           </div>
         </Link>
       </div>
 
-      {/* Save to List Modal (Section 33) */}
+      {/* User Lists Modal */}
       {isListModalOpen && (
         <div
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsListModalOpen(false); }}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(4px)',
+            display: 'grid',
+            placeItems: 'center',
+            padding: '1rem',
+            zIndex: 9999,
+          }}
+          onClick={() => setIsListModalOpen(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', maxWidth: '380px', width: '100%' }}
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-medium)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '1.5rem',
+              maxWidth: '380px',
+              width: '100%',
+              boxShadow: 'var(--shadow-elevation-lg)',
+            }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h4 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Salvar em Lista</h4>
-              <button type="button" onClick={() => setIsListModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <ListPlus size={18} color="var(--accent-gold)" /> Salvar em Lista
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsListModalOpen(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem' }}
+              >
                 <X size={18} />
               </button>
             </div>
 
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-              Escolha uma coleção particular para salvar {advertiser.stage_name}:
-            </p>
-
             {loadingLists ? (
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Carregando suas listas...</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Carregando listas...</p>
             ) : userLists.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Você ainda não criou nenhuma lista.</p>
+              <div>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                  Você ainda não possui listas personalizadas.
+                </p>
                 <Link href="/account/lists">
-                  <Button variant="primary" size="sm">Criar Minha Primeira Lista</Button>
+                  <Button variant="ruby" size="sm" fullWidth>
+                    Criar Minha Primeira Lista
+                  </Button>
                 </Link>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '220px', overflowY: 'auto', marginBottom: '1rem' }}>
-                {userLists.map((l) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '240px', overflowY: 'auto' }}>
+                {userLists.map((list) => (
                   <button
-                    key={l.id}
+                    key={list.id}
                     type="button"
-                    onClick={() => handleAddToList(l.id, l.name)}
+                    onClick={() => handleAddToList(list.id)}
                     style={{
                       display: 'flex',
-                      justifyContent: 'space-between',
                       alignItems: 'center',
+                      justifyContent: 'space-between',
                       padding: '0.75rem',
-                      borderRadius: 'var(--radius-md)',
-                      background: 'rgba(255,255,255,0.03)',
+                      background: 'var(--bg-tertiary)',
                       border: '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-md)',
                       color: 'var(--text-primary)',
                       cursor: 'pointer',
                       textAlign: 'left',
-                      fontSize: '0.9rem',
+                      minHeight: '44px',
                     }}
                   >
-                    <span>{l.name}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{l.items_count || 0} itens</span>
+                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{list.title}</span>
+                    <Check size={14} color="var(--accent-gold)" />
                   </button>
                 ))}
               </div>
@@ -421,12 +463,14 @@ export function AdvertiserCard({
       )}
 
       {/* Report Modal */}
-      <ReportModal
-        isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        advertiserId={advertiser.advertiser_id}
-        stageName={advertiser.stage_name}
-      />
+      {isReportModalOpen && (
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          advertiserId={advertiser.advertiser_id}
+          stageName={advertiser.stage_name}
+        />
+      )}
     </>
   );
 }

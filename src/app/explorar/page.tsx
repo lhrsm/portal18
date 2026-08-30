@@ -1,28 +1,29 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { searchService } from '@/services/discovery/searchService';
 import { locationService } from '@/services/locationService';
-import { DiscoveryProfileCard, BrazilState, BrazilCity, Category } from '@/types/app.types';
+import { PublicAdvertiser, Category, BrazilState, BrazilCity, DiscoveryProfileCard } from '@/types/app.types';
 import { AdvertiserCard } from '@/components/public/AdvertiserCard';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Sheet } from '@/components/ui/Sheet';
+import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
 import { 
-  Filter, 
   Search, 
-  Sparkles, 
+  Filter, 
   MapPin, 
-  RotateCcw, 
-  SlidersHorizontal, 
   Navigation, 
-  Video, 
-  ShieldCheck, 
-  Clock 
+  RotateCcw, 
+  Tag, 
+  SlidersHorizontal,
+  Video,
+  CheckCircle2,
+  Sparkles,
+  Users
 } from 'lucide-react';
 
 function ExploreContent() {
@@ -30,11 +31,12 @@ function ExploreContent() {
   const searchParams = useSearchParams();
   const { showToast } = useToast();
 
+  // State for search results
   const [profiles, setProfiles] = useState<DiscoveryProfileCard[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
 
@@ -131,29 +133,31 @@ function ExploreContent() {
 
   useEffect(() => {
     loadProfiles();
-  }, [queryParam, stateParam, cityParam, originCityIdParam, radiusParam, categoryParam, verifiedParam, videoParam, activityParam]);
+  }, [loadProfiles]);
 
-  // Update URL Query Helper
+  // Handle Dynamic URL Query Updates
   const updateFilter = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set(key, value);
-    } else {
+    if (value === null || value === '' || value === 'todos') {
       params.delete(key);
+    } else {
+      params.set(key, value);
     }
+    
+    // Reset city if state changes
     if (key === 'estado') {
       params.delete('cidade');
-      params.delete('origem');
     }
+
     router.push(`/explorar?${params.toString()}`);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateFilter('q', searchInput || null);
+    updateFilter('q', searchInput.trim() || null);
   };
 
-  // Browser Opt-in Geolocation (Section 13, 15, 16, 81)
+  // Browser Opt-in Geolocation
   const handleRequestNearMe = () => {
     if (!navigator.geolocation) {
       showToast({ type: 'warning', title: 'Geolocalização indisponível', message: 'Seu navegador não suporta geolocalização.' });
@@ -164,7 +168,6 @@ function ExploreContent() {
     navigator.geolocation.getCurrentPosition(
       async () => {
         setIsLocating(false);
-        // Map to capital as safe nearest approximation without saving exact GPS (Section 5 & 16)
         const spCity = cities.find((c) => c.slug === 'sao-paulo') || cities[0];
         if (spCity) {
           updateFilter('origem', spCity.id);
@@ -205,56 +208,59 @@ function ExploreContent() {
   ].filter(Boolean).length;
 
   return (
-    <div className="container" style={{ padding: '2.5rem 1rem 4rem 1rem' }}>
+    <div className="container" style={{ padding: '1.5rem 1rem 3.5rem 1rem' }}>
       {/* Top Header */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem', gap: '1rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.25rem', gap: '0.75rem' }}>
         <div>
-          <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.4rem' }}>
-            <Badge variant="gold">MOTOR DE DESCOBERTA 18+</Badge>
+          <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.3rem' }}>
+            <Badge variant="gold">DESCOBERTA 18+</Badge>
             <Badge variant="neutral">{totalCount} {totalCount === 1 ? 'perfil encontrado' : 'perfis encontrados'}</Badge>
           </div>
-          <h1 style={{ fontSize: '2.4rem' }}>Explorar Anúncios</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Busca por proximidade geográfica aproximada, categorias e relevância orgânica</p>
+          <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.3rem)', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
+            Explorar Anúncios
+          </h1>
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
           <Button
             variant="secondary"
             size="sm"
             onClick={handleRequestNearMe}
             isLoading={isLocating}
-            leftIcon={<Navigation size={15} color="var(--accent-gold)" />}
+            leftIcon={<Navigation size={14} color="var(--accent-gold)" />}
+            style={{ minHeight: '38px' }}
           >
             Perto de mim
           </Button>
 
           <Button
-            variant="secondary"
+            variant={activeFiltersCount > 0 ? 'ruby' : 'secondary'}
             size="sm"
             className="mobile-filter-btn"
             onClick={() => setMobileFiltersOpen(true)}
-            leftIcon={<SlidersHorizontal size={15} />}
+            leftIcon={<SlidersHorizontal size={14} />}
+            style={{ minHeight: '38px' }}
           >
             Filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Button>
         </div>
       </div>
 
-      {/* Search Input Bar */}
-      <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem' }}>
+      {/* Search Input Bar (100% width on mobile) */}
+      <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
         <div style={{ position: 'relative', flex: 1 }}>
           <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
           <input
             type="text"
             className="input"
-            placeholder="Buscar por nome, cidade, categoria ou especialidade (ex: São Paulo, Massagem)..."
+            placeholder="Buscar por nome, cidade ou categoria..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            style={{ paddingLeft: '2.8rem' }}
+            style={{ paddingLeft: '2.6rem', height: '46px', width: '100%' }}
           />
         </div>
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="primary" style={{ height: '46px', minWidth: '80px', fontWeight: 700 }}>
           Buscar
         </Button>
       </form>
@@ -279,7 +285,7 @@ function ExploreContent() {
               )}
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
               {/* Filter 1: State */}
               <div>
                 <label className="form-label" style={{ fontSize: '0.8rem' }}>Estado (UF)</label>
@@ -316,7 +322,7 @@ function ExploreContent() {
                 </div>
               )}
 
-              {/* Filter 3: Quem você procura? (Phase 26C) */}
+              {/* Filter 3: Quem você procura? */}
               <div>
                 <label className="form-label" style={{ fontSize: '0.8rem' }}>Quem você procura?</label>
                 <select
@@ -349,7 +355,7 @@ function ExploreContent() {
                 </select>
               </div>
 
-              {/* Filter 5: Quem atende? (Phase 26C) */}
+              {/* Filter 5: Quem atende? */}
               <div>
                 <label className="form-label" style={{ fontSize: '0.8rem' }}>Quem atende?</label>
                 <select
@@ -365,7 +371,7 @@ function ExploreContent() {
                 </select>
               </div>
 
-              {/* Filter 6: Modalidade / Local (Phase 26C) */}
+              {/* Filter 6: Modalidade / Local */}
               <div>
                 <label className="form-label" style={{ fontSize: '0.8rem' }}>Modalidade / Local</label>
                 <select
@@ -381,7 +387,7 @@ function ExploreContent() {
                 </select>
               </div>
 
-              {/* Filter 7: Proximity Radius (Sections 10 & 19) */}
+              {/* Filter 7: Proximity Radius */}
               <div>
                 <label className="form-label" style={{ fontSize: '0.8rem' }}>Raio de Proximidade</label>
                 <select
@@ -397,22 +403,7 @@ function ExploreContent() {
                 </select>
               </div>
 
-              {/* Filter 5: Recency Activity (Section 23 & 24) */}
-              <div>
-                <label className="form-label" style={{ fontSize: '0.8rem' }}>Atividade Recente</label>
-                <select
-                  className="input"
-                  value={activityParam}
-                  onChange={(e) => updateFilter('atividade', e.target.value || null)}
-                >
-                  <option value="">Qualquer atividade</option>
-                  <option value="active_today">Ativo Hoje</option>
-                  <option value="recently_active">Ativo Recentemente</option>
-                  <option value="active_this_week">Ativo Esta Semana</option>
-                </select>
-              </div>
-
-              {/* Filter 6: Verified Checkbox */}
+              {/* Filter 8: Verified Checkbox */}
               <div>
                 <label className="checkbox-field" style={{ margin: 0 }}>
                   <input
@@ -426,21 +417,6 @@ function ExploreContent() {
                   </span>
                 </label>
               </div>
-
-              {/* Filter 7: With Video Checkbox */}
-              <div>
-                <label className="checkbox-field" style={{ margin: 0 }}>
-                  <input
-                    type="checkbox"
-                    className="checkbox-input"
-                    checked={videoParam}
-                    onChange={(e) => updateFilter('video', e.target.checked ? 'true' : null)}
-                  />
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-                    Com <strong>Vídeo no Perfil</strong>
-                  </span>
-                </label>
-              </div>
             </div>
           </Card>
         </aside>
@@ -450,17 +426,17 @@ function ExploreContent() {
           {isLoading ? (
             <div className="advertiser-grid">
               {[1, 2, 3, 4, 5, 6].map((n) => (
-                <Skeleton key={n} height="360px" borderRadius="var(--radius-lg)" />
+                <Skeleton key={n} height="320px" borderRadius="var(--radius-md)" />
               ))}
             </div>
           ) : profiles.length === 0 ? (
-            <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '4rem 1.5rem' }}>
-              <Search size={44} color="var(--text-muted)" style={{ margin: '0 auto 1rem auto' }} />
-              <h2 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Nenhum anúncio encontrado</h2>
-              <p style={{ color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto 1.5rem auto', fontSize: '0.9rem' }}>
-                Tente ampliar o raio de busca ou ajustar os filtros de categoria e localização.
+            <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3.5rem 1.25rem' }}>
+              <Search size={40} color="var(--text-muted)" style={{ margin: '0 auto 0.75rem auto' }} />
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '0.4rem' }}>Nenhum perfil encontrado</h2>
+              <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto 1.25rem auto', fontSize: '0.85rem' }}>
+                Tente ajustar os filtros de categoria ou localização para encontrar profissionais disponíveis.
               </p>
-              <Button variant="ruby" onClick={clearAllFilters}>
+              <Button variant="ruby" size="md" onClick={clearAllFilters}>
                 Limpar Todos os Filtros
               </Button>
             </Card>
@@ -480,7 +456,7 @@ function ExploreContent() {
                       headline: adv.headline,
                       primary_media_url: adv.thumbnail_url,
                       verification_status: adv.verification_status as any,
-                      profile_status: 'active',
+                      profile_status: 'approved',
                       visibility: 'public',
                       category_names: [],
                       distance_label: adv.distance_label,
@@ -491,10 +467,10 @@ function ExploreContent() {
                 ))}
               </div>
 
-              {/* Cursor / Load More Pagination (Section 78) */}
+              {/* Load More Pagination */}
               {hasMore && (
-                <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-                  <Button variant="secondary" onClick={() => loadProfiles(true)}>
+                <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                  <Button variant="secondary" size="md" onClick={() => loadProfiles(true)} style={{ minHeight: '44px', minWidth: '180px' }}>
                     Carregar Mais Anúncios
                   </Button>
                 </div>
@@ -504,15 +480,16 @@ function ExploreContent() {
         </main>
       </div>
 
-      {/* Mobile Filters Sheet */}
+      {/* Mobile Filters Sheet (Max height 85-90dvh with sticky actions) */}
       <Sheet isOpen={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)} title={`Filtros (${activeFiltersCount})`}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1rem 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem 0', maxHeight: '72dvh', overflowY: 'auto' }}>
           <div>
-            <label className="form-label">Estado (UF)</label>
+            <label className="form-label" style={{ fontSize: '0.8rem' }}>Estado (UF)</label>
             <select
               className="input"
               value={stateParam}
               onChange={(e) => updateFilter('estado', e.target.value || null)}
+              style={{ height: '44px' }}
             >
               <option value="">Todos os Estados</option>
               {states.map((s) => (
@@ -525,11 +502,12 @@ function ExploreContent() {
 
           {cities.length > 0 && (
             <div>
-              <label className="form-label">Cidade</label>
+              <label className="form-label" style={{ fontSize: '0.8rem' }}>Cidade</label>
               <select
                 className="input"
                 value={cityParam}
                 onChange={(e) => updateFilter('cidade', e.target.value || null)}
+                style={{ height: '44px' }}
               >
                 <option value="">Todas as Cidades</option>
                 {cities.map((c) => (
@@ -542,11 +520,12 @@ function ExploreContent() {
           )}
 
           <div>
-            <label className="form-label">Quem você procura?</label>
+            <label className="form-label" style={{ fontSize: '0.8rem' }}>Quem você procura?</label>
             <select
               className="input"
               value={genderParam || 'todos'}
               onChange={(e) => updateFilter('genero', e.target.value === 'todos' ? null : e.target.value)}
+              style={{ height: '44px' }}
             >
               <option value="todos">Todos os Perfis</option>
               <option value="mulheres">Mulheres</option>
@@ -557,11 +536,12 @@ function ExploreContent() {
           </div>
 
           <div>
-            <label className="form-label">Categoria</label>
+            <label className="form-label" style={{ fontSize: '0.8rem' }}>Categoria</label>
             <select
               className="input"
               value={categoryParam}
               onChange={(e) => updateFilter('categoria', e.target.value || null)}
+              style={{ height: '44px' }}
             >
               <option value="">Todas as Categorias</option>
               {categories.map((cat) => (
@@ -573,11 +553,12 @@ function ExploreContent() {
           </div>
 
           <div>
-            <label className="form-label">Quem atende?</label>
+            <label className="form-label" style={{ fontSize: '0.8rem' }}>Quem atende?</label>
             <select
               className="input"
               value={targetAudienceParam || 'todos'}
               onChange={(e) => updateFilter('atende', e.target.value === 'todos' ? null : e.target.value)}
+              style={{ height: '44px' }}
             >
               <option value="todos">Todos os Públicos</option>
               <option value="homens">Homens</option>
@@ -588,11 +569,12 @@ function ExploreContent() {
           </div>
 
           <div>
-            <label className="form-label">Modalidade / Local</label>
+            <label className="form-label" style={{ fontSize: '0.8rem' }}>Modalidade / Local</label>
             <select
               className="input"
               value={serviceModalityParam}
               onChange={(e) => updateFilter('modalidade', e.target.value || null)}
+              style={{ height: '44px' }}
             >
               <option value="">Todas as Modalidades</option>
               <option value="local_proprio">Local Próprio</option>
@@ -603,11 +585,12 @@ function ExploreContent() {
           </div>
 
           <div>
-            <label className="form-label">Raio de Proximidade</label>
+            <label className="form-label" style={{ fontSize: '0.8rem' }}>Raio de Proximidade</label>
             <select
               className="input"
               value={radiusParam.toString()}
               onChange={(e) => updateFilter('raio', e.target.value)}
+              style={{ height: '44px' }}
             >
               <option value="10">Até 10 km</option>
               <option value="25">Até 25 km</option>
@@ -617,22 +600,23 @@ function ExploreContent() {
           </div>
 
           <div>
-            <label className="checkbox-field">
+            <label className="checkbox-field" style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}>
               <input
                 type="checkbox"
                 className="checkbox-input"
                 checked={verifiedParam}
                 onChange={(e) => updateFilter('verificado', e.target.checked ? 'true' : null)}
               />
-              <span>Apenas Verificados</span>
+              <span style={{ fontSize: '0.85rem' }}>Apenas <strong>Verificados</strong></span>
             </label>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-            <Button variant="secondary" fullWidth onClick={clearAllFilters}>
+          {/* Sticky Actions Bar */}
+          <div style={{ position: 'sticky', bottom: 0, background: 'var(--bg-secondary)', paddingTop: '0.75rem', paddingBottom: '0.5rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: '0.5rem', zIndex: 10 }}>
+            <Button variant="secondary" fullWidth onClick={clearAllFilters} style={{ minHeight: '44px' }}>
               Limpar
             </Button>
-            <Button variant="ruby" fullWidth onClick={() => setMobileFiltersOpen(false)}>
+            <Button variant="ruby" fullWidth onClick={() => setMobileFiltersOpen(false)} style={{ minHeight: '44px', fontWeight: 700 }}>
               Aplicar Filtros
             </Button>
           </div>
@@ -645,11 +629,11 @@ function ExploreContent() {
 export default function ExplorePage() {
   return (
     <Suspense fallback={
-      <div className="container" style={{ padding: '3rem 1rem' }}>
-        <Skeleton height="3rem" width="280px" style={{ marginBottom: '1.5rem' }} />
+      <div className="container" style={{ padding: '2rem 1rem' }}>
+        <Skeleton height="2.5rem" width="220px" style={{ marginBottom: '1.25rem' }} />
         <div className="advertiser-grid">
           {[1, 2, 3, 4].map((n) => (
-            <Skeleton key={n} height="360px" />
+            <Skeleton key={n} height="320px" />
           ))}
         </div>
       </div>

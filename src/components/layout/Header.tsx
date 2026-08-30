@@ -8,9 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Sheet } from '@/components/ui/Sheet';
 import { 
-  Sparkles, 
   Menu, 
-  X, 
   User, 
   Megaphone, 
   LogOut, 
@@ -20,14 +18,15 @@ import {
   MapPin, 
   Tag, 
   Home,
-  Flame,
   HelpCircle,
-  Lock
+  Users,
+  Compass,
+  Sparkles
 } from 'lucide-react';
 
 export function Header() {
   const pathname = usePathname();
-  const { user, profile, isAdvertiser, isAdmin, signOut } = useAuth();
+  const { user, profile, isAdvertiser, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -51,7 +50,7 @@ export function Header() {
             <span className="logo-highlight">18+</span>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation (Hidden on Mobile) */}
           <nav className="nav-desktop" aria-label="Navegação Principal">
             {navLinks.map((link) => {
               const isActive = pathname === link.href || (link.href.startsWith('/explorar') && pathname === '/explorar' && !link.href.includes('?'));
@@ -82,28 +81,28 @@ export function Header() {
                   </Button>
                 </Link>
                 <Link href="/advertiser/start">
-                  <Button variant="ruby" size="sm" leftIcon={<Megaphone size={14} />} style={{ fontWeight: 700, boxShadow: 'var(--shadow-glow-ruby)' }}>
+                  <Button variant="ruby" size="sm" leftIcon={<Megaphone size={14} />} style={{ fontWeight: 700, minHeight: '36px' }}>
                     Anunciar
                   </Button>
                 </Link>
               </>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 {isAdvertiser ? (
                   <Link href="/advertiser">
-                    <Button variant="primary" size="sm" leftIcon={<Megaphone size={14} />}>
+                    <Button variant="primary" size="sm" leftIcon={<Megaphone size={14} />} style={{ minHeight: '36px' }}>
                       Painel
                     </Button>
                   </Link>
                 ) : (
                   <Link href="/advertiser/start">
-                    <Button variant="ruby" size="sm" leftIcon={<Megaphone size={14} />}>
+                    <Button variant="ruby" size="sm" leftIcon={<Megaphone size={14} />} style={{ minHeight: '36px' }}>
                       Anunciar
                     </Button>
                   </Link>
                 )}
 
-                <Link href="/account" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }} aria-label="Minha Conta">
+                <Link href="/account" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', padding: '0.2rem' }} aria-label="Minha Conta">
                   <Avatar
                     src={profile?.avatar_path}
                     fallback={profile?.display_name || user.email || 'U'}
@@ -124,7 +123,7 @@ export function Header() {
               </div>
             )}
 
-            {/* Mobile Hamburger Toggle Button */}
+            {/* Mobile Hamburger Toggle Button (>=44px touch area) */}
             <button
               type="button"
               className="btn-mobile-toggle"
@@ -139,73 +138,90 @@ export function Header() {
 
       {/* Mobile Drawer Navigation */}
       <Sheet isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} title="Menu Principal">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.5rem 0' }}>
-          <Link href="/" className="mobile-nav-link" onClick={handleLinkClick}>
-            <Home size={18} color="var(--accent-gold)" /> Início
-          </Link>
-          <Link href="/explorar" className="mobile-nav-link" onClick={handleLinkClick}>
-            <Search size={18} color="var(--accent-gold)" /> Explorar Todos os Anúncios
-          </Link>
-          <Link href="/acompanhantes/bahia/salvador" className="mobile-nav-link" onClick={handleLinkClick}>
-            <MapPin size={18} color="var(--accent-gold)" /> Salvador / BA
-          </Link>
-          <Link href="/acompanhantes/sao-paulo/sao-paulo" className="mobile-nav-link" onClick={handleLinkClick}>
-            <MapPin size={18} color="var(--text-muted)" /> São Paulo / SP
-          </Link>
-          <Link href="/acompanhantes/rio-de-janeiro/rio-de-janeiro" className="mobile-nav-link" onClick={handleLinkClick}>
-            <MapPin size={18} color="var(--text-muted)" /> Rio de Janeiro / RJ
-          </Link>
-          <Link href="/trust" className="mobile-nav-link" onClick={handleLinkClick}>
-            <ShieldCheck size={18} color="var(--color-success)" /> Trust Center & Proteção 18+
-          </Link>
-          <Link href="/help" className="mobile-nav-link" onClick={handleLinkClick}>
-            <HelpCircle size={18} color="var(--text-secondary)" /> Central de Ajuda
-          </Link>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '0.5rem 0' }}>
+          {/* Main Discovery Links */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <Link href="/" className="mobile-nav-link" onClick={handleLinkClick}>
+              <Home size={18} color="var(--accent-gold)" /> <span>Início</span>
+            </Link>
+            <Link href="/explorar" className="mobile-nav-link" onClick={handleLinkClick}>
+              <Search size={18} color="var(--accent-gold)" /> <span>Explorar Anúncios</span>
+            </Link>
+            <Link href="/explorar?categoria=acompanhantes" className="mobile-nav-link" onClick={handleLinkClick}>
+              <Tag size={18} color="var(--accent-gold)" /> <span>Categorias de Atendimento</span>
+            </Link>
+            <Link href="/acompanhantes/bahia/salvador" className="mobile-nav-link" onClick={handleLinkClick}>
+              <MapPin size={18} color="var(--accent-gold)" /> <span>Salvador / BA</span>
+            </Link>
+            <Link href="/acompanhantes/sao-paulo/sao-paulo" className="mobile-nav-link" onClick={handleLinkClick}>
+              <MapPin size={18} color="var(--text-muted)" /> <span>São Paulo / SP</span>
+            </Link>
+            <Link href="/acompanhantes/rio-de-janeiro/rio-de-janeiro" className="mobile-nav-link" onClick={handleLinkClick}>
+              <MapPin size={18} color="var(--text-muted)" /> <span>Rio de Janeiro / RJ</span>
+            </Link>
+          </div>
 
-          <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '1rem 0' }} />
+          <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.75rem 0' }} />
+
+          {/* Trust & Safety */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <Link href="/trust" className="mobile-nav-link" onClick={handleLinkClick}>
+              <ShieldCheck size={18} color="var(--color-success)" /> <span>Segurança e Conformidade 18+</span>
+            </Link>
+            <Link href="/help" className="mobile-nav-link" onClick={handleLinkClick}>
+              <HelpCircle size={18} color="var(--text-secondary)" /> <span>Central de Ajuda & Suporte</span>
+            </Link>
+          </div>
+
+          <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.75rem 0' }} />
 
           {/* User Authentication in Drawer */}
           {!user ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <Link href="/advertiser/start" onClick={handleLinkClick}>
-                <Button variant="ruby" fullWidth size="lg" leftIcon={<Megaphone size={16} />}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.25rem' }}>
+              <Link href="/advertiser/start" onClick={handleLinkClick} style={{ textDecoration: 'none' }}>
+                <Button variant="ruby" fullWidth size="lg" leftIcon={<Megaphone size={16} />} style={{ minHeight: '44px', fontWeight: 700 }}>
                   Criar Anúncio Profissional
                 </Button>
               </Link>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                <Link href="/login" onClick={handleLinkClick}>
-                  <Button variant="secondary" fullWidth size="md">
+                <Link href="/login" onClick={handleLinkClick} style={{ textDecoration: 'none' }}>
+                  <Button variant="secondary" fullWidth size="md" style={{ minHeight: '44px' }}>
                     Entrar
                   </Button>
                 </Link>
-                <Link href="/register" onClick={handleLinkClick}>
-                  <Button variant="ghost" fullWidth size="md">
+                <Link href="/register" onClick={handleLinkClick} style={{ textDecoration: 'none' }}>
+                  <Button variant="ghost" fullWidth size="md" style={{ minHeight: '44px' }}>
                     Cadastrar
                   </Button>
                 </Link>
               </div>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
               <Link href="/account" className="mobile-nav-link" onClick={handleLinkClick}>
-                <User size={18} color="var(--accent-gold)" /> Minha Conta ({profile?.display_name || user.email})
+                <User size={18} color="var(--accent-gold)" /> <span>Minha Conta ({profile?.display_name || user.email?.split('@')[0]})</span>
               </Link>
               <Link href="/account/favorites" className="mobile-nav-link" onClick={handleLinkClick}>
-                <Heart size={18} color="var(--accent-ruby)" /> Meus Favoritos
+                <Heart size={18} color="var(--accent-ruby)" /> <span>Meus Favoritos</span>
               </Link>
-              {isAdvertiser ? (
-                <Link href="/advertiser" onClick={handleLinkClick}>
-                  <Button variant="primary" fullWidth size="lg" leftIcon={<Megaphone size={16} />}>
-                    Painel do Anunciante
-                  </Button>
-                </Link>
-              ) : (
-                <Link href="/advertiser/start" onClick={handleLinkClick}>
-                  <Button variant="ruby" fullWidth size="lg" leftIcon={<Megaphone size={16} />}>
-                    Quero Anunciar
-                  </Button>
-                </Link>
-              )}
+              <Link href="/account/following" className="mobile-nav-link" onClick={handleLinkClick}>
+                <Users size={18} color="var(--accent-gold)" /> <span>Anunciantes Seguidos</span>
+              </Link>
+              <div style={{ marginTop: '0.5rem' }}>
+                {isAdvertiser ? (
+                  <Link href="/advertiser" onClick={handleLinkClick} style={{ textDecoration: 'none' }}>
+                    <Button variant="primary" fullWidth size="lg" leftIcon={<Megaphone size={16} />} style={{ minHeight: '44px', fontWeight: 700 }}>
+                      Painel do Anunciante
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/advertiser/start" onClick={handleLinkClick} style={{ textDecoration: 'none' }}>
+                    <Button variant="ruby" fullWidth size="lg" leftIcon={<Megaphone size={16} />} style={{ minHeight: '44px', fontWeight: 700 }}>
+                      Quero Anunciar
+                    </Button>
+                  </Link>
+                )}
+              </div>
               <Button
                 variant="ghost"
                 fullWidth
@@ -215,7 +231,7 @@ export function Header() {
                   handleLinkClick();
                 }}
                 leftIcon={<LogOut size={16} />}
-                style={{ color: 'var(--accent-ruby)', marginTop: '0.5rem' }}
+                style={{ color: 'var(--accent-ruby)', marginTop: '0.5rem', minHeight: '44px' }}
               >
                 Sair da Conta
               </Button>

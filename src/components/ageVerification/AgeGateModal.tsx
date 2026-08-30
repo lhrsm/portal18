@@ -11,11 +11,8 @@ import {
   ShieldAlert, 
   ShieldCheck, 
   Lock, 
-  Sparkles, 
   ArrowRight, 
-  UserCheck, 
-  Info,
-  CheckCircle2
+  UserCheck
 } from 'lucide-react';
 
 export interface AgeGateModalProps {
@@ -59,8 +56,8 @@ export function AgeGateModal({
         position: 'fixed',
         inset: 0,
         backgroundColor: 'rgba(5, 5, 5, 0.85)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
         display: 'grid',
         placeItems: 'center',
         padding: '1rem',
@@ -69,61 +66,64 @@ export function AgeGateModal({
     >
       <Card
         variant="premium"
-        padding="lg"
+        padding="md"
         style={{
-          maxWidth: '520px',
-          width: '100%',
+          maxWidth: '480px',
+          width: 'min(calc(100% - 32px), 480px)',
+          maxHeight: '88dvh',
+          overflowY: 'auto',
           textAlign: 'center',
           border: '1px solid rgba(212, 175, 55, 0.4)',
           boxShadow: '0 24px 64px rgba(0,0,0,0.9)',
           position: 'relative',
         }}
       >
-        <div style={{ marginBottom: '1.25rem' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem' }}>
-            <Badge variant="ruby"><ShieldAlert size={12} /> ACESSO RESTRITO 18+</Badge>
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
+            <Badge variant="ruby"><ShieldAlert size={12} /> 18+</Badge>
             <Badge variant="gold"><Lock size={12} /> ECA DIGITAL</Badge>
           </div>
-          <h2 style={{ fontSize: '1.85rem', fontWeight: 900, marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
+          <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.75rem)', fontWeight: 800, marginBottom: '0.35rem', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
             Verificação de Maioridade
           </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
-            Este portal contém conteúdo publicitário destinado exclusivamente a maiores de 18 anos.
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.45, margin: 0 }}>
+            Conteúdo restrito a maiores de idade. Confirme sua maioridade para desbloquear mídias e contatos.
           </p>
         </div>
 
         {/* Privacy Note Box */}
         <div
           style={{
-            padding: '0.85rem 1rem',
+            padding: '0.75rem 0.85rem',
             background: 'var(--bg-tertiary)',
             borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border-subtle)',
-            fontSize: '0.825rem',
+            fontSize: '0.8rem',
             color: 'var(--text-secondary)',
-            lineHeight: 1.5,
+            lineHeight: 1.4,
             textAlign: 'left',
             display: 'flex',
             alignItems: 'flex-start',
-            gap: '0.65rem',
-            marginBottom: '1.75rem',
+            gap: '0.5rem',
+            marginBottom: '1.25rem',
           }}
         >
-          <ShieldCheck size={20} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <ShieldCheck size={18} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
           <div>
-            <strong>Privacidade Garantida:</strong> O Portal18 <u>não armazena</u> sua foto, selfie, documento ou biometria. Recebemos apenas a confirmação técnica de maioridade (18+) de um provedor seguro.
+            <strong>Zero Biometria Armazenada:</strong> O Portal18 <u>não armazena</u> documentos ou fotos de visitantes.
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.25rem' }}>
           <Button
             variant="primary"
             size="lg"
             fullWidth
             isLoading={loadingAction === 'new'}
             onClick={() => handleStartVerification(false)}
-            rightIcon={<ArrowRight size={18} />}
+            rightIcon={<ArrowRight size={16} />}
+            style={{ minHeight: '44px', fontWeight: 700 }}
           >
             Verificar Minha Idade (18+)
           </Button>
@@ -135,16 +135,16 @@ export function AgeGateModal({
             isLoading={loadingAction === 'returning'}
             onClick={() => handleStartVerification(true)}
             leftIcon={<UserCheck size={16} />}
+            style={{ minHeight: '44px' }}
           >
-            Já Sou Verificado (Reutilizar Credencial)
+            Já Sou Verificado (Reutilizar)
           </Button>
         </div>
 
         {/* Footer Link to Trust Center */}
         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          Ao continuar, você concorda com nossas políticas de proteção a menores.{' '}
           <Link href="/trust/age-verification" style={{ color: 'var(--accent-gold)', textDecoration: 'underline' }}>
-            Saiba como funciona a verificação de idade.
+            Saiba como protegemos seus dados
           </Link>
         </div>
       </Card>

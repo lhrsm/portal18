@@ -423,7 +423,7 @@ export default function PublicProfilePage() {
             <div style={{ position: 'absolute', top: '0.85rem', left: '0.85rem', display: 'flex', gap: '0.4rem', zIndex: 3 }}>
               {advertiser.verification_status === 'verified' && (
                 <span className="badge-verified">
-                  <ShieldCheck size={12} /> Verificada 18+
+                  <ShieldCheck size={12} /> Verificado 18+
                 </span>
               )}
               <span className="badge-sponsored">
@@ -790,6 +790,46 @@ export default function PublicProfilePage() {
           returnUrl={`/perfil/${stateSlug}/${citySlug}/${slug}`}
           onVerified={() => setIsAgeVerified(true)}
         />
+      )}
+
+      {/* Sticky Mobile Contact Bar (Verified visitors only) */}
+      {isAgeVerified && primaryWhatsApp && (
+        <div className="mobile-sticky-contact-bar">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', maxWidth: '600px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {advertiser.stage_name}
+              </span>
+              <span style={{ fontSize: '0.725rem', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-success)' }} />
+                Disponível no WhatsApp
+              </span>
+            </div>
+            <a
+              href={`https://wa.me/${primaryWhatsApp.contact_value.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${advertiser.stage_name}, vi seu perfil no Portal 18+ e gostaria de informações.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => handleContactClick('whatsapp')}
+              style={{ textDecoration: 'none' }}
+            >
+              <Button
+                variant="primary"
+                size="md"
+                leftIcon={<MessageCircle size={18} />}
+                style={{
+                  background: '#25d366',
+                  color: '#000',
+                  fontWeight: 800,
+                  minHeight: '44px',
+                  padding: '0 1.25rem',
+                  boxShadow: '0 4px 14px rgba(37, 211, 102, 0.4)',
+                }}
+              >
+                Conversar
+              </Button>
+            </a>
+          </div>
+        </div>
       )}
     </div>
   );

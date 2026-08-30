@@ -1255,21 +1255,28 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(10, 12, 16, 0.88);
+  background: rgba(10, 12, 16, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-subtle);
-  height: 70px;
+  height: 64px;
   display: flex;
   align-items: center;
+  padding-top: env(safe-area-inset-top);
   transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+@media (min-width: 768px) {
+  .header {
+    height: 70px;
+  }
 }
 
 .header-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 1rem;
   width: 100%;
 }
 
@@ -1278,7 +1285,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   align-items: center;
   gap: 0.2rem;
   font-family: var(--font-heading);
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 800;
   text-decoration: none;
   letter-spacing: -0.03em;
@@ -1294,7 +1301,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   color: #ffffff;
   padding: 0.15rem 0.45rem;
   border-radius: var(--radius-sm);
-  font-size: 1.05rem;
+  font-size: 1rem;
   line-height: 1;
   font-weight: 900;
 }
@@ -1335,19 +1342,23 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .btn-mobile-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: none;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   cursor: pointer;
-  padding: 0.5rem;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
   transition: all var(--transition-fast);
 }
 
@@ -1848,6 +1859,100 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     min-height: 44px;
   }
 }
+
+/* ============================================================================
+ * PHASE 26D — RESPONSIVE MOBILE DISCOVERY & UX UTILITIES
+ * ============================================================================ */
+
+/* Hero Search Responsive Form */
+.hero-search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .hero-search-form {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.hero-search-field {
+  width: 100%;
+}
+
+.hero-search-btn {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .hero-search-btn {
+    width: auto;
+  }
+}
+
+/* Profile Taxonomy Grid (2-columns on mobile, responsive on desktop) */
+.taxonomy-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+}
+
+@media (min-width: 640px) {
+  .taxonomy-profile-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.85rem;
+  }
+}
+
+/* National Region Views (Tabs desktop, Accordion mobile) */
+.desktop-region-view {
+  display: none;
+}
+
+.mobile-region-accordion {
+  display: flex;
+}
+
+@media (min-width: 641px) {
+  .desktop-region-view {
+    display: block;
+  }
+  .mobile-region-accordion {
+    display: none !important;
+  }
+}
+
+/* Sticky Contact Bar for Verified Profiles on Mobile */
+.mobile-sticky-contact-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.75rem 1rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: rgba(10, 12, 16, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border-medium);
+  z-index: 90;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
+}
+
+@media (min-width: 768px) {
+  .mobile-sticky-contact-bar {
+    display: none !important;
+  }
+}
+
+/* Safe Area Inset Utility Variables */
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 
 
 
