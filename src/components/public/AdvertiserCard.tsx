@@ -237,6 +237,11 @@ export function AdvertiserCard({
                   <ShieldCheck size={11} /> Verificado
                 </span>
               )}
+              {advertiser.authenticity_verified && (
+                <span className="badge-verified" style={{ background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.95) 0%, rgba(245, 215, 120, 1) 100%)', color: '#000', fontWeight: 800 }}>
+                  <Sparkles size={11} fill="#000" /> Autêntico
+                </span>
+              )}
             </div>
 
             {/* Favorite Floating Button (Touch target >= 40px) */}

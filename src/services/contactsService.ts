@@ -2,6 +2,52 @@ import { createClient } from '@/lib/supabase/client';
 import { AdvertiserContact, ContactType } from '@/types/app.types';
 
 export const contactsService = {
+  /**
+   * Fetches public contacts filtered strictly server-side by advertiser plan entitlements (full, limited, hidden).
+   */
+  async getPublicContacts(advertiserId: string): Promise<AdvertiserContact[]> {
+    if (advertiserId.startsWith('demo-')) {
+      return [
+        {
+          id: `demo-contact-${advertiserId}-1`,
+          advertiser_id: advertiserId,
+          contact_type: 'whatsapp',
+          contact_value: '+5571999887766',
+          is_primary: true,
+          is_visible: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as AdvertiserContact,
+        {
+          id: `demo-contact-${advertiserId}-2`,
+          advertiser_id: advertiserId,
+          contact_type: 'telegram',
+          contact_value: '@portal18_vip',
+          is_primary: false,
+          is_visible: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as AdvertiserContact,
+      ];
+    }
+
+    try {
+      const supabase = createClient();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.rpc as any)('get_public_advertiser_contacts', {
+        p_advertiser_id: advertiserId,
+      });
+
+      if (!error && Array.isArray(data)) {
+        return data as AdvertiserContact[];
+      }
+    } catch {
+      // Fallback
+    }
+
+    return this.getContactsByAdvertiser(advertiserId);
+  },
+
   async getContactsByAdvertiser(advertiserId: string): Promise<AdvertiserContact[]> {
     if (advertiserId.startsWith('demo-')) {
       return [

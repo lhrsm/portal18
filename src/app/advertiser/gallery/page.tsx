@@ -12,6 +12,10 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
+import { AudioPresentationManager } from '@/components/advertiser/MediaCenter/AudioPresentationManager';
+import { AuthenticityVideoManager } from '@/components/advertiser/MediaCenter/AuthenticityVideoManager';
+import { entitlementService } from '@/services/entitlementService';
+import { AdvertiserEntitlements } from '@/types/app.types';
 import { 
   Image as ImageIcon, 
   Video as VideoIcon, 
@@ -26,7 +30,9 @@ import {
   Plus, 
   Play, 
   Sparkles,
-  Lock 
+  Lock,
+  Mic,
+  Volume2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -39,7 +45,8 @@ export default function AdvertiserGalleryPage() {
   const [advertiser, setAdvertiser] = useState<AdvertiserProfile | null>(null);
   const [mediaList, setMediaList] = useState<AdvertiserMedia[]>([]);
   const [quota, setQuota] = useState<MediaQuota | null>(null);
-  const [activeTab, setActiveTab] = useState<'images' | 'videos'>('images');
+  const [entitlements, setEntitlements] = useState<AdvertiserEntitlements | null>(null);
+  const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'audio' | 'authenticity'>('images');
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number>(0);
@@ -51,12 +58,14 @@ export default function AdvertiserGalleryPage() {
       const adv = await advertisersService.getOwnAdvertiserProfile(profile.id);
       if (adv) {
         setAdvertiser(adv);
-        const [list, quotaData] = await Promise.all([
+        const [list, quotaData, entData] = await Promise.all([
           mediaService.getAdvertiserMedia(adv.id),
           mediaQuotaService.getAdvertiserMediaQuota(adv.id),
+          entitlementService.getAdvertiserEntitlements(adv.id),
         ]);
         setMediaList(list);
         setQuota(quotaData);
+        setEntitlements(entData);
       }
     }
     setLoading(false);
@@ -214,23 +223,24 @@ export default function AdvertiserGalleryPage() {
       </div>
 
       {/* Media Type Tabs */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem', overflowX: 'auto' }}>
         <button
           onClick={() => setActiveTab('images')}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            padding: '0.6rem 1.25rem',
+            padding: '0.6rem 1.15rem',
             borderRadius: 'var(--radius-md)',
             border: 'none',
             background: activeTab === 'images' ? 'rgba(229, 185, 92, 0.15)' : 'transparent',
             color: activeTab === 'images' ? 'var(--accent-gold)' : 'var(--text-secondary)',
             fontWeight: 700,
             cursor: 'pointer',
+            whiteSpace: 'nowrap',
           }}
         >
-          <ImageIcon size={16} /> Fotos ({quota?.currentImages})
+          <ImageIcon size={16} /> Fotos ({quota?.currentImages || 0})
         </button>
 
         <button
@@ -239,19 +249,77 @@ export default function AdvertiserGalleryPage() {
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            padding: '0.6rem 1.25rem',
+            padding: '0.6rem 1.15rem',
             borderRadius: 'var(--radius-md)',
             border: 'none',
             background: activeTab === 'videos' ? 'rgba(229, 185, 92, 0.15)' : 'transparent',
             color: activeTab === 'videos' ? 'var(--accent-gold)' : 'var(--text-secondary)',
             fontWeight: 700,
             cursor: 'pointer',
+            whiteSpace: 'nowrap',
           }}
         >
-          <VideoIcon size={16} /> Vídeos ({quota?.currentVideos})
+          <VideoIcon size={16} /> Vídeos ({quota?.currentVideos || 0})
           {!quota?.canUploadVideo && <Lock size={12} />}
         </button>
+
+        <button
+          onClick={() => setActiveTab('audio')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.6rem 1.15rem',
+            borderRadius: 'var(--radius-md)',
+            border: 'none',
+            background: activeTab === 'audio' ? 'rgba(229, 185, 92, 0.15)' : 'transparent',
+            color: activeTab === 'audio' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+            fontWeight: 700,
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <Volume2 size={16} /> Apresentação em Áudio
+        </button>
+
+        <button
+          onClick={() => setActiveTab('authenticity')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.6rem 1.15rem',
+            borderRadius: 'var(--radius-md)',
+            border: 'none',
+            background: activeTab === 'authenticity' ? 'rgba(229, 185, 92, 0.15)' : 'transparent',
+            color: activeTab === 'authenticity' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+            fontWeight: 700,
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <ShieldCheck size={16} /> Vídeo de Autenticidade
+        </button>
       </div>
+
+      {/* Tab: Audio Presentation */}
+      {activeTab === 'audio' && advertiser && (
+        <AudioPresentationManager
+          advertiserId={advertiser.id}
+          existingAudio={mediaList.find((m) => m.media_type === 'audio')}
+          audioPresentationUrl={advertiser.audio_presentation_url}
+          entitlements={entitlements}
+          onAudioUpdated={loadData}
+        />
+      )}
+
+      {/* Tab: Authenticity Video */}
+      {activeTab === 'authenticity' && advertiser && (
+        <AuthenticityVideoManager
+          advertiser={advertiser}
+          onStatusUpdated={loadData}
+        />
+      )}
 
       {/* Video Upgrade Banner if not entitled */}
       {activeTab === 'videos' && !quota?.canUploadVideo && (
@@ -272,193 +340,197 @@ export default function AdvertiserGalleryPage() {
         </Card>
       )}
 
-      {/* Upload Dropzone */}
-      <Card
-        variant="glass"
-        padding="lg"
-        style={{
-          border: isDragging ? '2px dashed var(--accent-gold)' : '2px dashed var(--border-subtle)',
-          backgroundColor: isDragging ? 'rgba(229, 185, 92, 0.05)' : 'var(--bg-card)',
-          textAlign: 'center',
-          cursor: 'pointer',
-          marginBottom: '2rem',
-          transition: 'all var(--transition-fast)',
-        }}
-        onClick={() => {
-          if (activeTab === 'images') imageInputRef.current?.click();
-          else if (quota?.canUploadVideo) videoInputRef.current?.click();
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setIsDragging(true);
-        }}
-        onDragLeave={() => setIsDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setIsDragging(false);
-          if (e.dataTransfer.files) handleUpload(e.dataTransfer.files, activeTab === 'images' ? 'image' : 'video');
-        }}
-      >
-        <input
-          type="file"
-          ref={imageInputRef}
-          multiple
-          accept="image/jpeg,image/png,image/webp,image/avif"
-          style={{ display: 'none' }}
-          onChange={(e) => e.target.files && handleUpload(e.target.files, 'image')}
-        />
-
-        <input
-          type="file"
-          ref={videoInputRef}
-          accept="video/mp4,video/webm,video/quicktime"
-          style={{ display: 'none' }}
-          onChange={(e) => e.target.files && handleUpload(e.target.files, 'video')}
-        />
-
-        <UploadCloud size={44} color="var(--accent-gold)" style={{ margin: '0 auto 0.75rem auto' }} />
-        <h3 style={{ fontSize: '1.2rem', marginBottom: '0.35rem' }}>
-          {isUploading ? `${uploadMessage} (${uploadPercent}%)` : `Arraste seus arquivos de ${activeTab === 'images' ? 'fotos' : 'vídeo'} aqui`}
-        </h3>
-
-        {/* Progress Bar */}
-        {isUploading && (
-          <div style={{ width: '100%', maxWidth: '360px', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '3px', margin: '0.75rem auto', overflow: 'hidden' }}>
-            <div style={{ width: `${uploadPercent}%`, height: '100%', backgroundColor: 'var(--accent-gold)', transition: 'width 0.3s' }} />
-          </div>
-        )}
-
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '460px', margin: '0 auto 1rem auto' }}>
-          {activeTab === 'images'
-            ? 'Formatos: JPG, PNG, WEBP, AVIF (máx. 15MB). Metadados de GPS são removidos automaticamente.'
-            : 'Formatos: MP4, WebM (máx. 300MB, até 180s). Transcodificado e otimizado para streaming.'}
-        </p>
-
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          isLoading={isUploading}
-          disabled={activeTab === 'videos' && !quota?.canUploadVideo}
-          leftIcon={<Plus size={16} />}
+      {/* Upload Dropzone for Photos & Videos */}
+      {(activeTab === 'images' || activeTab === 'videos') && (
+        <Card
+          variant="glass"
+          padding="lg"
+          style={{
+            border: isDragging ? '2px dashed var(--accent-gold)' : '2px dashed var(--border-subtle)',
+            backgroundColor: isDragging ? 'rgba(229, 185, 92, 0.05)' : 'var(--bg-card)',
+            textAlign: 'center',
+            cursor: 'pointer',
+            marginBottom: '2rem',
+            transition: 'all var(--transition-fast)',
+          }}
+          onClick={() => {
+            if (activeTab === 'images') imageInputRef.current?.click();
+            else if (quota?.canUploadVideo) videoInputRef.current?.click();
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
+            if (e.dataTransfer.files) handleUpload(e.dataTransfer.files, activeTab === 'images' ? 'image' : 'video');
+          }}
         >
-          {isUploading ? 'Processando...' : `Adicionar ${activeTab === 'images' ? 'Fotos' : 'Vídeo'}`}
-        </Button>
-      </Card>
+          <input
+            type="file"
+            ref={imageInputRef}
+            multiple
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            style={{ display: 'none' }}
+            onChange={(e) => e.target.files && handleUpload(e.target.files, 'image')}
+          />
 
-      {/* Media Grid */}
-      {currentTabMedia.length === 0 ? (
-        <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
-          {activeTab === 'images' ? (
-            <ImageIcon size={40} color="var(--text-muted)" style={{ margin: '0 auto 1rem auto' }} />
-          ) : (
-            <VideoIcon size={40} color="var(--text-muted)" style={{ margin: '0 auto 1rem auto' }} />
-          )}
-          <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
-            Nenhum arquivo de {activeTab === 'images' ? 'foto' : 'vídeo'} cadastrado
+          <input
+            type="file"
+            ref={videoInputRef}
+            accept="video/mp4,video/webm,video/quicktime"
+            style={{ display: 'none' }}
+            onChange={(e) => e.target.files && handleUpload(e.target.files, 'video')}
+          />
+
+          <UploadCloud size={44} color="var(--accent-gold)" style={{ margin: '0 auto 0.75rem auto' }} />
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '0.35rem' }}>
+            {isUploading ? `${uploadMessage} (${uploadPercent}%)` : `Arraste seus arquivos de ${activeTab === 'images' ? 'fotos' : 'vídeo'} aqui`}
           </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Envie mídias de alta qualidade para atrair mais clientes para o seu anúncio.
+
+          {/* Progress Bar */}
+          {isUploading && (
+            <div style={{ width: '100%', maxWidth: '360px', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '3px', margin: '0.75rem auto', overflow: 'hidden' }}>
+              <div style={{ width: `${uploadPercent}%`, height: '100%', backgroundColor: 'var(--accent-gold)', transition: 'width 0.3s' }} />
+            </div>
+          )}
+
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '460px', margin: '0 auto 1rem auto' }}>
+            {activeTab === 'images'
+              ? 'Formatos: JPG, PNG, WEBP, AVIF (máx. 15MB). Metadados de GPS são removidos automaticamente.'
+              : 'Formatos: MP4, WebM (máx. 300MB, até 180s). Transcodificado e otimizado para streaming.'}
           </p>
+
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            isLoading={isUploading}
+            disabled={activeTab === 'videos' && !quota?.canUploadVideo}
+            leftIcon={<Plus size={16} />}
+          >
+            {isUploading ? 'Processando...' : `Adicionar ${activeTab === 'images' ? 'Fotos' : 'Vídeo'}`}
+          </Button>
         </Card>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.25rem' }}>
-          {currentTabMedia.map((media, idx) => {
-            const isMainPhoto = idx === 0 && media.media_type === 'image';
-            const urls = mediaService.getMediaUrls(media);
+      )}
 
-            return (
-              <Card key={media.id} variant="glass" padding="sm" style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                {/* Media Container */}
-                <div style={{ position: 'relative', width: '100%', height: '220px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', backgroundColor: 'var(--bg-tertiary)', marginBottom: '0.75rem' }}>
-                  {media.media_type === 'image' ? (
-                    <img
-                      src={urls.thumbnailUrl}
-                      alt="Foto da galeria"
-                      loading="lazy"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' }}>
-                      {media.thumbnail_path ? (
-                        <img src={urls.thumbnailUrl} alt="Thumbnail de vídeo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : null}
-                      <div style={{ position: 'absolute', width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Play size={20} color="#fff" />
-                      </div>
-                      {media.duration_seconds && (
-                        <div style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'rgba(0,0,0,0.75)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                          {Math.floor(media.duration_seconds / 60)}:{(media.duration_seconds % 60).toString().padStart(2, '0')}
+      {/* Media Grid for Photos & Videos */}
+      {(activeTab === 'images' || activeTab === 'videos') && (
+        currentTabMedia.length === 0 ? (
+          <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
+            {activeTab === 'images' ? (
+              <ImageIcon size={40} color="var(--text-muted)" style={{ margin: '0 auto 1rem auto' }} />
+            ) : (
+              <VideoIcon size={40} color="var(--text-muted)" style={{ margin: '0 auto 1rem auto' }} />
+            )}
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+              Nenhum arquivo de {activeTab === 'images' ? 'foto' : 'vídeo'} cadastrado
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+              Envie mídias de alta qualidade para atrair mais clientes para o seu anúncio.
+            </p>
+          </Card>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.25rem' }}>
+            {currentTabMedia.map((media, idx) => {
+              const isMainPhoto = idx === 0 && media.media_type === 'image';
+              const urls = mediaService.getMediaUrls(media);
+
+              return (
+                <Card key={media.id} variant="glass" padding="sm" style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  {/* Media Container */}
+                  <div style={{ position: 'relative', width: '100%', height: '220px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', backgroundColor: 'var(--bg-tertiary)', marginBottom: '0.75rem' }}>
+                    {media.media_type === 'image' ? (
+                      <img
+                        src={urls.thumbnailUrl}
+                        alt="Foto da galeria"
+                        loading="lazy"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' }}>
+                        {media.thumbnail_path ? (
+                          <img src={urls.thumbnailUrl} alt="Thumbnail de vídeo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : null}
+                        <div style={{ position: 'absolute', width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Play size={20} color="#fff" />
                         </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Main Cover Badge */}
-                  {isMainPhoto && (
-                    <div style={{ position: 'absolute', top: '8px', left: '8px' }}>
-                      <Badge variant="gold">
-                        <Star size={11} fill="var(--accent-gold)" /> Foto de Capa
-                      </Badge>
-                    </div>
-                  )}
-
-                  {/* Status Badge */}
-                  <div style={{ position: 'absolute', bottom: '8px', left: '8px' }}>
-                    {getStatusBadge(media)}
-                  </div>
-                </div>
-
-                {/* Actions & Controls */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                  {/* Reorder Buttons */}
-                  <div style={{ display: 'flex', gap: '0.25rem' }}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={idx === 0}
-                      onClick={() => handleMoveMedia(idx, 'up')}
-                      style={{ padding: '0.35rem' }}
-                    >
-                      <ArrowUp size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={idx === currentTabMedia.length - 1}
-                      onClick={() => handleMoveMedia(idx, 'down')}
-                      style={{ padding: '0.35rem' }}
-                    >
-                      <ArrowDown size={14} />
-                    </Button>
-                  </div>
-
-                  {/* Main / Delete Buttons */}
-                  <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    {!isMainPhoto && media.media_type === 'image' && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleSetMainPhoto(media.id)}
-                        style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}
-                      >
-                        Capa
-                      </Button>
+                        {media.duration_seconds && (
+                          <div style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'rgba(0,0,0,0.75)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                            {Math.floor(media.duration_seconds / 60)}:{(media.duration_seconds % 60).toString().padStart(2, '0')}
+                          </div>
+                        )}
+                      </div>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteMedia(media.id)}
-                      style={{ color: 'var(--accent-ruby)', padding: '0.35rem' }}
-                    >
-                      <Trash2 size={15} />
-                    </Button>
+
+                    {/* Main Cover Badge */}
+                    {isMainPhoto && (
+                      <div style={{ position: 'absolute', top: '8px', left: '8px' }}>
+                        <Badge variant="gold">
+                          <Star size={11} fill="var(--accent-gold)" /> Foto de Capa
+                        </Badge>
+                      </div>
+                    )}
+
+                    {/* Status Badge */}
+                    <div style={{ position: 'absolute', bottom: '8px', left: '8px' }}>
+                      {getStatusBadge(media)}
+                    </div>
                   </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+
+                  {/* Actions & Controls */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                    {/* Reorder Buttons */}
+                    <div style={{ display: 'flex', gap: '0.25rem' }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={idx === 0}
+                        onClick={() => handleMoveMedia(idx, 'up')}
+                        style={{ padding: '0.35rem' }}
+                      >
+                        <ArrowUp size={14} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={idx === currentTabMedia.length - 1}
+                        onClick={() => handleMoveMedia(idx, 'down')}
+                        style={{ padding: '0.35rem' }}
+                      >
+                        <ArrowDown size={14} />
+                      </Button>
+                    </div>
+
+                    {/* Main / Delete Buttons */}
+                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                      {!isMainPhoto && media.media_type === 'image' && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleSetMainPhoto(media.id)}
+                          style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}
+                        >
+                          Capa
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteMedia(media.id)}
+                        style={{ color: 'var(--accent-ruby)', padding: '0.35rem' }}
+                      >
+                        <Trash2 size={15} />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )
       )}
     </AdvertiserLayout>
   );

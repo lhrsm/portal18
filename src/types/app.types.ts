@@ -24,13 +24,41 @@ export type Visibility = 'public' | 'private' | 'hidden';
 export type VerificationStatus = 'not_started' | 'pending' | 'processing' | 'verified' | 'rejected' | 'requires_review' | 'expired';
 export type ContactType = 'whatsapp' | 'telegram' | 'phone' | 'website' | 'email' | 'instagram' | 'twitter' | 'onlyfans' | 'privacy';
 export type ConsentType = 'terms_of_service' | 'privacy_policy' | 'age_18_verification' | 'commercial_terms' | 'marketing_cookies' | 'analytics_tracking';
-export type MediaType = 'image' | 'video';
+export type MediaType = 'image' | 'photo' | 'video' | 'commercial_video' | 'audio' | 'profile_audio' | 'authenticity_video';
 export type ModerationStatus = 'pending' | 'approved' | 'rejected' | 'flagged' | 'blocked';
 export type ModerationRiskLevel = 'none' | 'low' | 'medium' | 'high' | 'critical';
 export type ModerationCategory = 'nudity' | 'suggestive' | 'violence' | 'hate_speech' | 'minor' | 'spam' | 'other';
 export type ReportStatus = 'open' | 'under_review' | 'resolved' | 'rejected' | 'escalated';
 export type ReportSeverity = 'low' | 'medium' | 'high' | 'critical';
 export type LegalDocumentType = 'terms_of_service' | 'privacy_policy' | 'advertiser_rules' | 'compliance_guide' | 'dmca_policy';
+
+// Phase 27A Commercial Lifecycle & Authenticity Types
+export type CommercialLifecycleState = 'trial' | 'active' | 'grace_period' | 'limited' | 'expired' | 'cancelled' | 'suspended';
+
+export interface AuthenticityChallenge {
+  id: string;
+  advertiser_id: string;
+  challenge_code: string;
+  status: 'issued' | 'submitted' | 'expired' | 'verified' | 'rejected';
+  issued_at: string;
+  expires_at: string;
+  used_at?: string | null;
+  video_storage_path?: string | null;
+  moderation_status: 'pending' | 'approved' | 'rejected';
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  rejection_reason?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TrustBadges {
+  age_verified: boolean;
+  identity_verified: boolean;
+  authenticity_verified: boolean;
+  phone_verified: boolean;
+  media_verified: boolean;
+}
 
 // ============================================================================
 // Database Table Row Types
@@ -40,7 +68,12 @@ export type UserRole = Database['public']['Tables']['user_roles']['Row'];
 export type BrazilState = Database['public']['Tables']['brazil_states']['Row'];
 export type BrazilCity = Database['public']['Tables']['brazil_cities']['Row'];
 export type Category = Database['public']['Tables']['categories']['Row'];
-export type AdvertiserProfile = Database['public']['Tables']['advertiser_profiles']['Row'];
+export type AdvertiserProfile = Database['public']['Tables']['advertiser_profiles']['Row'] & {
+  authenticity_verified?: boolean;
+  audio_presentation_url?: string | null;
+  trial_used?: boolean;
+  trial_started_at?: string | null;
+};
 export type AdvertiserMedia = Database['public']['Tables']['advertiser_media']['Row'];
 export type Favorite = Database['public']['Tables']['favorites']['Row'];
 export type Report = Database['public']['Tables']['reports']['Row'];
@@ -112,6 +145,7 @@ export interface DiscoveryProfileCard {
   distance_label: string;
   is_sponsored: boolean;
   organic_score: number;
+  authenticity_verified?: boolean;
 }
 
 export interface NearbyCity {
@@ -172,6 +206,8 @@ export type PublicAdvertiser = PublicAdvertiserRow & {
   gender?: string | null;
   target_audience?: string[] | null;
   service_modalities?: string[] | null;
+  authenticity_verified?: boolean | null;
+  audio_presentation_url?: string | null;
 };
 
 // Runtime type guard for domain invariants
@@ -272,10 +308,20 @@ export interface AdvertiserEntitlements {
   has_active_subscription: boolean;
   plan_name: string;
   plan_slug: string;
+  lifecycle_state?: CommercialLifecycleState;
   media_limit: number;
   video_limit: number;
   boost_allowance: number;
-  analytics_level: 'basic' | 'advanced' | 'premium';
+  analytics_level: 'basic' | 'advanced' | 'premium' | 'none';
+  audio_allowed?: boolean;
+  commercial_video_allowed?: boolean;
+  contacts_strategy?: 'full' | 'limited' | 'hidden';
+  is_trial?: boolean;
+  trial_days_remaining?: number;
+  trial_ends_at?: string | null;
+  current_period_end?: string | null;
+  grace_period_end?: string | null;
+  authenticity_verified?: boolean;
 }
 
 export interface CheckoutResponse {

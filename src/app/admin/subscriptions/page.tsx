@@ -46,9 +46,11 @@ export default function AdminSubscriptionsPage() {
 
       {/* Filter */}
       <Card variant="glass" padding="sm" style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem' }}>
-        <div style={{ minWidth: '200px' }}>
+        <div style={{ minWidth: '220px' }}>
           <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} placeholderOption="Todos os Status">
-            <option value="active">Ativas</option>
+            <option value="active">Ativas (Pagas e Trials)</option>
+            <option value="trial">Em Período de Experiência (Trial)</option>
+            <option value="grace_period">Período de Tolerância (Grace Period)</option>
             <option value="pending">Pendentes</option>
             <option value="cancelled">Canceladas</option>
             <option value="past_due">Atrasadas (Past Due)</option>
@@ -69,43 +71,51 @@ export default function AdminSubscriptionsPage() {
           <Crown size={40} color="var(--accent-gold)" style={{ margin: '0 auto 1rem auto' }} />
           <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Nenhuma assinatura encontrada</h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Assinaturas contratadas por anunciantes serão exibidas nesta fila.
+            Assinaturas contratadas ou trials ativos de anunciantes serão exibidos nesta fila.
           </p>
         </Card>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-          {subscriptions.map((sub) => (
-            <Card key={sub.id} variant="glass" padding="md" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                  <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>
-                    {sub.advertiser_profiles?.stage_name || 'Anunciante'}
+          {subscriptions.map((sub) => {
+            const isTrial = sub.provider === 'portal18_trial' || (sub.trial_end && new Date(sub.trial_end).getTime() > Date.now());
+
+            return (
+              <Card key={sub.id} variant="glass" padding="md" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                    <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>
+                      {sub.advertiser_profiles?.stage_name || 'Anunciante'}
+                    </span>
+                    {isTrial ? (
+                      <Badge variant="gold">PREMIUM TRIAL</Badge>
+                    ) : (
+                      <Badge variant={sub.status === 'active' ? 'success' : sub.status === 'cancelled' ? 'ruby' : 'warning'}>
+                        {sub.status.toUpperCase()}
+                      </Badge>
+                    )}
+                    {sub.cancel_at_period_end && (
+                      <Badge variant="warning">Cancela no fim do ciclo</Badge>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    <span>Plano: <strong>{isTrial ? 'Premium (Trial 7d)' : sub.subscription_plans?.name || 'N/A'}</strong></span>
+                    <span>•</span>
+                    <span>Início: {sub.current_period_start ? new Date(sub.current_period_start).toLocaleDateString('pt-BR') : 'N/A'}</span>
+                    <span>•</span>
+                    <span>Renovação/Fim: {sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString('pt-BR') : 'N/A'}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
+                    {sub.subscription_plans?.price_amount ? formatPrice(sub.subscription_plans.price_amount) : 'R$ 0,00'}
                   </span>
-                  <Badge variant={sub.status === 'active' ? 'success' : sub.status === 'cancelled' ? 'ruby' : 'warning'}>
-                    {sub.status.toUpperCase()}
-                  </Badge>
-                  {sub.cancel_at_period_end && (
-                    <Badge variant="warning">Cancela no fim do ciclo</Badge>
-                  )}
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>/mês</span>
                 </div>
-
-                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                  <span>Plano: <strong>{sub.subscription_plans?.name || 'N/A'}</strong></span>
-                  <span>•</span>
-                  <span>Início: {sub.current_period_start ? new Date(sub.current_period_start).toLocaleDateString('pt-BR') : 'N/A'}</span>
-                  <span>•</span>
-                  <span>Renovação/Fim: {sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString('pt-BR') : 'N/A'}</span>
-                </div>
-              </div>
-
-              <div>
-                <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
-                  {sub.subscription_plans?.price_amount ? formatPrice(sub.subscription_plans.price_amount) : 'R$ 0,00'}
-                </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>/mês</span>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
     </AdminLayout>

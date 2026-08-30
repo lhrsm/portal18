@@ -14,7 +14,7 @@ import { privacyService } from '@/services/account/privacyService';
 import { historyService } from '@/services/account/historyService';
 import { relationshipService } from '@/services/account/relationshipService';
 import { recommendationService } from '@/services/discovery/recommendationService';
-import { PublicAdvertiser, AdvertiserMedia, AdvertiserContact, DiscoveryProfileCard } from '@/types/app.types';
+import { PublicAdvertiser, AdvertiserMedia, AdvertiserContact, DiscoveryProfileCard, isValidPublicAdvertiser } from '@/types/app.types';
 import { DEMO_PUBLIC_ADVERTISERS } from '@/data/demoProfiles';
 import { useAuth } from '@/hooks/useAuth';
 import { AdvertiserCard } from '@/components/public/AdvertiserCard';
@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import { AgeGateModal } from '@/components/ageVerification/AgeGateModal';
 import { ageVerificationService } from '@/services/ageVerification/ageVerificationService';
+import { ProfileAudioPlayer } from '@/components/public/ProfileAudioPlayer';
 
 // Dynamic imports for heavy non-critical modals
 const GalleryLightbox = dynamic(
@@ -76,7 +77,9 @@ export function ProfileViewClient({
 
   // Fallback demo resolution if not passed
   const initialAdv = useMemo(() => {
-    if (initialProfile) return initialProfile;
+    if (initialProfile && isValidPublicAdvertiser(initialProfile)) {
+      return initialProfile;
+    }
     return DEMO_PUBLIC_ADVERTISERS.find(
       (p) =>
         (p.slug === slug || p.slug.includes(slug)) &&
@@ -166,10 +169,10 @@ export function ProfileViewClient({
         setAdvertiser(adv);
         setIsLoading(false);
 
-        // Fetch media and contacts
+        // Fetch media and contacts using server-authoritative resolver
         const [approvedMedia, advContacts] = await Promise.all([
           mediaService.getApprovedPublicMedia(adv.advertiser_id),
-          contactsService.getContactsByAdvertiser(adv.advertiser_id),
+          contactsService.getPublicContacts(adv.advertiser_id),
         ]);
 
         if (!isMounted) return;
@@ -427,10 +430,15 @@ export function ProfileViewClient({
             />
 
             {/* Badges Top */}
-            <div style={{ position: 'absolute', top: '0.85rem', left: '0.85rem', display: 'flex', gap: '0.4rem', zIndex: 3 }}>
+            <div style={{ position: 'absolute', top: '0.85rem', left: '0.85rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem', zIndex: 3 }}>
               {advertiser.verification_status === 'verified' && (
                 <span className="badge-verified">
                   <ShieldCheck size={12} /> Verificado 18+
+                </span>
+              )}
+              {advertiser.authenticity_verified && (
+                <span className="badge-verified" style={{ background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.95) 0%, rgba(245, 215, 120, 1) 100%)', color: '#000', fontWeight: 800 }}>
+                  <Sparkles size={11} fill="#000" /> Perfil Autenticado
                 </span>
               )}
               <span className="badge-sponsored">
@@ -572,6 +580,14 @@ export function ProfileViewClient({
               </div>
             )}
           </div>
+
+          {/* Profile Voice Presentation Player */}
+          {advertiser.audio_presentation_url && (
+            <ProfileAudioPlayer
+              src={advertiser.audio_presentation_url}
+              stageName={advertiser.stage_name}
+            />
+          )}
 
           {/* Primary WhatsApp Conversion Card */}
           <Card variant="elevated" padding="md" style={{ 

@@ -29,9 +29,12 @@ import {
   Megaphone
 } from 'lucide-react';
 
+import { commercialLifecycleService, CommercialLifecycleDetails } from '@/services/commercialLifecycleService';
+
 export default function AdvertiserDashboardPage() {
   const { profile, isLoading: authLoading } = useAuth();
   const [data, setData] = useState<AdvertiserDashboardData | null>(null);
+  const [lifecycle, setLifecycle] = useState<CommercialLifecycleDetails | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<7 | 30 | 90>(7);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +42,9 @@ export default function AdvertiserDashboardPage() {
     if (profile) {
       const result = await advertiserDashboardService.getDashboardData(profile.id, period);
       setData(result);
-      if (result) {
+      if (result && result.advertiser) {
+        const lc = await commercialLifecycleService.getCommercialLifecycle(result.advertiser.id);
+        setLifecycle(lc);
         onboardingAnalytics.trackEvent('onboarding_resumed', {
           step: result.advertiser?.onboarding_step,
           hasMainPhoto: result.mediaList.length > 0,
@@ -114,7 +119,71 @@ export default function AdvertiserDashboardPage() {
         completenessScore={healthScore.score}
       />
 
-      {/* 2. REJECTION / CHANGES REQUESTED BANNER */}
+      {/* 2. COMMERCIAL LIFECYCLE & TRIAL STATUS BANNER */}
+      {lifecycle && (
+        <Card
+          variant="glass"
+          padding="md"
+          style={{
+            marginTop: '1.5rem',
+            border: lifecycle.isTrial
+              ? '2px solid var(--accent-gold)'
+              : lifecycle.lifecycleState === 'grace_period'
+              ? '2px solid var(--accent-ruby)'
+              : '1px solid var(--border-subtle)',
+            background: lifecycle.isTrial
+              ? 'radial-gradient(ellipse at 50% 0%, rgba(212, 175, 55, 0.12) 0%, var(--bg-card) 100%)'
+              : 'var(--bg-card)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                background: lifecycle.isTrial ? 'var(--accent-gold)' : 'var(--bg-tertiary)',
+                display: 'grid',
+                placeItems: 'center',
+                color: lifecycle.isTrial ? '#000' : 'var(--accent-gold)',
+                flexShrink: 0
+              }}>
+                <Sparkles size={22} />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                  <span style={{ fontWeight: 800, fontSize: '1.05rem' }}>{lifecycle.planName}</span>
+                  {lifecycle.isTrial && (
+                    <span style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 800,
+                      background: 'var(--accent-gold)',
+                      color: '#000',
+                      padding: '0.15rem 0.5rem',
+                      borderRadius: 'var(--radius-full)'
+                    }}>
+                      {lifecycle.trialDaysRemaining} dias restantes
+                    </span>
+                  )}
+                </div>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                  {lifecycle.statusBadge.description}
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <Link href="/advertiser/subscription/plans">
+                <Button variant={lifecycle.isTrial ? 'primary' : 'outline'} size="sm" style={{ fontWeight: 700 }}>
+                  {lifecycle.isTrial ? 'Garantir Plano Premium' : 'Ver Planos e Benefícios'}
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* 3. REJECTION / CHANGES REQUESTED BANNER */}
       {advertiser.profile_status === 'rejected' && (
         <AdvertiserRejectionBanner advertiser={advertiser} />
       )}

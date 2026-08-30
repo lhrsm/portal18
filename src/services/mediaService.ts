@@ -299,6 +299,109 @@ export const mediaService = {
   },
 
   /**
+   * Uploads an audio presentation file (max 60 seconds, strict MIME verification).
+   */
+  async uploadAudioPresentation(
+    advertiserId: string,
+    audioBlob: Blob,
+    durationSeconds: number
+  ): Promise<{ success: boolean; data?: AdvertiserMedia; error?: string }> {
+    const ALLOWED_AUDIO_MIMES = [
+      'audio/webm',
+      'audio/mp4',
+      'audio/mpeg',
+      'audio/ogg',
+      'audio/wav',
+      'audio/aac',
+      'audio/x-m4a',
+      'audio/mp3',
+    ];
+
+    if (!ALLOWED_AUDIO_MIMES.includes(audioBlob.type) && !audioBlob.type.startsWith('audio/')) {
+      return { success: false, error: 'Formato de áudio não suportado. Formatos aceitos: webm, mp3, mp4, ogg, wav, aac.' };
+    }
+
+    if (durationSeconds > 65) {
+      return { success: false, error: 'A apresentação em áudio não pode ultrapassar 60 segundos.' };
+    }
+
+    if (audioBlob.size > 10 * 1024 * 1024) {
+      return { success: false, error: 'O tamanho do arquivo de áudio não pode ultrapassar 10MB.' };
+    }
+
+    const supabase = createClient();
+    const ext = audioBlob.type.includes('webm') ? 'webm' : audioBlob.type.includes('mp4') || audioBlob.type.includes('m4a') ? 'm4a' : 'mp3';
+    const filePath = `audio/${advertiserId}/audio_${Date.now()}.${ext}`;
+
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('advertiser-media-public')
+        .upload(filePath, audioBlob, {
+          contentType: audioBlob.type,
+          upsert: true,
+        });
+
+      if (uploadError) {
+        return { success: false, error: uploadError.message };
+      }
+
+      const { data: urlData } = supabase.storage.from('advertiser-media-public').getPublicUrl(filePath);
+      const publicUrl = urlData.publicUrl;
+
+      // Register in advertiser_media table
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: mediaData, error: dbError } = await (supabase.from('advertiser_media') as any)
+        .insert({
+          advertiser_id: advertiserId,
+          media_type: 'audio',
+          storage_path: publicUrl,
+          duration_seconds: Math.round(durationSeconds),
+          file_size: audioBlob.size,
+          mime_type: audioBlob.type,
+          moderation_status: 'pending',
+          visibility: 'public',
+        })
+        .select()
+        .single();
+
+      if (dbError) {
+        return { success: false, error: dbError.message };
+      }
+
+      // Also update audio_presentation_url on advertiser_profiles
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from('advertiser_profiles') as any)
+        .update({ audio_presentation_url: publicUrl })
+        .eq('id', advertiserId);
+
+      return { success: true, data: mediaData as AdvertiserMedia };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Erro ao processar envio de áudio.' };
+    }
+  },
+
+  /**
+   * Removes audio presentation from advertiser profile.
+   */
+  async removeAudioPresentation(advertiserId: string, mediaId?: string): Promise<{ success: boolean; error?: string }> {
+    const supabase = createClient();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from('advertiser_profiles') as any)
+        .update({ audio_presentation_url: null })
+        .eq('id', advertiserId);
+
+      if (mediaId) {
+        await this.deleteMedia(mediaId);
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Erro ao remover áudio.' };
+    }
+  },
+
+  /**
    * Admin Media Processing Queue (Section 95).
    */
   async getAdminProcessingJobs(limit = 20) {

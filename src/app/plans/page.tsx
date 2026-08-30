@@ -240,6 +240,59 @@ export default function PublicPlansPage() {
         </Card>
       </div>
 
+      {/* 7-Day Trial & Zero Data Loss Guarantee */}
+      <div style={{ maxWidth: '900px', margin: '0 auto 4rem auto' }}>
+        <Card
+          variant="glass"
+          padding="lg"
+          style={{
+            border: '2px solid var(--accent-gold)',
+            background: 'radial-gradient(ellipse at 50% 0%, rgba(212, 175, 55, 0.12) 0%, var(--bg-card) 100%)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.25rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '50%',
+              background: 'var(--accent-gold)',
+              display: 'grid',
+              placeItems: 'center',
+              color: '#000',
+              flexShrink: 0
+            }}>
+              <Sparkles size={22} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.35rem', fontWeight: 800, margin: '0 0 0.25rem 0' }}>
+                7 Dias de Experiência Premium Sem Custo
+              </h3>
+              <span style={{ fontSize: '0.85rem', color: 'var(--accent-gold)', fontWeight: 700 }}>
+                Inicia automaticamente quando seu anúncio for aprovado e publicado
+              </span>
+            </div>
+          </div>
+
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+            Assim que seu perfil for aprovado por nossa equipe, você recebe <strong>7 dias completos de todos os recursos Premium</strong> (vídeos na galeria, áudio de apresentação, contatos completos e destaque). Nenhum dado de cartão de crédito é exigido para começar.
+          </p>
+
+          <div style={{
+            padding: '0.85rem 1rem',
+            background: 'rgba(255, 255, 255, 0.03)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border-subtle)',
+            fontSize: '0.85rem',
+            color: 'var(--text-muted)'
+          }}>
+            🛡️ <strong>Garantia de Preservação de Dados:</strong> Caso você não assine um plano ao término do período de teste, seu perfil permanece publicado no modo gratuito/básico com até 10 fotos. Suas mídias, áudios, contatos, bio e métricas <strong>nunca são deletados</strong>.
+          </div>
+        </Card>
+      </div>
+
       {/* Commercial FAQ */}
       <div style={{ maxWidth: '800px', margin: '0 auto 4rem auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
