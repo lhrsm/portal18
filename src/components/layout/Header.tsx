@@ -129,6 +129,8 @@ export function Header() {
               className="btn-mobile-toggle"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Abrir menu de navegação"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-nav-drawer"
             >
               <Menu size={22} />
             </button>
@@ -137,7 +139,12 @@ export function Header() {
       </header>
 
       {/* Mobile Drawer Navigation */}
-      <Sheet isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} title="Menu Principal">
+      <Sheet 
+        id="mobile-nav-drawer"
+        isOpen={mobileMenuOpen} 
+        onClose={() => setMobileMenuOpen(false)} 
+        title="Menu Principal"
+      >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '0.5rem 0' }}>
           {/* Main Discovery Links */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>

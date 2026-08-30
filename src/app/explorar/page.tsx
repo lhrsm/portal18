@@ -250,11 +250,12 @@ function ExploreContent() {
       {/* Search Input Bar (100% width on mobile) */}
       <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
         <div style={{ position: 'relative', flex: 1 }}>
-          <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+          <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
           <input
             type="text"
             className="input"
             placeholder="Buscar por nome, cidade ou categoria..."
+            aria-label="Buscar por nome, cidade ou categoria"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             style={{ paddingLeft: '2.6rem', height: '46px', width: '100%' }}
@@ -264,6 +265,11 @@ function ExploreContent() {
           Buscar
         </Button>
       </form>
+
+      {/* Screen reader live region for search results announcement */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {!isLoading && `${totalCount} ${totalCount === 1 ? 'perfil encontrado' : 'perfis encontrados'}`}
+      </div>
 
       {/* Main Grid with Sidebar Filters */}
       <div className="explore-layout">

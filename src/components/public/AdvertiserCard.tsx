@@ -211,7 +211,7 @@ export function AdvertiserCard({
               return photoUrl ? (
                 <img
                   src={photoUrl}
-                  alt={advertiser.stage_name}
+                  alt={advertiser.stage_name ? `Foto de perfil de ${advertiser.stage_name}` : 'Foto de perfil do anunciante'}
                   className="advertiser-card-image"
                   loading="lazy"
                   decoding="async"
@@ -244,7 +244,7 @@ export function AdvertiserCard({
               type="button"
               className={`advertiser-card-fav-btn ${isFavorite ? 'active' : ''}`}
               onClick={handleFavoriteClick}
-              aria-label={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              aria-label={isFavorite ? `Remover ${advertiser.stage_name} dos favoritos` : `Salvar ${advertiser.stage_name} nos favoritos`}
               style={{ width: '38px', height: '38px', padding: '6px' }}
             >
               <Heart size={18} fill={isFavorite ? 'var(--accent-ruby)' : 'none'} color={isFavorite ? 'var(--accent-ruby)' : '#fff'} />
@@ -271,7 +271,8 @@ export function AdvertiserCard({
                 cursor: 'pointer',
                 zIndex: 5,
               }}
-              aria-label="Mais opções"
+              aria-label={`Mais opções para ${advertiser.stage_name}`}
+              aria-expanded={isMenuOpen}
             >
               <MoreVertical size={16} />
             </button>

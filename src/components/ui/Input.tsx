@@ -8,12 +8,13 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, error, leftIcon, rightIcon, ...props }, ref) => {
+  ({ className, error, leftIcon, rightIcon, 'aria-invalid': ariaInvalid, ...props }, ref) => {
     return (
       <div className="input-wrapper">
-        {leftIcon && <span className="input-icon-left">{leftIcon}</span>}
+        {leftIcon && <span className="input-icon-left" aria-hidden="true">{leftIcon}</span>}
         <input
           ref={ref}
+          aria-invalid={ariaInvalid !== undefined ? ariaInvalid : (error ? true : undefined)}
           className={clsx(
             'input',
             error && 'input-error',
@@ -23,7 +24,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           {...props}
         />
-        {rightIcon && <span className="input-icon-right">{rightIcon}</span>}
+        {rightIcon && <span className="input-icon-right" aria-hidden="true">{rightIcon}</span>}
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { ToastProvider } from '@/hooks/useToast';
@@ -9,8 +9,16 @@ import {
   getCanonicalBaseUrl, 
   SEO_CONFIG, 
   generateWebSiteSchema, 
-  generateOrganizationSchema 
+  generateOrganizationSchema,
+  getSiteVerificationMetadata
 } from '@/lib/seo/seoEngine';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#0a0c10',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(getCanonicalBaseUrl()),
@@ -46,6 +54,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: getCanonicalBaseUrl(),
   },
+  verification: getSiteVerificationMetadata(),
 };
 
 export default function RootLayout({
@@ -69,11 +78,16 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <a href="#main-content" className="skip-to-content">
+          Avançar para o conteúdo principal
+        </a>
         <ToastProvider>
           <AuthProvider>
             <AgeGateModal />
             <Header />
-            <main style={{ flex: 1, minHeight: 'calc(100vh - 160px)' }}>{children}</main>
+            <main id="main-content" tabIndex={-1} style={{ flex: 1, minHeight: 'calc(100vh - 160px)', outline: 'none' }}>
+              {children}
+            </main>
             <Footer />
           </AuthProvider>
         </ToastProvider>

@@ -24,12 +24,17 @@ export function FormField({
       {label && (
         <label className="form-label">
           {label}
-          {required && <span className="form-label-required" aria-hidden="true">*</span>}
+          {required && (
+            <>
+              <span className="form-label-required" aria-hidden="true">*</span>
+              <span className="sr-only">(campo obrigatório)</span>
+            </>
+          )}
         </label>
       )}
       {children}
       {error && (
-        <span className="form-error" role="alert">
+        <span className="form-error" role="alert" aria-live="polite">
           <AlertCircle size={14} aria-hidden="true" style={{ flexShrink: 0 }} />
           <span>{error}</span>
         </span>

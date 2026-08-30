@@ -55,6 +55,9 @@ export function GalleryLightbox({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Visualizador de fotos em tela cheia"
       style={{
         position: 'fixed',
         inset: 0,
@@ -101,7 +104,7 @@ export function GalleryLightbox({
             cursor: 'pointer',
             transition: 'background 0.2s',
           }}
-          aria-label="Fechar galeria"
+          aria-label="Fechar visualizador de fotos"
         >
           <X size={22} />
         </button>
@@ -122,7 +125,7 @@ export function GalleryLightbox({
         {currentMedia && (
           <img
             src={currentMedia.storage_path}
-            alt="Mídia do anunciante"
+            alt={`Foto ${currentIndex + 1} de ${mediaList.length} do anunciante`}
             style={{
               maxWidth: '100%',
               maxHeight: '80vh',

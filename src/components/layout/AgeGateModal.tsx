@@ -28,8 +28,16 @@ export function AgeGateModal() {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" style={{ zIndex: 99999, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
+    <div 
+      className="modal-overlay" 
+      style={{ zIndex: 99999, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+      aria-hidden={!isOpen}
+    >
       <div 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="age-gate-title"
+        aria-describedby="age-gate-desc"
         className="modal-card age-gate-container" 
         style={{ 
           maxWidth: '480px', 
@@ -39,11 +47,17 @@ export function AgeGateModal() {
           padding: '1.5rem 1.25rem' 
         }}
       >
-        <div className="age-gate-badge">18+</div>
-        <h2 style={{ fontSize: 'clamp(1.35rem, 4vw, 1.65rem)', marginBottom: '0.65rem', color: 'var(--text-primary)', lineHeight: 1.2 }}>
+        <div className="age-gate-badge" aria-hidden="true">18+</div>
+        <h2 
+          id="age-gate-title"
+          style={{ fontSize: 'clamp(1.35rem, 4vw, 1.65rem)', marginBottom: '0.65rem', color: 'var(--text-primary)', lineHeight: 1.2 }}
+        >
           Conteúdo exclusivo para maiores de 18 anos
         </h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: '1.5', marginBottom: '1.25rem' }}>
+        <p 
+          id="age-gate-desc"
+          style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: '1.5', marginBottom: '1.25rem' }}
+        >
           O portal contém anúncios destinados exclusivamente a adultos. Ao entrar, você declara ter 18 anos ou mais e aceitar os Termos de Uso e Política de Privacidade.
         </p>
 

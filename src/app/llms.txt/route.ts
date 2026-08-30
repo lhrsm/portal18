@@ -18,6 +18,7 @@ O Portal18 é um portal de descoberta inclusivo e seguro para profissionais adul
 - Anuncie Conosco: ${baseUrl}/anunciar
 - Anuncie em Salvador / BA: ${baseUrl}/anunciar/salvador
 - Central de Ajuda & FAQ: ${baseUrl}/help
+- Declaração de Acessibilidade (WCAG 2.2 AA): ${baseUrl}/accessibility
 
 ## Políticas de Segurança, Confiança e 18+ (Trust Center)
 - Trust Center Oficial: ${baseUrl}/trust

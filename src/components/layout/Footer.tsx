@@ -119,7 +119,7 @@ export function Footer() {
               <li><Link href="/trust/privacy" className="footer-link">Política de Privacidade</Link></li>
               <li><Link href="/trust/lgpd" className="footer-link">Direitos dos Titulares (LGPD)</Link></li>
               <li><Link href="/account/privacy" className="footer-link">Termos de Uso</Link></li>
-              <li><Link href="/account/privacy" className="footer-link">Diretrizes da Comunidade</Link></li>
+              <li><Link href="/accessibility" className="footer-link">Acessibilidade</Link></li>
               <li><Link href="/trust/security" className="footer-link">Segurança da Informação</Link></li>
             </ul>
           </div>
@@ -186,6 +186,7 @@ export function Footer() {
               <li><Link href="/trust/privacy" className="footer-link">Política de Privacidade</Link></li>
               <li><Link href="/trust/lgpd" className="footer-link">Direitos LGPD</Link></li>
               <li><Link href="/account/privacy" className="footer-link">Termos de Uso</Link></li>
+              <li><Link href="/accessibility" className="footer-link">Acessibilidade</Link></li>
               <li><Link href="/trust/security" className="footer-link">Segurança da Informação</Link></li>
             </ul>
           </MobileFooterAccordion>
@@ -215,6 +216,8 @@ export function Footer() {
             <Link href="/account/privacy">Termos</Link>
             <span>•</span>
             <Link href="/trust/lgpd">LGPD</Link>
+            <span>•</span>
+            <Link href="/accessibility">Acessibilidade</Link>
             <span>•</span>
             <Link href="/status">Status</Link>
           </div>

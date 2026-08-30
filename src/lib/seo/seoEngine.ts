@@ -1,7 +1,9 @@
 /**
  * Portal18 — Centralized SEO, Canonical & Structured Data Engine
- * Phase 26E: Technical SEO, Programmatic SEO & AI Discovery
+ * Phase 26E.1: SEO Hardening, Search Console Readiness & Accessibility Compliance
  */
+
+import type { Metadata } from 'next';
 
 export interface SeoConfig {
   siteName: string;
@@ -49,7 +51,7 @@ export function buildCanonicalUrl(pathname: string): string {
 }
 
 /**
- * Builds WebSite JSON-LD Schema
+ * Builds WebSite JSON-LD Schema (Clean WebSite schema without SearchAction per Phase 26E.1)
  */
 export function generateWebSiteSchema() {
   const baseUrl = getCanonicalBaseUrl();
@@ -60,11 +62,6 @@ export function generateWebSiteSchema() {
     url: baseUrl,
     description: SEO_CONFIG.defaultDescription,
     inLanguage: 'pt-BR',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${baseUrl}/explorar?q={search_term_string}`,
-      'query-input': 'required name=search_term_string',
-    },
   };
 }
 
@@ -114,4 +111,25 @@ export function isPreviewEnvironment(): boolean {
     process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview' ||
     Boolean(process.env.NEXT_PUBLIC_PREVIEW_BUILD)
   );
+}
+
+/**
+ * Gets site verification metadata conditionally for Search Console / Bing Webmaster.
+ * Never outputs placeholder tokens.
+ */
+export function getSiteVerificationMetadata(): Metadata['verification'] {
+  const google = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || process.env.GOOGLE_SITE_VERIFICATION;
+  const bing = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || process.env.BING_SITE_VERIFICATION || process.env.MS_VALIDATE;
+
+  const verification: Record<string, any> = {};
+  if (google && google.trim().length > 0 && !google.includes('placeholder')) {
+    verification.google = google.trim();
+  }
+  if (bing && bing.trim().length > 0 && !bing.includes('placeholder')) {
+    verification.other = {
+      'msvalidate.01': bing.trim(),
+    };
+  }
+
+  return Object.keys(verification).length > 0 ? verification : undefined;
 }

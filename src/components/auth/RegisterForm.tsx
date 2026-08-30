@@ -287,6 +287,7 @@ export function RegisterForm() {
             onChange={(e) => setDisplayName(e.target.value)}
             error={!!errors.displayName}
             leftIcon={<User size={18} />}
+            autoComplete="name"
             disabled={isLoading}
             required
           />

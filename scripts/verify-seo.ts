@@ -55,6 +55,7 @@ async function verifySeoAndAiDiscovery() {
   assert(urls.includes(`${baseUrl}/plans`), 'Sitemap includes /plans');
   assert(urls.includes(`${baseUrl}/trust`), 'Sitemap includes /trust');
   assert(urls.includes(`${baseUrl}/help`), 'Sitemap includes /help');
+  assert(urls.includes(`${baseUrl}/accessibility`), 'Sitemap includes /accessibility');
 
   // Check state routes
   const hasBahia = urls.some((u) => u.includes('/acompanhantes/bahia'));

@@ -67,6 +67,10 @@ export function AgeGateModal({
       <Card
         variant="premium"
         padding="md"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="age-assurance-title"
+        aria-describedby="age-assurance-desc"
         style={{
           maxWidth: '480px',
           width: 'min(calc(100% - 32px), 480px)',
@@ -83,10 +87,16 @@ export function AgeGateModal({
             <Badge variant="ruby"><ShieldAlert size={12} /> 18+</Badge>
             <Badge variant="gold"><Lock size={12} /> ECA DIGITAL</Badge>
           </div>
-          <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.75rem)', fontWeight: 800, marginBottom: '0.35rem', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+          <h2 
+            id="age-assurance-title"
+            style={{ fontSize: 'clamp(1.4rem, 4vw, 1.75rem)', fontWeight: 800, marginBottom: '0.35rem', letterSpacing: '-0.02em', lineHeight: 1.2 }}
+          >
             Verificação de Maioridade
           </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.45, margin: 0 }}>
+          <p 
+            id="age-assurance-desc"
+            style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.45, margin: 0 }}
+          >
             Conteúdo restrito a maiores de idade. Confirme sua maioridade para desbloquear mídias e contatos.
           </p>
         </div>
