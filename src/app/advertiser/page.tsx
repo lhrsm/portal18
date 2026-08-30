@@ -251,6 +251,16 @@ export default function AdvertiserDashboardPage() {
                   </div>
                 </Card>
               </Link>
+
+              <Link href="/advertiser/referrals" style={{ textDecoration: 'none' }}>
+                <Card variant="glass" padding="md" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', border: '1px solid rgba(212, 175, 55, 0.4)', background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(18, 22, 31, 0.8) 100%)', height: '100%' }}>
+                  <Megaphone size={20} color="var(--accent-gold)" />
+                  <div>
+                    <strong style={{ fontSize: '0.9rem', color: 'var(--accent-gold)', display: 'block' }}>Indique e Ganhe</strong>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>+7 Dias de bônus</span>
+                  </div>
+                </Card>
+              </Link>
             </div>
           </div>
 

@@ -28,7 +28,8 @@ import {
   LifeBuoy,
   Scale,
   Shield,
-  Activity
+  Activity,
+  Gift
 } from 'lucide-react';
 
 export interface AdminLayoutProps {
@@ -54,6 +55,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/plans', label: 'Planos & Preços', icon: <Crown size={18} />, allowed: isAdmin },
     { href: '/admin/payments', label: 'Faturamento', icon: <CreditCard size={18} />, allowed: isAdmin },
     { href: '/admin/subscriptions', label: 'Assinaturas', icon: <FileCheck2 size={18} />, allowed: isAdmin },
+    { href: '/admin/referrals', label: 'Indicações', icon: <Gift size={18} />, allowed: isAdmin },
     { href: '/admin/support', label: 'Suporte', icon: <LifeBuoy size={18} />, allowed: isModerator },
     { href: '/admin/privacy', label: 'Privacidade & LGPD', icon: <Scale size={18} />, allowed: isAdmin },
     { href: '/admin/security', label: 'Segurança & Sessões', icon: <Shield size={18} />, allowed: isAdmin },

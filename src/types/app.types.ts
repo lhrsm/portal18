@@ -663,4 +663,72 @@ export interface PlatformKillSwitch {
   updated_at: string;
 }
 
+// ============================================================================
+// Phase 27B Models — Referral Program, Reward Ledger & Anti-Fraud Engine
+// ============================================================================
 
+export type ReferralState =
+  | 'registered'
+  | 'pending_qualification'
+  | 'qualified'
+  | 'rewarded'
+  | 'rejected'
+  | 'cancelled'
+  | 'revoked'
+  | 'flagged';
+
+export type ReferralRiskStatus = 'normal' | 'manual_review' | 'blocked';
+export type ReferralRewardType = 'bonus_days' | 'promotion_credit' | 'feature_unlock';
+export type ReferralRewardStatus = 'granted' | 'consumed' | 'revoked' | 'expired';
+
+export interface Referral {
+  id: string;
+  referrer_advertiser_id: string;
+  referrer_profile_id: string;
+  referred_advertiser_id: string;
+  referred_profile_id: string;
+  referral_code: string;
+  status: ReferralState;
+  risk_status: ReferralRiskStatus;
+  risk_reasons?: string[] | null;
+  qualification_due_at?: string | null;
+  qualified_at?: string | null;
+  rewarded_at?: string | null;
+  policy_version: string;
+  created_at: string;
+  updated_at: string;
+  referred_advertiser?: {
+    stage_name?: string;
+    city_name?: string;
+    state_code?: string;
+    profile_status?: string;
+  };
+}
+
+export interface ReferralReward {
+  id: string;
+  advertiser_id: string;
+  profile_id: string;
+  referral_id: string;
+  reward_type: ReferralRewardType;
+  reward_value: number;
+  status: ReferralRewardStatus;
+  policy_version: string;
+  granted_at: string;
+  effective_at: string;
+  expires_at: string;
+  revoked_at?: string | null;
+  revocation_reason?: string | null;
+  created_at: string;
+}
+
+export interface ReferralStats {
+  referral_code: string;
+  referral_url: string;
+  total_referrals: number;
+  pending_count: number;
+  qualified_count: number;
+  rewarded_count: number;
+  total_bonus_days_earned: number;
+  active_bonus_days: number;
+}

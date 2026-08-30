@@ -22,16 +22,17 @@ import {
   Menu, 
   X, 
   Sparkles, 
-  ArrowLeft 
+  ArrowLeft,
+  Gift
 } from 'lucide-react';
 
 export interface AdvertiserLayoutProps {
   children: React.ReactNode;
-  advertiser: AdvertiserProfile | null;
+  advertiser?: AdvertiserProfile | null;
   completenessScore?: number;
 }
 
-export function AdvertiserLayout({ children, advertiser, completenessScore }: AdvertiserLayoutProps) {
+export function AdvertiserLayout({ children, advertiser = null, completenessScore }: AdvertiserLayoutProps) {
   const pathname = usePathname();
   const { user } = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -39,9 +40,10 @@ export function AdvertiserLayout({ children, advertiser, completenessScore }: Ad
   const navItems = [
     { href: '/advertiser', label: 'Visão geral', icon: <LayoutDashboard size={18} /> },
     { href: '/advertiser/profile', label: 'Meu perfil', icon: <User size={18} /> },
-    { href: '/advertiser/gallery', label: 'Galeria de Fotos', icon: <ImageIcon size={18} /> },
+    { href: '/advertiser/gallery', label: 'Central de Mídia', icon: <ImageIcon size={18} /> },
     { href: '/advertiser/location', label: 'Localização', icon: <MapPin size={18} /> },
     { href: '/advertiser/contacts', label: 'Contatos', icon: <Phone size={18} /> },
+    { href: '/advertiser/referrals', label: 'Indique e Ganhe', icon: <Gift size={18} /> },
     { href: '/advertiser/verification', label: 'Verificação 18+', icon: <ShieldCheck size={18} /> },
     { href: '/advertiser/statistics', label: 'Estatísticas', icon: <BarChart3 size={18} /> },
     { href: '/advertiser/settings', label: 'Configurações', icon: <Settings size={18} /> },

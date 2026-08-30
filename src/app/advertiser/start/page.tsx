@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { advertisersService } from '@/services/advertisersService';
+import { referralService } from '@/services/referralService';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -22,11 +23,15 @@ import {
   ArrowRight,
   CheckCircle2,
   Camera,
-  Layers
+  Layers,
+  Gift
 } from 'lucide-react';
 
-export default function AdvertiserStartPage() {
+function AdvertiserStartContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const refCode = searchParams?.get('ref');
+
   const { user, isAdvertiser, refreshProfile } = useAuth();
   const { showToast } = useToast();
 
@@ -35,8 +40,26 @@ export default function AdvertiserStartPage() {
   const [term3, setTerm3] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [referrerNotice, setReferrerNotice] = useState<string | null>(null);
 
   const isSubmittingRef = useRef(false);
+
+  useEffect(() => {
+    if (refCode) {
+      // Generate or retrieve privacy-safe visitor token
+      let token = typeof window !== 'undefined' ? localStorage.getItem('portal18_ref_token') : null;
+      if (!token) {
+        token = 'vtok_' + Math.random().toString(36).substring(2, 15);
+        if (typeof window !== 'undefined') localStorage.setItem('portal18_ref_token', token);
+      }
+
+      referralService.trackReferralVisit(refCode, token).then((res) => {
+        if (res.success) {
+          setReferrerNotice('Você foi convidado(a) por um anunciante parceiro do Portal18.');
+        }
+      });
+    }
+  }, [refCode]);
 
   const benefits = [
     {
@@ -107,6 +130,11 @@ export default function AdvertiserStartPage() {
         return;
       }
 
+      // Bind referral if originated from a referral link
+      if (refCode && res.advertiser_id) {
+        await referralService.bindReferral(res.advertiser_id, refCode);
+      }
+
       await refreshProfile();
       showToast({
         type: 'success',
@@ -127,7 +155,7 @@ export default function AdvertiserStartPage() {
   return (
     <div className="container" style={{ padding: '3.5rem 1rem 5rem 1rem', maxWidth: '860px' }}>
       {/* 1. Header Hero */}
-      <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+      <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
         <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.75rem' }}>
           <Badge variant="gold">ÁREA DO ANUNCIANTE</Badge>
           <Badge variant="ruby">18+ OBRIGATÓRIO</Badge>
@@ -139,6 +167,23 @@ export default function AdvertiserStartPage() {
           Configure seu anúncio, escolha seus canais de atendimento e publique fotos em alta resolução na plataforma mais sofisticada do Brasil.
         </p>
       </div>
+
+      {/* Referral Invitation Banner */}
+      {referrerNotice && (
+        <Card variant="glass" padding="sm" style={{
+          marginBottom: '2rem',
+          background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(18, 22, 31, 0.8) 100%)',
+          border: '1px solid rgba(212, 175, 55, 0.35)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+        }}>
+          <Gift size={20} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+          <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+            <strong>Convite Especial:</strong> {referrerNotice}
+          </div>
+        </Card>
+      )}
 
       {/* 2. Benefits Grid (6 Cards) */}
       <div
@@ -283,5 +328,13 @@ export default function AdvertiserStartPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function AdvertiserStartPage() {
+  return (
+    <React.Suspense fallback={<div style={{ minHeight: '60vh' }} />}>
+      <AdvertiserStartContent />
+    </React.Suspense>
   );
 }
