@@ -74,7 +74,7 @@ export default function AdminReportsQueuePage() {
 
         <div style={{ minWidth: '180px' }}>
           <Select value={severityFilter} onChange={(e) => setSeverityFilter(e.target.value)} placeholderOption="Todas as Severidades">
-            <option value="critical">🚨 Crítica (Prioritária)</option>
+            <option value="critical">Crítica (Prioritária)</option>
             <option value="high">Alta</option>
             <option value="medium">Média</option>
             <option value="low">Baixa</option>

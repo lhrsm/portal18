@@ -267,7 +267,7 @@ export default function HomePage() {
               </>
             ) : (
               <>
-                Encontre acompanhantes na <span style={{ background: 'linear-gradient(135deg, var(--accent-gold) 0%, #fff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>sua região</span>
+                Encontre acompanhantes na <span style={{ color: 'var(--accent-gold)' }}>sua região</span>
               </>
             )}
           </h1>

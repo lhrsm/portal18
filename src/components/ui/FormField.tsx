@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import clsx from 'clsx';
+import { AlertCircle } from 'lucide-react';
 
 export interface FormFieldProps {
   label?: string;
@@ -23,11 +24,16 @@ export function FormField({
       {label && (
         <label className="form-label">
           {label}
-          {required && <span className="form-label-required">*</span>}
+          {required && <span className="form-label-required" aria-hidden="true">*</span>}
         </label>
       )}
       {children}
-      {error && <span className="form-error">⚠️ {error}</span>}
+      {error && (
+        <span className="form-error" role="alert">
+          <AlertCircle size={14} aria-hidden="true" style={{ flexShrink: 0 }} />
+          <span>{error}</span>
+        </span>
+      )}
       {hint && !error && <span className="form-hint">{hint}</span>}
     </div>
   );

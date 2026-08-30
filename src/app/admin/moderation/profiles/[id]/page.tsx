@@ -99,7 +99,7 @@ export default function AdminProfileReviewDetailPage() {
 
       showToast({
         type: 'success',
-        title: 'Perfil Aprovado & Publicado! 🎉',
+        title: 'Perfil Aprovado e Publicado',
         message: 'O anúncio foi publicado com sucesso nas buscas públicas.',
       });
       router.push('/admin/moderation/profiles');
@@ -277,7 +277,7 @@ export default function AdminProfileReviewDetailPage() {
       {criticalReports.length > 0 && (
         <Alert
           type="error"
-          title="⚠️ ATENÇÃO: Denúncias Críticas Abertas contra este Anunciante"
+          title="ATENÇÃO: Denúncias Críticas Abertas contra este Anunciante"
           style={{ marginBottom: '1.5rem' }}
         >
           Existem {criticalReports.length} denúncia(s) crítica(s) em aberto. A aprovação está bloqueada até que as denúncias sejam resolvidas pela equipe de Trust & Safety.

@@ -93,7 +93,7 @@ export function ReportModal({ isOpen, onClose, advertiserId, stageName }: Report
 
         <FormField label="Motivo da Denúncia" required>
           <Select value={reason} onChange={(e) => setReason(e.target.value)}>
-            <option value="suspected_minor">🚨 Suspeita de Menor de Idade (Prioridade Crítica)</option>
+            <option value="suspected_minor">Suspeita de Menor de Idade (Prioridade Crítica)</option>
             <option value="fake_profile">Perfil Falso / Golpista</option>
             <option value="unauthorized_images">Uso de Fotos / Mídias sem Autorização</option>
             <option value="fraud">Tentativa de Fraude Financeira</option>

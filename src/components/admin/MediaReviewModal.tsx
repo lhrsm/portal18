@@ -169,13 +169,13 @@ export function MediaReviewModal({
           {activeTab === 'block' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ background: 'rgba(163, 0, 33, 0.15)', border: '1px solid var(--accent-ruby)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', fontSize: '0.8rem', color: 'var(--accent-ruby)' }}>
-                ⚠️ O bloqueio permanente suspende o anunciante preventivamente caso envolva menores ou conteúdo não consensual.
+                O bloqueio permanente suspende o anunciante preventivamente caso envolva menores ou conteúdo não consensual.
               </div>
 
               <FormField label="Motivo Crítico de Bloqueio">
                 <Select value={blockReason} onChange={(e) => setBlockReason(e.target.value)}>
-                  <option value="suspected_minor">🚨 Suspeita de Menor de Idade (Gera alerta crítico)</option>
-                  <option value="non_consensual_content">🚨 Conteúdo Não Consensual</option>
+                  <option value="suspected_minor">Suspeita de Menor de Idade (Gera alerta crítico)</option>
+                  <option value="non_consensual_content">Conteúdo Não Consensual</option>
                   <option value="prohibited_content">Conteúdo Proibido pela Legislação</option>
                   <option value="fraud_impersonation">Fraude / Falsidade Ideológica</option>
                 </Select>

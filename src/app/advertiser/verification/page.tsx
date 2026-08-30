@@ -171,7 +171,7 @@ export default function AdvertiserVerificationPage() {
         <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3.5rem 2rem', border: '1px solid var(--color-success)' }}>
           <CheckCircle2 size={56} color="var(--color-success)" style={{ margin: '0 auto 1.25rem auto' }} />
           <h1 style={{ fontSize: '1.85rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--color-success)' }}>
-            Identidade Verificada 🛡️
+            Identidade Verificada
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '500px', margin: '0 auto 1.5rem auto', lineHeight: 1.6 }}>
             Seu perfil foi confirmado com sucesso e possui o selo oficial de verificação 18+ em todas as buscas públicas do portal.

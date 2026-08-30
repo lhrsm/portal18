@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { Users, Search, ShieldCheck, ShieldAlert, Plus, Trash2, Lock } from 'lucide-react';
+import { Users, Search, ShieldCheck, ShieldAlert, Plus, Trash2, Lock, X } from 'lucide-react';
 
 export default function AdminUsersPage() {
   const { roles } = useAuth();
@@ -131,10 +131,11 @@ export default function AdminUsersPage() {
                           {isSuperAdmin && (
                             <button
                               onClick={() => handleRevokeRole(u.id, roleName)}
-                              style={{ background: 'transparent', border: 'none', color: 'var(--accent-ruby)', cursor: 'pointer', fontSize: '0.75rem' }}
+                              style={{ background: 'transparent', border: 'none', color: 'var(--accent-ruby)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: '2px' }}
                               title="Revogar cargo"
+                              aria-label={`Revogar cargo ${roleName}`}
                             >
-                              ✕
+                              <X size={12} aria-hidden="true" />
                             </button>
                           )}
                         </div>

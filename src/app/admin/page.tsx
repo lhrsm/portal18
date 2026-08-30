@@ -50,7 +50,7 @@ export default function AdminDashboardPage() {
               <ShieldAlert size={26} color="var(--accent-ruby)" />
               <div>
                 <div style={{ fontWeight: 800, color: 'var(--accent-ruby)', fontSize: '1rem' }}>
-                  🚨 {metrics.criticalReports} Denúncia(s) Crítica(s) Aguardando Análise Imediata!
+                  {metrics.criticalReports} Denúncia(s) Crítica(s) Aguardando Análise Imediata
                 </div>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                   Casos de suspeita de menor de idade ou violações graves requerem ação prioritária.
