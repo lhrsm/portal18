@@ -2,15 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { billingService } from '@/services/billingService';
-import { entitlementService, UsageMeters } from '@/services/entitlementService';
-import { Subscription, SubscriptionPlan, AdvertiserEntitlements, Payment } from '@/types/app.types';
+import { useAuth } from '@/hooks/useAuth';
+import { advertisersService } from '@/services/advertisersService';
+import { commercialCatalogService } from '@/services/commercialCatalogService';
+import { commercialLifecycleService, CommercialLifecycleDetails } from '@/services/commercialLifecycleService';
+import { referralService } from '@/services/referralService';
+import { AdvertiserCommercialSummary, ReferralStats } from '@/types/app.types';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { Alert } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { ActionConfirmModal } from '@/components/admin/ActionConfirmModal';
 import { useToast } from '@/hooks/useToast';
 import { 
   CreditCard, 
@@ -20,67 +21,46 @@ import {
   AlertTriangle, 
   ArrowRight, 
   ArrowLeft, 
-  FileText, 
   Sparkles,
   Zap,
   Info,
   Image as ImageIcon,
   Video,
-  Layers
+  Layers,
+  Gift,
+  ShieldCheck,
+  Phone
 } from 'lucide-react';
 
 export default function AdvertiserSubscriptionDashboardPage() {
+  const { profile } = useAuth();
   const { showToast } = useToast();
 
-  const [subData, setSubData] = useState<(Subscription & { subscription_plans?: SubscriptionPlan }) | null>(null);
-  const [entitlements, setEntitlements] = useState<AdvertiserEntitlements | null>(null);
-  const [usageMeters, setUsageMeters] = useState<UsageMeters | null>(null);
-  const [payments, setPayments] = useState<Payment[]>([]);
+  const [summary, setSummary] = useState<AdvertiserCommercialSummary | null>(null);
+  const [lifecycle, setLifecycle] = useState<CommercialLifecycleDetails | null>(null);
+  const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   const loadData = async () => {
+    if (!profile) return;
     setLoading(true);
-    const [subRes, paymentsRes] = await Promise.all([
-      billingService.getOwnSubscription(),
-      billingService.getOwnPayments(),
-    ]);
-
-    setSubData(subRes.subscription);
-    setEntitlements(subRes.entitlements);
-    setPayments(paymentsRes);
-
-    if (subRes.subscription?.advertiser_id) {
-      const meters = await entitlementService.getUsageMeters(subRes.subscription.advertiser_id);
-      setUsageMeters(meters);
+    const adv = await advertisersService.getOwnAdvertiserProfile(profile.id);
+    if (adv) {
+      const [sumData, lifeData, refData] = await Promise.all([
+        commercialCatalogService.getAdvertiserCommercialSummary(adv.id),
+        commercialLifecycleService.getCommercialLifecycle(adv.id),
+        referralService.getAdvertiserReferralStats(adv.id),
+      ]);
+      setSummary(sumData);
+      setLifecycle(lifeData);
+      setReferralStats(refData);
     }
     setLoading(false);
   };
 
   useEffect(() => {
     loadData();
-  }, []);
-
-  const handleCancelSubscription = async () => {
-    if (!subData) return;
-    const res = await billingService.cancelSubscription(subData.id, true);
-    if (res.success) {
-      showToast({
-        type: 'info',
-        title: 'Cancelamento Agendado',
-        message: 'Sua assinatura não será renovada e continuará ativa até o fim do período vigente.',
-      });
-      await loadData();
-    } else {
-      showToast({ type: 'error', title: 'Erro', message: res.error || 'Não foi possível cancelar.' });
-    }
-    setIsCancelModalOpen(false);
-  };
-
-  const formatPrice = (cents: number) => {
-    return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  };
+  }, [profile]);
 
   if (loading) {
     return (
@@ -91,210 +71,126 @@ export default function AdvertiserSubscriptionDashboardPage() {
     );
   }
 
-  const hasActivePlan = subData && subData.status === 'active';
-  const plan = subData?.subscription_plans;
+  const entitlements = summary?.entitlements;
+  const usage = summary?.usage;
+
+  const badgeVariant = (lifecycle?.statusBadge.variant === 'gold' || lifecycle?.statusBadge.variant === 'ruby' || lifecycle?.statusBadge.variant === 'success')
+    ? lifecycle.statusBadge.variant
+    : 'neutral';
 
   return (
     <div className="container" style={{ padding: '2rem 1rem 5rem 1rem', maxWidth: '900px' }}>
-      {/* Top Breadcrumb */}
+      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <Link href="/advertiser" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.9rem' }}>
           <ArrowLeft size={16} /> Painel do Anunciante
         </Link>
-        <Link href="/advertiser/promote">
-          <Button variant="secondary" size="sm" leftIcon={<Zap size={14} />}>
-            Impulsionar Anúncio
-          </Button>
-        </Link>
+        <Badge variant="gold"><Crown size={12} /> GESTÃO DE PLANO</Badge>
       </div>
 
       <div style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-          Minha Assinatura & Plano
+          Plano & Benefícios Ativos
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-          Gerencie seu plano de divulgação, limites de fotos, renovações e faturas
+          Acompanhe seu ciclo comercial, limites de mídia na galeria e bônus acumulados
         </p>
       </div>
 
-      {/* Over Limit Warning if any */}
-      {usageMeters?.isOverLimit && (
-        <Alert type="warning" title="Aviso sobre Limite do Plano" style={{ marginBottom: '1.5rem' }}>
-          {usageMeters.overLimitNotice}
-        </Alert>
+      {/* Lifecycle Status Banner */}
+      {lifecycle && (
+        <Card variant="glass" padding="lg" style={{ marginBottom: '2rem', border: '1px solid var(--border-accent)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                <Badge variant={badgeVariant}>{lifecycle.statusBadge.label}</Badge>
+                {referralStats && referralStats.active_bonus_days > 0 && (
+                  <Badge variant="success">+{referralStats.active_bonus_days} dias de bônus</Badge>
+                )}
+              </div>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: '0 0 0.25rem 0' }}>
+                {lifecycle.planName}
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0, lineHeight: 1.5 }}>
+                {lifecycle.statusBadge.description}
+              </p>
+            </div>
+
+            <Link href="/advertiser/subscription/plans">
+              <Button variant="primary" size="md">
+                Ver Opções de Planos
+              </Button>
+            </Link>
+          </div>
+        </Card>
       )}
 
-      {/* Current Plan Card */}
-      <Card variant="premium" padding="lg" style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <Badge variant={hasActivePlan ? 'gold' : 'neutral'}>
-                {hasActivePlan ? 'PLANO ATIVO' : 'SEM PLANO PAGO'}
-              </Badge>
-              {subData?.cancel_at_period_end && (
-                <Badge variant="warning">Cancelamento agendado no fim do ciclo</Badge>
-              )}
-            </div>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>
-              {plan ? plan.name : entitlements?.plan_name || 'Básico Inicial'}
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              {plan?.description || 'Plano de presença inicial com recursos essenciais.'}
-            </p>
+      {/* Usage Meters */}
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem' }}>Uso de Recursos</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
+        {/* Photos Usage */}
+        <Card variant="glass" padding="md">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Fotos na Galeria</span>
+            <ImageIcon size={16} color="var(--accent-gold)" />
           </div>
-
-          <div style={{ textAlign: 'right' }}>
-            {plan && (
-              <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--accent-gold)' }}>
-                {formatPrice(plan.price_amount)}
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>/mês</span>
-              </div>
-            )}
-            {subData?.current_period_end && (
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                Ciclo vigente até: {new Date(subData.current_period_end).toLocaleDateString('pt-BR')}
-              </div>
-            )}
+          <div style={{ fontSize: '1.75rem', fontWeight: 800 }}>
+            {usage?.photos.current || 0} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ {usage?.photos.limit || 10}</span>
           </div>
-        </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            {usage?.photos.can_add_more ? 'Capacidade disponível' : 'Limite do plano atingido'}
+          </span>
+        </Card>
 
-        {/* Real Usage Meters Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', padding: '1.25rem', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>
-              <ImageIcon size={13} /> Limite de Fotos
-            </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>
-              {usageMeters ? `${usageMeters.photos.current} / ${usageMeters.photos.limit}` : `${entitlements?.media_limit || 10} fotos`}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-              {usageMeters?.photos.canAddMore ? 'Disponível para envio' : 'Limite atingido'}
-            </div>
+        {/* Videos Usage */}
+        <Card variant="glass" padding="md">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Vídeos Comerciais</span>
+            <Video size={16} color="var(--color-info)" />
           </div>
-
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>
-              <Video size={13} /> Vídeos na Galeria
-            </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>
-              {usageMeters ? `${usageMeters.videos.current} / ${usageMeters.videos.limit}` : (entitlements?.video_limit ? 'Liberado' : '0 vídeos')}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-              {entitlements?.video_limit ? 'Ativo' : 'Requer Plano Premium'}
-            </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800 }}>
+            {usage?.videos.current || 0} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ {usage?.videos.limit || 0}</span>
           </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            {(usage?.videos.limit || 0) > 0 ? 'Vídeos liberados na galeria' : 'Disponível em planos superiores'}
+          </span>
+        </Card>
 
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>
-              <Zap size={13} /> Impulsionamentos Inclusos
-            </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>
-              {usageMeters ? `${usageMeters.boosts.remaining} restantes` : `${entitlements?.boost_allowance || 0}/mês`}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-              Renovação mensal
-            </div>
+        {/* Categories Usage */}
+        <Card variant="glass" padding="md">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Categorias Vinculadas</span>
+            <Layers size={16} color="var(--color-success)" />
           </div>
-
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>
-              <Layers size={13} /> Analytics & Métricas
-            </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, textTransform: 'capitalize' }}>
-              {entitlements?.analytics_level || 'Básico'}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-              Relatórios no painel
-            </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800 }}>
+            {usage?.categories.current || 0} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ {usage?.categories.limit || 3}</span>
           </div>
-        </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Classificação taxonômica do perfil</span>
+        </Card>
+      </div>
 
-        {/* Action Buttons */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '1rem' }}>
-          <Button
-            variant="primary"
-            size="md"
-            rightIcon={<ArrowRight size={16} />}
-            onClick={() => setIsUpgradeModalOpen(true)}
-          >
-            {hasActivePlan ? 'Alterar Plano (Upgrade / Downgrade)' : 'Contratar um Plano'}
-          </Button>
-
-          {hasActivePlan && !subData?.cancel_at_period_end && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsCancelModalOpen(true)}
-              style={{ color: 'var(--accent-ruby)' }}
-            >
-              Cancelar Renovação
-            </Button>
-          )}
-        </div>
-      </Card>
-
-      {/* Invoices & Payments History */}
+      {/* Active Benefits Details */}
       <Card variant="glass" padding="lg">
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <FileText size={18} color="var(--accent-gold)" /> Histórico de Pagamentos & Faturas
-        </h3>
-
-        {payments.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Nenhum pagamento registrado no momento. A plataforma está em fase de homologação gratuita.
+        <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0 0 1rem 0' }}>Benefícios & Entitlements Autorizados</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', fontSize: '0.875rem' }}>
+          <div style={{ padding: '0.75rem', background: 'var(--bg-input)', borderRadius: 'var(--radius-sm)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Áudio de Apresentação</div>
+            <strong>{entitlements?.audio_allowed ? 'Liberado' : 'Bloqueado no plano'}</strong>
           </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-            {payments.map((p) => (
-              <div key={p.id} style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-sm)', fontSize: '0.85rem' }}>
-                <div>
-                  <div style={{ fontWeight: 600, marginBottom: '0.15rem' }}>
-                    {p.payment_type.toUpperCase()} • {p.provider_payment_reference}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    {new Date(p.created_at).toLocaleString('pt-BR')}
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <span style={{ fontWeight: 700 }}>{formatPrice(p.amount)}</span>
-                  <Badge variant={p.status === 'paid' ? 'success' : p.status === 'refunded' ? 'ruby' : 'warning'}>
-                    {p.status}
-                  </Badge>
-                </div>
-              </div>
-            ))}
+          <div style={{ padding: '0.75rem', background: 'var(--bg-input)', borderRadius: 'var(--radius-sm)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Selo de Autenticidade</div>
+            <strong>{entitlements?.authenticity_verified ? 'Verificado & Ativo' : 'Disponível (Grátis)'}</strong>
           </div>
-        )}
+          <div style={{ padding: '0.75rem', background: 'var(--bg-input)', borderRadius: 'var(--radius-sm)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Nível de Analytics</div>
+            <strong style={{ textTransform: 'capitalize' }}>{entitlements?.analytics_level || 'Básico'}</strong>
+          </div>
+          <div style={{ padding: '0.75rem', background: 'var(--bg-input)', borderRadius: 'var(--radius-sm)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Visualização de Contatos</div>
+            <strong>{entitlements?.contacts_strategy === 'full' ? 'Todos os canais' : 'WhatsApp prioritário'}</strong>
+          </div>
+        </div>
       </Card>
-
-      {/* Cancel Confirmation Modal */}
-      <ActionConfirmModal
-        isOpen={isCancelModalOpen}
-        title="Cancelar Renovação Automática"
-        description="Tem certeza de que deseja cancelar a renovação da sua assinatura? Seu plano continuará ativo com todos os benefícios vigentes até a data de expiração do ciclo atual."
-        confirmLabel="Confirmar Cancelamento"
-        variant="ruby"
-        requireReason={false}
-        onClose={() => setIsCancelModalOpen(false)}
-        onConfirm={handleCancelSubscription}
-      />
-
-      {/* Upgrade / Commercial Homologation Modal */}
-      <ActionConfirmModal
-        isOpen={isUpgradeModalOpen}
-        title="Contratação em Fase de Homologação"
-        description="O gateway de pagamentos automatizados está em processo de homologação técnica. Todos os recursos básicos, galerias e ferramentas de contato estão liberados gratuitamente no momento!"
-        confirmLabel="Ver Todos os Planos"
-        variant="primary"
-        requireReason={false}
-        onClose={() => setIsUpgradeModalOpen(false)}
-        onConfirm={async () => {
-          setIsUpgradeModalOpen(false);
-          window.location.href = '/plans';
-        }}
-      />
     </div>
   );
 }

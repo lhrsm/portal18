@@ -900,3 +900,64 @@ export interface AdminPlatformAnalytics {
   };
   error?: string;
 }
+
+// ============================================================================
+// Phase 27E Models — Plan Catalog, Billing Periods & Boost Marketplace
+// ============================================================================
+
+export interface BillingPeriod {
+  id: string;
+  slug: '7_days' | '30_days' | '90_days' | string;
+  name: string;
+  duration_days: number;
+  display_order: number;
+}
+
+export interface PlanPeriodPricing {
+  period_slug: string;
+  duration_days: number;
+  price_cents: number;
+  currency: string;
+}
+
+export interface CatalogPlan {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  sort_order: number;
+  media_limit: number;
+  video_limit: number;
+  boost_allowance: number;
+  analytics_level: string;
+  features: string[];
+  pricing: Record<string, PlanPeriodPricing>;
+}
+
+export interface CommercialCatalog {
+  success: boolean;
+  plans: CatalogPlan[];
+  periods: BillingPeriod[];
+  boost_products: PromotionProduct[];
+  policy_version: string;
+}
+
+export interface AdvertiserCommercialSummary {
+  success: boolean;
+  advertiser_id: string;
+  entitlements: AdvertiserEntitlements;
+  usage: {
+    photos: { current: number; limit: number; can_add_more: boolean };
+    videos: { current: number; limit: number; can_add_more: boolean };
+    categories: { current: number; limit: number; can_add_more: boolean };
+  };
+  subscription: {
+    id: string;
+    plan_name: string;
+    plan_slug: string;
+    status: string;
+    current_period_end: string | null;
+    cancel_at_period_end: boolean;
+  } | null;
+  error?: string;
+}

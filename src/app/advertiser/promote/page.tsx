@@ -10,14 +10,14 @@ import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
 import { 
-  Zap, 
-  Sparkles, 
-  Clock, 
-  TrendingUp, 
-  ArrowLeft, 
-  Eye, 
+  Zap,
+  Megaphone,
+  Clock,
+  TrendingUp,
+  ArrowLeft,
+  Eye,
   MousePointerClick,
-  Info 
+  Info
 } from 'lucide-react';
 
 export default function AdvertiserPromotePage() {
@@ -73,7 +73,7 @@ export default function AdvertiserPromotePage() {
         <Link href="/advertiser" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.9rem' }}>
           <ArrowLeft size={16} /> Painel do Anunciante
         </Link>
-        <Badge variant="gold"><Sparkles size={12} /> RECURSO EM HOMOLOGAÇÃO</Badge>
+        <Badge variant="gold"><Megaphone size={12} /> RECURSO EM HOMOLOGAÇÃO</Badge>
       </div>
 
       <div style={{ marginBottom: '2rem' }}>
