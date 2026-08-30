@@ -7,8 +7,12 @@ import { Badge } from '@/components/ui/Badge';
 import { ShieldCheck, Sparkles, ArrowLeft, Heart, Megaphone, Lock } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Criar Conta 18+ | Portal 18+',
-  description: 'Cadastre-se para anunciar seu perfil profissional ou explorar acompanhantes independentes no Portal 18+.',
+  title: 'Criar Conta 18+ | Portal18',
+  description: 'Cadastre-se para anunciar seu perfil profissional ou explorar acompanhantes independentes no Portal18.',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RegisterPage() {

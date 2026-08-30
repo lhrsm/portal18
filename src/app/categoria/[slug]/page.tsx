@@ -8,7 +8,8 @@ import { AdvertiserCard } from '@/components/public/AdvertiserCard';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { Tag, Sparkles } from 'lucide-react';
+import { Tag, Sparkles, ChevronRight } from 'lucide-react';
+import { generateBreadcrumbSchema } from '@/lib/seo/seoEngine';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -26,14 +27,26 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const category = categories.find((c) => c.slug === categorySlug);
 
   if (!category) {
-    return { title: 'Categoria não encontrada | Portal 18+' };
+    return { title: 'Categoria não encontrada | Portal18', robots: { index: false } };
   }
 
+  const title = `${category.name} | Portal18`;
+  const description = category.description || `Encontre anúncios verificados de profissionais independentes na categoria ${category.name}. Maioridade 18+, fotos moderadas e contato direto no Portal18.`;
+  const canonicalUrl = `/categoria/${category.slug}`;
+
   return {
-    title: `${category.name} — Perfis e Anúncios 18+ | Portal Nacional`,
-    description: category.description || `Encontre profissionais independentes na categoria ${category.name}. Perfis verificados, maioridade comprovada e contato direto.`,
+    title,
+    description,
     alternates: {
-      canonical: `/categoria/${category.slug}`,
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: 'website',
+      siteName: 'Portal18',
+      locale: 'pt_BR',
     },
   };
 }
@@ -56,42 +69,56 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   const profiles = profilesRes?.data || [];
 
+  const breadcrumbsSchema = generateBreadcrumbSchema([
+    { name: 'Início', url: '/' },
+    { name: 'Categorias', url: '/explorar?categoria=acompanhantes' },
+    { name: category.name, url: `/categoria/${category.slug}` },
+  ]);
+
   return (
-    <div className="container" style={{ padding: '3rem 1rem 5rem 1rem' }}>
-      {/* Breadcrumbs */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-        <Link href="/" style={{ color: 'var(--text-secondary)' }}>Início</Link>
-        <span>/</span>
-        <Link href="/explorar" style={{ color: 'var(--text-secondary)' }}>Categorias</Link>
-        <span>/</span>
-        <span style={{ color: 'var(--accent-gold)' }}>{category.name}</span>
-      </div>
+    <div className="container" style={{ padding: '2rem 1rem 4rem 1rem' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
+      />
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+        <Link href="/" style={{ color: 'var(--text-muted)' }}>Início</Link>
+        <ChevronRight size={10} />
+        <Link href="/explorar" style={{ color: 'var(--text-muted)' }}>Categorias</Link>
+        <ChevronRight size={10} />
+        <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>{category.name}</span>
+      </nav>
 
       {/* Header */}
-      <div style={{ marginBottom: '2.5rem' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
-          <Badge variant="ruby"><Tag size={12} /> CATEGORIA</Badge>
-          <Badge variant="neutral">{profiles.length} profissionais</Badge>
+      <div style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
+          <Badge variant="gold"><Tag size={12} /> CATEGORIA 18+</Badge>
+          <Badge variant="neutral">{profiles.length} {profiles.length === 1 ? 'perfil ativo' : 'perfis ativos'}</Badge>
         </div>
-        <h1 style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 800, marginBottom: '0.5rem' }}>
+        <h1 style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.4rem' }}>
           {category.name}
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '720px', lineHeight: 1.6 }}>
-          {category.description || `Encontre os melhores anúncios de ${category.name} com total privacidade, maioridade verificada e contato direto via WhatsApp.`}
+        <p style={{ color: 'var(--text-secondary)', maxWidth: '650px', fontSize: '0.9rem', lineHeight: 1.5 }}>
+          {category.description || 'Profissionais qualificados disponíveis para atendimento personalizado.'}
         </p>
       </div>
 
       {/* Profiles Grid */}
-      <div style={{ marginBottom: '3.5rem' }}>
+      <div>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem' }}>
+          Anúncios em {category.name}
+        </h2>
+
         {profiles.length === 0 ? (
-          <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
-            <Sparkles size={40} color="var(--accent-gold)" style={{ margin: '0 auto 1rem auto' }} />
-            <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>Nenhum anúncio nesta categoria ainda</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              Seja a primeira profissional a anunciar na categoria {category.name}.
+          <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+            <Sparkles size={36} color="var(--accent-gold)" style={{ margin: '0 auto 1rem auto' }} />
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '0.4rem' }}>Nenhum anúncio encontrado nesta categoria</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+              Seja o primeiro anunciante a publicar seu perfil na categoria {category.name}.
             </p>
-            <Link href="/advertiser/start">
-              <Button variant="primary">Criar Meu Anúncio</Button>
+            <Link href="/anunciar">
+              <Button variant="ruby" size="md">Criar Anúncio Agora</Button>
             </Link>
           </Card>
         ) : (

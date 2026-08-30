@@ -8,7 +8,8 @@ import { AdvertiserCard } from '@/components/public/AdvertiserCard';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { MapPin, Sparkles, ArrowRight } from 'lucide-react';
+import { MapPin, Sparkles, ArrowRight, ChevronRight } from 'lucide-react';
+import { generateBreadcrumbSchema } from '@/lib/seo/seoEngine';
 
 interface StatePageProps {
   params: Promise<{
@@ -26,14 +27,26 @@ export async function generateMetadata({ params }: StatePageProps): Promise<Meta
   const state = states.find((s) => s.slug === estadoParam || s.code.toLowerCase() === estadoParam);
 
   if (!state) {
-    return { title: 'Estado não encontrado | Portal 18+' };
+    return { title: 'Estado não encontrado | Portal18', robots: { index: false } };
   }
 
+  const title = `Acompanhantes e Perfis em ${state.name} (${state.code}) | Portal18`;
+  const description = `Encontre anúncios verificados de acompanhantes e profissionais independentes no estado de ${state.name}. Fotos moderadas, maioridade 18+ e contato direto.`;
+  const canonicalUrl = `/acompanhantes/${state.slug}`;
+
   return {
-    title: `Acompanhantes e Perfis em ${state.name} (${state.code}) | Portal 18+`,
-    description: `Encontre acompanhantes e profissionais independentes em ${state.name}. Fotos aprovadas, maioridade comprovada e contato direto.`,
+    title,
+    description,
     alternates: {
-      canonical: `/acompanhantes/${state.slug}`,
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: 'website',
+      siteName: 'Portal18',
+      locale: 'pt_BR',
     },
   };
 }
@@ -56,48 +69,65 @@ export default async function StateDirectoryPage({ params }: StatePageProps) {
 
   const profiles = profilesRes?.data || [];
 
+  const breadcrumbsSchema = generateBreadcrumbSchema([
+    { name: 'Início', url: '/' },
+    { name: state.name, url: `/acompanhantes/${state.slug}` },
+  ]);
+
   return (
-    <div className="container" style={{ padding: '3rem 1rem 5rem 1rem' }}>
+    <div className="container" style={{ padding: '2rem 1rem 4rem 1rem' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
+      />
       {/* Breadcrumb */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-        <Link href="/" style={{ color: 'var(--text-secondary)' }}>Início</Link>
-        <span>/</span>
-        <Link href="/explorar" style={{ color: 'var(--text-secondary)' }}>Acompanhantes</Link>
-        <span>/</span>
-        <span style={{ color: 'var(--accent-gold)' }}>{state.name}</span>
-      </div>
+      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+        <Link href="/" style={{ color: 'var(--text-muted)' }}>Início</Link>
+        <ChevronRight size={10} />
+        <Link href="/explorar" style={{ color: 'var(--text-muted)' }}>Explorar</Link>
+        <ChevronRight size={10} />
+        <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>{state.name}</span>
+      </nav>
 
       {/* Header */}
-      <div style={{ marginBottom: '2.5rem' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
+      <div style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
           <Badge variant="gold">{state.name.toUpperCase()} ({state.code})</Badge>
-          <Badge variant="neutral">{profiles.length} anunciantes</Badge>
+          <Badge variant="neutral">{profiles.length} {profiles.length === 1 ? 'anúncio ativo' : 'anúncios ativos'}</Badge>
         </div>
-        <h1 style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 800, marginBottom: '0.5rem' }}>
-          Acompanhantes em {state.name}
+        <h1 style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.4rem' }}>
+          Acompanhantes e Perfis em {state.name}
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '720px', lineHeight: 1.6 }}>
-          Explore anunciantes e acompanhantes independentes no estado de {state.name}. Escolha sua cidade para refinar a busca com total sigilo.
+        <p style={{ color: 'var(--text-secondary)', maxWidth: '650px', fontSize: '0.9rem', lineHeight: 1.5 }}>
+          Explore anúncios de acompanhantes e profissionais independentes nas principais cidades de {state.name}.
         </p>
       </div>
 
-      {/* Cities Selector */}
+      {/* Cities Quick Bar */}
       {citiesData.length > 0 && (
-        <div style={{ marginBottom: '3rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <MapPin size={18} color="var(--accent-gold)" /> Cidades em {state.name}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <MapPin size={15} color="var(--accent-gold)" /> Cidades em {state.name}
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {citiesData.map((city) => (
               <Link
                 key={city.id}
                 href={`/acompanhantes/${state.slug}/${city.slug}`}
-                prefetch={true}
-                className="discovery-pill-card"
-                style={{ justifyContent: 'space-between', padding: '0.75rem 1rem' }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '0.5rem 0.85rem',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.825rem',
+                  color: 'var(--text-primary)',
+                  textDecoration: 'none',
+                  minHeight: '38px',
+                }}
               >
-                <span>{city.name}</span>
-                <ArrowRight size={14} color="var(--text-muted)" />
+                {city.name}
               </Link>
             ))}
           </div>
@@ -105,19 +135,20 @@ export default async function StateDirectoryPage({ params }: StatePageProps) {
       )}
 
       {/* Profiles Grid */}
-      <div style={{ marginBottom: '3.5rem' }}>
-        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '1.25rem' }}>
-          Anúncios recentes em {state.name}
+      <div>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem' }}>
+          Anúncios em Destaque em {state.name}
         </h2>
+
         {profiles.length === 0 ? (
-          <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3.5rem 1.5rem' }}>
-            <Sparkles size={40} color="var(--accent-gold)" style={{ margin: '0 auto 1rem auto' }} />
-            <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>Nenhum anúncio cadastrado neste estado</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              Seja o primeiro a anunciar seus serviços profissionais em {state.name}.
+          <Card variant="glass" padding="lg" style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+            <Sparkles size={36} color="var(--accent-gold)" style={{ margin: '0 auto 1rem auto' }} />
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '0.4rem' }}>Nenhum anúncio publicado nesta região no momento</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+              Seja o primeiro anunciante a publicar seu perfil profissional em {state.name}.
             </p>
-            <Link href="/advertiser/start">
-              <Button variant="primary">Criar Meu Anúncio</Button>
+            <Link href="/anunciar">
+              <Button variant="ruby" size="md">Criar Anúncio em {state.name}</Button>
             </Link>
           </Card>
         ) : (

@@ -4,8 +4,12 @@ import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
 import { Card } from '@/components/ui/Card';
 
 export const metadata: Metadata = {
-  title: 'Recuperar Senha | Portal Nacional 18+',
-  description: 'Recupere o acesso à sua conta no portal.',
+  title: 'Recuperar Senha | Portal18',
+  description: 'Recupere o acesso à sua conta no Portal18.',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function ForgotPasswordPage() {

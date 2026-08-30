@@ -20,6 +20,7 @@ import {
   Flame,
   Star
 } from 'lucide-react';
+import { generateBreadcrumbSchema } from '@/lib/seo/seoEngine';
 
 interface CityPageProps {
   params: Promise<{
@@ -49,16 +50,27 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
   const state = states.find((s) => s.slug === estadoParam || s.code.toLowerCase() === estadoParam);
 
   if (!state) {
-    return { title: 'Localização não encontrada | Portal 18+' };
+    return { title: 'Localização não encontrada | Portal18', robots: { index: false } };
   }
 
   const formattedCity = cidadeParam.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const title = `Acompanhantes em ${formattedCity}, ${state.code} | Portal18`;
+  const description = `Encontre anúncios verificados de acompanhantes e profissionais independentes em ${formattedCity}, ${state.name}. Fotos moderadas, maioridade 18+ e contato direto.`;
+  const canonicalUrl = `/acompanhantes/${state.slug}/${cidadeParam}`;
 
   return {
-    title: `Acompanhantes em ${formattedCity}, ${state.code} | Portal 18+`,
-    description: `Descubra acompanhantes e profissionais independentes em ${formattedCity}, ${state.name}. Fotos moderadas, maioridade estrita e contatos diretos.`,
+    title,
+    description,
     alternates: {
-      canonical: `/acompanhantes/${state.slug}/${cidadeParam}`,
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: 'website',
+      siteName: 'Portal18',
+      locale: 'pt_BR',
     },
   };
 }
@@ -115,8 +127,18 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
   // Highlight featured top profiles for local spotlight if >= 6 profiles
   const spotlightProfiles = profiles.length >= 6 ? profiles.slice(0, 4) : [];
 
+  const breadcrumbsSchema = generateBreadcrumbSchema([
+    { name: 'Início', url: '/' },
+    { name: state.name, url: `/acompanhantes/${state.slug}` },
+    { name: cityName, url: `/acompanhantes/${state.slug}/${cidadeParam}` },
+  ]);
+
   return (
     <div className="container" style={{ padding: '1.25rem 1rem 4rem 1rem', maxWidth: '1400px' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
+      />
       {/* 1. DISCREET BREADCRUMB (12px) */}
       <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
         <Link href="/" style={{ color: 'var(--text-muted)' }}>Início</Link>

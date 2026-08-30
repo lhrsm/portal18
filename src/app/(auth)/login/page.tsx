@@ -7,8 +7,12 @@ import { Badge } from '@/components/ui/Badge';
 import { ShieldCheck, Lock, Sparkles, Heart, Search, ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Entrar na Conta | Portal 18+',
-  description: 'Acesse seus favoritos, listas, histórico e painel profissional no Portal 18+.',
+  title: 'Entrar na Conta | Portal18',
+  description: 'Acesse seus favoritos, listas, histórico e painel profissional no Portal18.',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function LoginPage() {

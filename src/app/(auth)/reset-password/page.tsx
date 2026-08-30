@@ -4,8 +4,12 @@ import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm';
 import { Card } from '@/components/ui/Card';
 
 export const metadata: Metadata = {
-  title: 'Definir Nova Senha | Portal Nacional 18+',
-  description: 'Defina uma nova senha para sua conta.',
+  title: 'Definir Nova Senha | Portal18',
+  description: 'Defina uma nova senha para sua conta no Portal18.',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function ResetPasswordPage() {

@@ -5,20 +5,46 @@ import { ToastProvider } from '@/hooks/useToast';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AgeGateModal } from '@/components/layout/AgeGateModal';
+import { 
+  getCanonicalBaseUrl, 
+  SEO_CONFIG, 
+  generateWebSiteSchema, 
+  generateOrganizationSchema 
+} from '@/lib/seo/seoEngine';
 
 export const metadata: Metadata = {
-  title: 'Portal Nacional 18+ | Plataforma de Anúncios Independentes',
-  description: 'Portal nacional de anúncios e descoberta de perfis de profissionais adultos independentes no Brasil. Acesso estritamente restrito a maiores de 18 anos.',
-  keywords: ['portal adulto', 'anúncios independentes', '18+', 'brasil'],
+  metadataBase: new URL(getCanonicalBaseUrl()),
+  title: {
+    default: SEO_CONFIG.defaultTitle,
+    template: SEO_CONFIG.titleTemplate,
+  },
+  description: SEO_CONFIG.defaultDescription,
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
   openGraph: {
-    title: 'Portal Nacional 18+ | Anúncios Independentes',
-    description: 'Plataforma segura de descoberta de perfis profissionais independentes.',
+    siteName: SEO_CONFIG.siteName,
+    title: SEO_CONFIG.defaultTitle,
+    description: SEO_CONFIG.defaultDescription,
+    url: getCanonicalBaseUrl(),
     type: 'website',
     locale: 'pt_BR',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SEO_CONFIG.defaultTitle,
+    description: SEO_CONFIG.defaultDescription,
+  },
+  alternates: {
+    canonical: getCanonicalBaseUrl(),
   },
 };
 
@@ -27,8 +53,21 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const websiteJsonLd = generateWebSiteSchema();
+  const organizationJsonLd = generateOrganizationSchema();
+
   return (
     <html lang="pt-BR">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+      </head>
       <body>
         <ToastProvider>
           <AuthProvider>
