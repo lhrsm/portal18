@@ -803,3 +803,100 @@ export interface RankingDiagnostics {
   policy_version?: string;
   error?: string;
 }
+
+// ============================================================================
+// Phase 27D Models — Advertiser Analytics, Funnel Intelligence & Performance
+// ============================================================================
+
+export interface FunnelTotals {
+  impressions: number;
+  profile_views: number;
+  contact_clicks: number;
+  profile_open_rate: number;
+  contact_conversion_rate: number;
+  overall_contact_rate: number;
+}
+
+export interface FunnelTrends {
+  impressions_trend_percent: number;
+  views_trend_percent: number;
+  contacts_trend_percent: number;
+}
+
+export interface FunnelSourceMetric {
+  impressions: number;
+  views: number;
+  contacts: number;
+}
+
+export interface FunnelSourceBreakdown {
+  organic: FunnelSourceMetric;
+  sponsored: FunnelSourceMetric;
+  direct: FunnelSourceMetric;
+}
+
+export interface FunnelContactChannels {
+  whatsapp: number;
+  telegram: number;
+  phone: number;
+  website: number;
+}
+
+export interface FunnelTimeSeriesPoint {
+  date: string;
+  impressions: number;
+  profile_views: number;
+  contact_clicks: number;
+}
+
+export interface PerformanceInsight {
+  id: string;
+  type: 'positive' | 'neutral' | 'warning' | 'info';
+  title: string;
+  description: string;
+}
+
+export interface ProfileQualityStatus {
+  completeness_score: number;
+  has_verified_badge: boolean;
+  has_authenticity_badge: boolean;
+  has_audio_presentation: boolean;
+  has_headline: boolean;
+  has_bio: boolean;
+}
+
+export interface AdvertiserFunnelAnalytics {
+  success: boolean;
+  period_days: number;
+  advertiser_id: string;
+  funnel: FunnelTotals;
+  trends: FunnelTrends;
+  sources: FunnelSourceBreakdown;
+  channels: FunnelContactChannels;
+  time_series: FunnelTimeSeriesPoint[];
+  insights: PerformanceInsight[];
+  quality: ProfileQualityStatus;
+  error?: string;
+}
+
+export interface AdminPlatformAnalytics {
+  success: boolean;
+  period_days: number;
+  funnel: {
+    impressions: number;
+    profile_views: number;
+    contact_clicks: number;
+    profile_open_rate: number;
+    contact_conversion_rate: number;
+  };
+  distribution: {
+    organic_impressions: number;
+    sponsored_impressions: number;
+    sponsored_share_percent: number;
+  };
+  operations: {
+    active_advertisers: number;
+    active_campaigns: number;
+  };
+  error?: string;
+}

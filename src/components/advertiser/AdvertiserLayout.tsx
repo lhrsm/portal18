@@ -45,7 +45,7 @@ export function AdvertiserLayout({ children, advertiser = null, completenessScor
     { href: '/advertiser/contacts', label: 'Contatos', icon: <Phone size={18} /> },
     { href: '/advertiser/referrals', label: 'Indique e Ganhe', icon: <Gift size={18} /> },
     { href: '/advertiser/verification', label: 'Verificação 18+', icon: <ShieldCheck size={18} /> },
-    { href: '/advertiser/statistics', label: 'Estatísticas', icon: <BarChart3 size={18} /> },
+    { href: '/advertiser/analytics', label: 'Analytics & Funil', icon: <BarChart3 size={18} /> },
     { href: '/advertiser/settings', label: 'Configurações', icon: <Settings size={18} /> },
     { href: '/advertiser/profile/preview', label: 'Pré-visualização', icon: <Eye size={18} /> },
   ];

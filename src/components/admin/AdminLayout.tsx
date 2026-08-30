@@ -28,6 +28,7 @@ import {
   LifeBuoy,
   Scale,
   Shield,
+  BarChart3,
   Activity,
   Gift
 } from 'lucide-react';
@@ -47,6 +48,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const navItems = [
     { href: '/admin', label: 'Painel Geral', icon: <LayoutDashboard size={18} />, allowed: isModerator },
+    { href: '/admin/analytics', label: 'Analytics & Funil', icon: <BarChart3 size={18} />, allowed: isAdmin },
     { href: '/admin/moderation/profiles', label: 'Fila de Perfis', icon: <UserCheck size={18} />, allowed: isModerator },
     { href: '/admin/moderation/media', label: 'Fila de Mídias', icon: <ImageIcon size={18} />, allowed: isModerator },
     { href: '/admin/reports', label: 'Denúncias', icon: <AlertTriangle size={18} />, allowed: isModerator },
