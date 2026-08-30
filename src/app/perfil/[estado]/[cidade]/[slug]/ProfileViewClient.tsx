@@ -433,16 +433,16 @@ export function ProfileViewClient({
             <div style={{ position: 'absolute', top: '0.85rem', left: '0.85rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem', zIndex: 3 }}>
               {advertiser.verification_status === 'verified' && (
                 <span className="badge-verified">
-                  <ShieldCheck size={12} /> Verificado 18+
+                  <ShieldCheck size={12} aria-hidden="true" /> Verificado 18+
                 </span>
               )}
               {advertiser.authenticity_verified && (
-                <span className="badge-verified" style={{ background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.95) 0%, rgba(245, 215, 120, 1) 100%)', color: '#000', fontWeight: 800 }}>
-                  <Sparkles size={11} fill="#000" /> Perfil Autenticado
+                <span className="badge-verified" style={{ background: 'rgba(212, 175, 55, 0.15)', color: 'var(--accent-gold)', border: '1px solid var(--border-accent)', fontWeight: 700 }}>
+                  <ShieldCheck size={12} aria-hidden="true" /> Perfil Autenticado
                 </span>
               )}
               <span className="badge-sponsored">
-                <Sparkles size={11} /> Destaque VIP
+                <Sparkles size={11} aria-hidden="true" /> Destaque VIP
               </span>
             </div>
 

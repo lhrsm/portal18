@@ -118,4 +118,52 @@ export const authenticityService = {
       return [];
     }
   },
+
+  /**
+   * Admin: Revokes an active authenticity badge from an advertiser with mandatory audit reason.
+   */
+  async revokeAuthenticity(
+    advertiserId: string,
+    reason: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const supabase = createClient();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.rpc as any)('revoke_authenticity', {
+        p_advertiser_id: advertiserId,
+        p_reason: reason,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Erro ao revogar selo de autenticidade.' };
+    }
+  },
+
+  /**
+   * Generates a short-lived signed URL (max 300s TTL) for private evidence review.
+   * Access is strictly restricted server-side to authorized staff or the owning advertiser.
+   */
+  async getEvidenceSignedUrl(
+    storagePath: string,
+    expiresInSeconds: number = 300
+  ): Promise<{ signedUrl?: string; error?: string }> {
+    const supabase = createClient();
+    try {
+      const { data, error } = await supabase.storage
+        .from('advertiser-private-media')
+        .createSignedUrl(storagePath, expiresInSeconds);
+
+      if (error || !data?.signedUrl) {
+        return { error: error?.message || 'Não foi possível gerar URL assinada segura.' };
+      }
+      return { signedUrl: data.signedUrl };
+    } catch (err: any) {
+      return { error: err?.message || 'Falha ao acessar armazenamento privado.' };
+    }
+  },
 };
+

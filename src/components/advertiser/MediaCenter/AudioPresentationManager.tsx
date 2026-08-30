@@ -183,7 +183,7 @@ export function AudioPresentationManager({
 
       showToast({
         type: 'success',
-        title: 'Áudio Enviado com Sucesso! 🎙️',
+        title: 'Áudio Enviado com Sucesso',
         message: 'Sua apresentação de voz foi enviada para moderação e em breve estará visível no seu perfil.',
       });
 

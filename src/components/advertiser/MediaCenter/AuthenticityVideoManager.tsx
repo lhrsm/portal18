@@ -132,7 +132,8 @@ export function AuthenticityVideoManager({
     try {
       const supabase = createClient();
       const ext = selectedFile.name.split('.').pop() || 'mp4';
-      const filePath = `authenticity/${advertiser.id}/auth_${Date.now()}.${ext}`;
+      const fileId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now();
+      const filePath = `authenticity/${advertiser.id}/auth_${fileId}.${ext}`;
 
       // Upload to private bucket
       const { error: uploadError } = await supabase.storage
@@ -156,7 +157,7 @@ export function AuthenticityVideoManager({
 
       showToast({
         type: 'success',
-        title: 'Vídeo Enviado para Moderação! 🛡️',
+        title: 'Vídeo Enviado para Moderação',
         message: 'Nossa equipe de conformidade analisará sua evidência com total confidencialidade.',
       });
 

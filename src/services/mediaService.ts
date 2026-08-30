@@ -18,6 +18,7 @@ export const mediaService = {
         .eq('advertiser_id', advertiserId)
         .eq('moderation_status', 'approved')
         .eq('visibility', 'public')
+        .neq('media_type', 'authenticity_video')
         .is('deleted_at', null)
         .order('position', { ascending: true })
         .order('created_at', { ascending: true });

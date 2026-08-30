@@ -100,13 +100,29 @@ export function MediaReviewModal({
           </button>
         </div>
 
-        {/* Media Preview Image */}
-        <div style={{ flex: 1, backgroundColor: '#000', display: 'grid', placeItems: 'center', minHeight: '320px', maxHeight: '480px', overflow: 'hidden' }}>
-          <img
-            src={media.storage_path}
-            alt="Mídia em revisão"
-            style={{ maxWidth: '100%', maxHeight: '480px', objectFit: 'contain' }}
-          />
+        {/* Media Preview Area */}
+        <div style={{ flex: 1, backgroundColor: '#000', display: 'grid', placeItems: 'center', minHeight: '320px', maxHeight: '480px', overflow: 'hidden', padding: '1rem' }}>
+          {media.media_type === 'audio' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: '#fff' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--accent-gold)', display: 'grid', placeItems: 'center', color: '#000' }}>
+                <Check size={32} />
+              </div>
+              <span style={{ fontSize: '1rem', fontWeight: 700 }}>Apresentação em Áudio</span>
+              <audio controls src={media.storage_path} style={{ width: '280px' }} />
+            </div>
+          ) : media.media_type === 'video' || media.media_type === 'authenticity_video' ? (
+            <video
+              controls
+              src={media.storage_path}
+              style={{ maxWidth: '100%', maxHeight: '440px', objectFit: 'contain' }}
+            />
+          ) : (
+            <img
+              src={media.storage_path}
+              alt="Mídia em revisão"
+              style={{ maxWidth: '100%', maxHeight: '480px', objectFit: 'contain' }}
+            />
+          )}
         </div>
 
         {/* Action Panel */}
@@ -139,7 +155,13 @@ export function MediaReviewModal({
                 isLoading={isProcessing}
                 leftIcon={<Check size={16} />}
               >
-                Aprovar Imagem
+                {media.media_type === 'authenticity_video'
+                  ? 'Aprovar Selo de Autenticidade'
+                  : media.media_type === 'audio'
+                  ? 'Aprovar Áudio'
+                  : media.media_type === 'video'
+                  ? 'Aprovar Vídeo'
+                  : 'Aprovar Foto'}
               </Button>
             </div>
           )}

@@ -234,12 +234,12 @@ export function AdvertiserCard({
               )}
               {advertiser.verification_status === 'verified' && (
                 <span className="badge-verified">
-                  <ShieldCheck size={11} /> Verificado
+                  <ShieldCheck size={11} aria-hidden="true" /> Verificado
                 </span>
               )}
               {advertiser.authenticity_verified && (
-                <span className="badge-verified" style={{ background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.95) 0%, rgba(245, 215, 120, 1) 100%)', color: '#000', fontWeight: 800 }}>
-                  <Sparkles size={11} fill="#000" /> Autêntico
+                <span className="badge-verified" style={{ background: 'rgba(212, 175, 55, 0.15)', color: 'var(--accent-gold)', border: '1px solid var(--border-accent)', fontWeight: 700 }}>
+                  <ShieldCheck size={11} aria-hidden="true" /> Autêntico
                 </span>
               )}
             </div>
