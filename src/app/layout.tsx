@@ -5,6 +5,8 @@ import { ToastProvider } from '@/hooks/useToast';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AgeGateModal } from '@/components/layout/AgeGateModal';
+import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
+import { AccessibilityControlCenter } from '@/components/accessibility/AccessibilityControlCenter';
 import { 
   getCanonicalBaseUrl, 
   SEO_CONFIG, 
@@ -81,16 +83,19 @@ export default function RootLayout({
         <a href="#main-content" className="skip-to-content">
           Avançar para o conteúdo principal
         </a>
-        <ToastProvider>
-          <AuthProvider>
-            <AgeGateModal />
-            <Header />
-            <main id="main-content" tabIndex={-1} style={{ flex: 1, minHeight: 'calc(100vh - 160px)', outline: 'none' }}>
-              {children}
-            </main>
-            <Footer />
-          </AuthProvider>
-        </ToastProvider>
+        <AccessibilityProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <AgeGateModal />
+              <Header />
+              <main id="main-content" tabIndex={-1} style={{ flex: 1, minHeight: 'calc(100vh - 160px)', outline: 'none' }}>
+                {children}
+              </main>
+              <Footer />
+              <AccessibilityControlCenter />
+            </AuthProvider>
+          </ToastProvider>
+        </AccessibilityProvider>
       </body>
     </html>
   );

@@ -270,16 +270,16 @@ export default function HomePage() {
             A plataforma nacional de anúncios para acompanhantes e profissionais independentes com maioridade verificada 18+.
           </p>
 
-          {/* Unified Search Form (Full-width on mobile) */}
+          {/* Unified Search Form (Full-width & compact on mobile, row on desktop) */}
           <Card variant="glass" padding="sm" style={{ maxWidth: '840px', margin: '0 auto', boxShadow: 'var(--shadow-md)' }}>
-            <form onSubmit={handleSearchSubmit} className="hero-search-form" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <form onSubmit={handleSearchSubmit} className="hero-search-form">
               {/* 1. Location Autocomplete */}
-              <div className="hero-search-field" style={{ flex: '1 1 220px', width: '100%' }}>
+              <div className="hero-search-field field-location">
                 <CityAutocomplete onSelectCity={setSelectedSearchCity} placeholder="Digite cidade ou estado..." />
               </div>
 
               {/* 2. Quem você procura? */}
-              <div className="hero-search-field" style={{ flex: '1 1 170px', width: '100%' }}>
+              <div className="hero-search-field field-identity">
                 <select
                   className="input"
                   value={selectedSearchIdentity}
@@ -296,7 +296,7 @@ export default function HomePage() {
               </div>
 
               {/* 3. Category */}
-              <div className="hero-search-field" style={{ flex: '1 1 170px', width: '100%' }}>
+              <div className="hero-search-field field-category">
                 <select
                   className="input"
                   value={selectedSearchCategory}
@@ -314,7 +314,7 @@ export default function HomePage() {
               </div>
 
               {/* 4. Action Button */}
-              <Button type="submit" variant="ruby" size="md" leftIcon={<Search size={16} />} className="hero-search-btn" style={{ flexShrink: 0, height: '46px', minWidth: '100px', fontWeight: 700 }}>
+              <Button type="submit" variant="ruby" size="md" leftIcon={<Search size={16} />} className="hero-search-btn" style={{ height: '46px', fontWeight: 700 }}>
                 Buscar
               </Button>
             </form>

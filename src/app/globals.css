@@ -1870,26 +1870,49 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
+  margin: 0;
+  padding: 0;
+  height: auto;
+  min-height: 0;
+}
+
+.hero-search-field {
+  width: 100%;
+  flex: 0 0 auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.hero-search-btn {
+  width: 100%;
+  flex: 0 0 auto;
+  min-height: 44px;
 }
 
 @media (min-width: 640px) {
   .hero-search-form {
     flex-direction: row;
     align-items: center;
+    gap: 0.5rem;
   }
-}
-
-.hero-search-field {
-  width: 100%;
-}
-
-.hero-search-btn {
-  width: 100%;
-}
-
-@media (min-width: 640px) {
+  .hero-search-field.field-location {
+    flex: 1 1 220px;
+    width: auto;
+  }
+  .hero-search-field.field-identity {
+    flex: 1 1 170px;
+    width: auto;
+  }
+  .hero-search-field.field-category {
+    flex: 1 1 170px;
+    width: auto;
+  }
   .hero-search-btn {
     width: auto;
+    flex-shrink: 0;
+    min-width: 100px;
   }
 }
 
@@ -2011,6 +2034,267 @@ textarea:focus-visible,
   outline: 2px solid var(--accent-gold);
   outline-offset: 2px;
 }
+
+/* ============================================================================
+ * ACCESSIBILITY CONTROL CENTER (PHASE 26E.2)
+ * ============================================================================ */
+
+/* Global Floating Trigger Button (Z-Index 85: discreet, above page content, below modals) */
+.a11y-floating-trigger {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(212, 175, 55, 0.3);
+  cursor: pointer;
+  z-index: 85;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.a11y-floating-trigger:hover {
+  transform: scale(1.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 16px rgba(212, 175, 55, 0.5);
+}
+
+@media (max-width: 768px) {
+  .a11y-floating-trigger {
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+    width: 46px;
+    height: 46px;
+  }
+
+  /* When sticky mobile contact bar is visible on profile page, position floating trigger safely above it */
+  body:has(.mobile-sticky-contact-bar) .a11y-floating-trigger {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Modal Backdrop */
+.a11y-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 10, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 95;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+@media (min-width: 640px) {
+  .a11y-modal-backdrop {
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 1.5rem;
+  }
+}
+
+/* Control Panel Dialog */
+.a11y-control-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.8), var(--shadow-glow-gold);
+  width: 100%;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  z-index: 96;
+}
+
+@media (max-width: 639px) {
+  .a11y-control-panel {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+@media (min-width: 640px) {
+  .a11y-control-panel {
+    width: 380px;
+    border-radius: var(--radius-lg);
+    max-height: 80vh;
+    margin-bottom: 3.5rem;
+    margin-right: 0.5rem;
+  }
+}
+
+.a11y-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.15rem 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-tertiary);
+}
+
+.a11y-panel-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.a11y-panel-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-tertiary);
+}
+
+.a11y-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.a11y-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.825rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.a11y-font-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+}
+
+.a11y-option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.25rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  min-height: 44px;
+  transition: all var(--transition-fast);
+}
+
+.a11y-option-btn:hover {
+  border-color: var(--border-accent);
+}
+
+.a11y-option-btn.active {
+  background: var(--accent-gold);
+  color: #000;
+  border-color: var(--accent-gold);
+  font-weight: 800;
+}
+
+.a11y-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.85rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  width: 100%;
+  min-height: 48px;
+  transition: all var(--transition-fast);
+}
+
+.a11y-toggle-row:hover {
+  border-color: var(--border-medium);
+}
+
+.a11y-toggle-row.active {
+  border-color: var(--accent-gold);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.a11y-switch-indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--border-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.a11y-switch-indicator.on {
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
+/* ============================================================================
+ * ACCESSIBILITY PREFERENCES DOM ATTR SELECTORS
+ * ============================================================================ */
+
+/* 1. High Contrast */
+html[data-a11y-contrast="high"] {
+  --text-primary: #ffffff !important;
+  --text-secondary: #f1f5f9 !important;
+  --text-muted: #cbd5e1 !important;
+  --border-subtle: #64748b !important;
+  --border-medium: #94a3b8 !important;
+  --border-accent: #fbbf24 !important;
+  --bg-primary: #000000 !important;
+  --bg-secondary: #0a0c10 !important;
+  --bg-tertiary: #121620 !important;
+}
+
+html[data-a11y-contrast="high"] .card,
+html[data-a11y-contrast="high"] .input,
+html[data-a11y-contrast="high"] .advertiser-card-container {
+  border-color: #94a3b8 !important;
+}
+
+/* 2. Highlight Links */
+html[data-a11y-links="highlight"] a:not(.btn):not(.advertiser-card-link) {
+  text-decoration: underline !important;
+  text-decoration-color: #fbbf24 !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+}
+
+/* 3. Legible Font */
+html[data-a11y-font="legible"] {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* 4. Manual Reduced Motion */
+html[data-a11y-motion="reduced"] *,
+html[data-a11y-motion="reduced"] *::before,
+html[data-a11y-motion="reduced"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* 5. Increased Spacing */
+html[data-a11y-spacing="large"] p,
+html[data-a11y-spacing="large"] span,
+html[data-a11y-spacing="large"] li,
+html[data-a11y-spacing="large"] .form-label {
+  line-height: 1.8 !important;
+  letter-spacing: 0.025em !important;
+}
+
 
 
 

@@ -10,7 +10,7 @@ function assert(condition: boolean, message: string) {
 }
 
 function verifyAccessibilityCompliance() {
-  console.log('=== RUNNING PHASE 26E.1 VERIFICATION: ACCESSIBILITY (WCAG 2.2 AA) & SEO HARDENING ===\n');
+  console.log('=== RUNNING PHASE 26E.2 VERIFICATION: HERO HOTFIX & ACCESSIBILITY CONTROL CENTER ===\n');
 
   // 1. Skip-to-content link & Main landmark
   console.log('--- 1. Testing Landmarks & Skip-to-Content Link ---');
@@ -94,8 +94,46 @@ function verifyAccessibilityCompliance() {
   assert(!seoEngine.includes("'@type': 'SearchAction'"), 'SearchAction has been removed from WebSite schema');
   assert(seoEngine.includes('getSiteVerificationMetadata'), 'getSiteVerificationMetadata helper implemented');
 
+  // 9. Mobile Hero Search Form Compactness Hotfix (Phase 26E.2)
+  console.log('\n--- 9. Testing Mobile Hero Layout Hotfix ---');
+  const homePage = fs.readFileSync(path.join(process.cwd(), 'src/app/page.tsx'), 'utf-8');
+  assert(!homePage.includes("flex: '1 1 220px'"), 'Hero form removed inline vertical flex-basis on fields');
+  assert(!homePage.includes("flex: '1 1 170px'"), 'Hero form removed inline vertical basis from select fields');
+  assert(globalsCss.includes('.hero-search-form'), '.hero-search-form defined in globals.css');
+  assert(globalsCss.includes('min-height: 0;'), '.hero-search-form has min-height: 0 on mobile');
+  assert(globalsCss.includes('height: auto;'), '.hero-search-form has height: auto on mobile');
+  assert(globalsCss.includes('.hero-search-field.field-location'), 'Desktop field flex basis scoped to min-width: 640px');
+
+  // 10. Global Accessibility Control Center (Phase 26E.2)
+  console.log('\n--- 10. Testing Global Accessibility Control Center ---');
+  assert(fs.existsSync(path.join(process.cwd(), 'src/components/accessibility/AccessibilityProvider.tsx')), 'AccessibilityProvider exists');
+  assert(fs.existsSync(path.join(process.cwd(), 'src/components/accessibility/AccessibilityControlCenter.tsx')), 'AccessibilityControlCenter exists');
+  assert(rootLayout.includes('<AccessibilityProvider>'), 'RootLayout is wrapped in AccessibilityProvider');
+  assert(rootLayout.includes('<AccessibilityControlCenter />'), 'RootLayout mounts AccessibilityControlCenter');
+
+  const a11yControlCenter = fs.readFileSync(path.join(process.cwd(), 'src/components/accessibility/AccessibilityControlCenter.tsx'), 'utf-8');
+  assert(a11yControlCenter.includes('aria-label="Abrir opções de acessibilidade"'), 'Floating trigger button has accessible aria-label');
+  assert(a11yControlCenter.includes('role="dialog"'), 'Control center panel has role="dialog"');
+  assert(a11yControlCenter.includes('aria-modal="true"'), 'Control center panel has aria-modal="true"');
+  assert(a11yControlCenter.includes("e.key === 'Escape'"), 'Control center panel closes on Escape key');
+  assert(a11yControlCenter.includes('triggerButtonRef.current?.focus()'), 'Control center restores focus to trigger button on close');
+
+  const a11yProvider = fs.readFileSync(path.join(process.cwd(), 'src/components/accessibility/AccessibilityProvider.tsx'), 'utf-8');
+  assert(a11yProvider.includes('portal18:a11y-preferences'), 'A11y preferences persist under portal18:a11y-preferences key');
+  assert(a11yProvider.includes('data-a11y-contrast'), 'A11y provider synchronizes high contrast attribute');
+  assert(a11yProvider.includes('data-a11y-links'), 'A11y provider synchronizes link highlight attribute');
+  assert(a11yProvider.includes('data-a11y-font'), 'A11y provider synchronizes legible font attribute');
+  assert(a11yProvider.includes('data-a11y-motion'), 'A11y provider synchronizes reduced motion attribute');
+  assert(a11yProvider.includes('data-a11y-spacing'), 'A11y provider synchronizes spacing attribute');
+
+  // 11. Zero Age Assurance Interference
+  console.log('\n--- 11. Testing Zero Age Assurance / ECA Digital Interference ---');
+  assert(!a11yProvider.includes('is_verified'), 'A11y provider contains zero age assurance bypass logic');
+  assert(!a11yProvider.includes('session'), 'A11y provider does not alter verification sessions');
+  assert(!a11yProvider.includes('cookie'), 'A11y provider does not alter verification cookies');
+
   console.log('\n==================================================');
-  console.log('FINAL RESULT: ALL 22 ACCESSIBILITY & SEO HARDENING TESTS PASSED');
+  console.log('FINAL RESULT: ALL 38 ACCESSIBILITY, HERO HOTFIX & WCAG TESTS PASSED');
   console.log('==================================================\n');
 }
 
