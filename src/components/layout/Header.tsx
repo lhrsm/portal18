@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Sheet } from '@/components/ui/Sheet';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { 
   Menu, 
   User, 
@@ -122,6 +123,11 @@ export function Header() {
                 </Button>
               </div>
             )}
+
+            {/* Desktop Theme Toggle */}
+            <div className="hide-mobile">
+              <ThemeToggle variant="dropdown" />
+            </div>
 
             {/* Mobile Hamburger Toggle Button (>=44px touch area) */}
             <button
@@ -244,6 +250,13 @@ export function Header() {
               </Button>
             </div>
           )}
+
+          <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0.75rem 0' }} />
+
+          {/* Mobile Theme Selector */}
+          <div style={{ padding: '0.25rem 0' }}>
+            <ThemeToggle variant="inline" />
+          </div>
         </div>
       </Sheet>
     </>

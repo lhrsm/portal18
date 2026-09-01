@@ -1,11 +1,11 @@
 {
-  "name": "Portal Nacional 18+",
-  "short_name": "Portal Nacional",
+  "name": "Portal18",
+  "short_name": "Portal18",
   "description": "Plataforma de descoberta e anúncios de entretenimento adulto 18+ com máxima segurança e privacidade.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0c",
-  "theme_color": "#0a0a0c",
+  "background_color": "#0a0c10",
+  "theme_color": "#0a0c10",
   "orientation": "portrait",
   "icons": [
     {

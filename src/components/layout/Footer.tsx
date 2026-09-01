@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, AlertCircle, ChevronDown, Lock, ShieldAlert, Sparkles, Heart, FileText, HelpCircle, User, Compass } from 'lucide-react';
+import { ShieldCheck, AlertCircle, ChevronDown, Lock, ShieldAlert, Sparkles, Heart, FileText, HelpCircle, User, Compass, Smartphone } from 'lucide-react';
+import { usePWAInstall } from '@/components/pwa/PWAInstallProvider';
 
 interface FooterSectionProps {
   title: string;
@@ -43,6 +44,8 @@ function MobileFooterAccordion({ title, icon, children, id }: FooterSectionProps
 }
 
 export function Footer() {
+  const { isInstallable, isStandalone, promptToInstall } = usePWAInstall();
+
   return (
     <footer className="footer">
       <div className="container">
@@ -93,6 +96,18 @@ export function Footer() {
               <li><Link href="/account" className="footer-link">Minha Conta</Link></li>
               <li><Link href="/account/favorites" className="footer-link">Meus Favoritos</Link></li>
               <li><Link href="/account/following" className="footer-link">Perfis Seguidos</Link></li>
+              {isInstallable && !isStandalone && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={promptToInstall}
+                    className="footer-link"
+                    style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--accent-gold)' }}
+                  >
+                    <Smartphone size={13} color="var(--accent-gold)" /> Instalar Aplicativo
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -168,6 +183,18 @@ export function Footer() {
               <li><Link href="/advertiser/start" className="footer-link" style={{ color: 'var(--accent-ruby)', fontWeight: 600 }}>Quero Anunciar</Link></li>
               <li><Link href="/account" className="footer-link">Minha Conta</Link></li>
               <li><Link href="/account/favorites" className="footer-link">Favoritos</Link></li>
+              {isInstallable && !isStandalone && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={promptToInstall}
+                    className="footer-link"
+                    style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--accent-gold)' }}
+                  >
+                    <Smartphone size={13} color="var(--accent-gold)" /> Instalar Aplicativo
+                  </button>
+                </li>
+              )}
             </ul>
           </MobileFooterAccordion>
 

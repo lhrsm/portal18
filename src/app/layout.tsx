@@ -7,6 +7,9 @@ import { Footer } from '@/components/layout/Footer';
 import { AgeGateModal } from '@/components/layout/AgeGateModal';
 import { AccessibilityProvider } from '@/components/accessibility/AccessibilityProvider';
 import { AccessibilityControlCenter } from '@/components/accessibility/AccessibilityControlCenter';
+import { ThemeProvider, ThemeScript } from '@/components/theme/ThemeProvider';
+import { PWAInstallProvider } from '@/components/pwa/PWAInstallProvider';
+import { PWAInstallPrompt } from '@/components/pwa/PWAInstallPrompt';
 import { 
   getCanonicalBaseUrl, 
   SEO_CONFIG, 
@@ -68,8 +71,9 @@ export default function RootLayout({
   const organizationJsonLd = generateOrganizationSchema();
 
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
+        <ThemeScript />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
@@ -83,19 +87,24 @@ export default function RootLayout({
         <a href="#main-content" className="skip-to-content">
           Avançar para o conteúdo principal
         </a>
-        <AccessibilityProvider>
-          <ToastProvider>
-            <AuthProvider>
-              <AgeGateModal />
-              <Header />
-              <main id="main-content" tabIndex={-1} style={{ flex: 1, minHeight: 'calc(100vh - 160px)', outline: 'none' }}>
-                {children}
-              </main>
-              <Footer />
-              <AccessibilityControlCenter />
-            </AuthProvider>
-          </ToastProvider>
-        </AccessibilityProvider>
+        <ThemeProvider>
+          <PWAInstallProvider>
+            <AccessibilityProvider>
+              <ToastProvider>
+                <AuthProvider>
+                  <AgeGateModal />
+                  <Header />
+                  <main id="main-content" tabIndex={-1} style={{ flex: 1, minHeight: 'calc(100vh - 160px)', outline: 'none' }}>
+                    {children}
+                  </main>
+                  <Footer />
+                  <AccessibilityControlCenter />
+                  <PWAInstallPrompt />
+                </AuthProvider>
+              </ToastProvider>
+            </AccessibilityProvider>
+          </PWAInstallProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
