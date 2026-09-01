@@ -76,8 +76,23 @@ export function CityAutocomplete({
 
   return (
     <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
-      <div className="input-group">
-        <span className="input-icon-left">
+      <div className="input-wrapper" style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center' }}>
+        <span
+          className="input-icon-left"
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left: '0.9rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            zIndex: 2,
+            lineHeight: 1,
+          }}
+        >
           <MapPin size={18} color="var(--accent-gold)" />
         </span>
         <input
@@ -87,12 +102,14 @@ export function CityAutocomplete({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length >= 2 && suggestions.length > 0 && setIsOpen(true)}
-          style={{ paddingLeft: '2.5rem', paddingRight: query ? '2.5rem' : '1rem' }}
+          style={{ height: '46px', paddingLeft: '2.5rem', paddingRight: query ? '2.5rem' : '1rem' }}
+          aria-label={placeholder}
         />
         {query && (
           <button
             type="button"
             onClick={handleClear}
+            aria-label="Limpar campo de busca"
             style={{
               position: 'absolute',
               right: '0.75rem',
@@ -102,6 +119,11 @@ export function CityAutocomplete({
               border: 'none',
               color: 'var(--text-muted)',
               cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '4px',
+              zIndex: 2,
             }}
           >
             <X size={16} />

@@ -429,7 +429,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-left: 0.2rem;
 }
 
-.input-wrapper {
+.input-wrapper,
+.input-group {
   position: relative;
   display: flex;
   align-items: center;
@@ -439,15 +440,29 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .input-icon-left {
   position: absolute;
   left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--text-muted);
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  line-height: 1;
 }
 
 .input-icon-right {
   position: absolute;
   right: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--text-muted);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  line-height: 1;
 }
 
 .input {
