@@ -106,4 +106,30 @@ export const reviewService = {
     }
     return { success: true };
   },
+
+  /**
+   * Submits an advertiser's formal right-of-response to an approved review.
+   */
+  async respondToReview(
+    reviewId: string,
+    advertiserId: string,
+    response: string
+  ): Promise<{ success: boolean; message?: string; error?: string }> {
+    const supabase = createClient();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.rpc as any)('respond_to_advertiser_review', {
+        p_review_id: reviewId,
+        p_advertiser_id: advertiserId,
+        p_response: response,
+      });
+
+      if (error || !data || !data.success) {
+        return { success: false, error: data?.error || error?.message || 'Falha ao responder avaliação.' };
+      }
+      return { success: true, message: data.message || 'Resposta registrada com sucesso.' };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Erro inesperado ao registrar resposta.' };
+    }
+  },
 };

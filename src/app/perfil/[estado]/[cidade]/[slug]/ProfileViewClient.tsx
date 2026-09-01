@@ -48,6 +48,9 @@ import { ProfileAudioPlayer } from '@/components/public/ProfileAudioPlayer';
 import { consumerSubscriptionService } from '@/services/consumerSubscriptionService';
 import { reviewService } from '@/services/reviewService';
 import { ProfileReviewsResponse, ConsumerEntitlements } from '@/types/app.types';
+import { TrustPanel } from '@/components/public/TrustPanel';
+import { reputationService } from '@/services/reputation/reputationService';
+import { PublicAdvertiserTrust, ReviewFilterType } from '@/services/reputation/types';
 
 // Dynamic imports for heavy non-critical modals
 const GalleryLightbox = dynamic(
@@ -156,9 +159,11 @@ export function ProfileViewClient({
   const [isLoading, setIsLoading] = useState(!initialAdv);
   const [isAgeVerified, setIsAgeVerified] = useState(true);
 
-  // Phase 27F: Consumer Entitlements & Reviews State
+  // Phase 27F & 32: Consumer Entitlements, Trust & Reviews State
   const [consumerEntitlements, setConsumerEntitlements] = useState<ConsumerEntitlements | null>(null);
   const [reviewsData, setReviewsData] = useState<ProfileReviewsResponse | null>(null);
+  const [publicTrust, setPublicTrust] = useState<PublicAdvertiserTrust | null>(null);
+  const [reviewFilter, setReviewFilter] = useState<ReviewFilterType>('recent');
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviewForm, setReviewForm] = useState({
     ratingComm: 5,
@@ -167,6 +172,34 @@ export function ProfileViewClient({
     comment: '',
     isSubmitting: false,
   });
+
+  // Filter and sort reviews according to active filter
+  const filteredReviews = useMemo(() => {
+    if (!reviewsData?.reviews) return [];
+    const list = [...reviewsData.reviews];
+    if (reviewFilter === 'highest_rating') {
+      return list.sort((a, b) => b.rating_overall - a.rating_overall);
+    }
+    if (reviewFilter === 'lowest_rating') {
+      return list.sort((a, b) => a.rating_overall - b.rating_overall);
+    }
+    if (reviewFilter === 'with_response') {
+      return list.filter((r) => Boolean(r.advertiser_response));
+    }
+    // Default: 'recent'
+    return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [reviewsData?.reviews, reviewFilter]);
+
+  // Compute 5-star to 1-star distribution
+  const starDistribution = useMemo(() => {
+    const dist = { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
+    if (!reviewsData?.reviews) return dist;
+    for (const r of reviewsData.reviews) {
+      const star = String(Math.min(5, Math.max(1, Math.round(r.rating_overall)))) as '1' | '2' | '3' | '4' | '5';
+      dist[star] = (dist[star] || 0) + 1;
+    }
+    return dist;
+  }, [reviewsData?.reviews]);
 
   useEffect(() => {
     setIsAgeVerified(ageVerificationService.isAgeVerified());
@@ -190,18 +223,20 @@ export function ProfileViewClient({
         setAdvertiser(adv);
         setIsLoading(false);
 
-        // Fetch media, contacts, reviews, and viewer entitlements in parallel
-        const [approvedMedia, advContacts, revData, entitlements] = await Promise.all([
+        // Fetch media, contacts, reviews, viewer entitlements, and public trust signals in parallel
+        const [approvedMedia, advContacts, revData, entitlements, trustData] = await Promise.all([
           mediaService.getApprovedPublicMedia(adv.advertiser_id),
           contactsService.getPublicContacts(adv.advertiser_id),
           reviewService.getProfileReviews(adv.advertiser_id, user?.id),
           consumerSubscriptionService.getConsumerEntitlements(user?.id),
+          reputationService.getPublicTrust(adv.advertiser_id),
         ]);
 
         if (!isMounted) return;
 
         setReviewsData(revData);
         setConsumerEntitlements(entitlements);
+        if (trustData) setPublicTrust(trustData);
 
         if (approvedMedia && approvedMedia.length > 0) {
           setMediaList(approvedMedia);
@@ -652,6 +687,13 @@ export function ProfileViewClient({
             )}
           </div>
 
+          {/* Transparent Trust & Verification Panel */}
+          <TrustPanel
+            trust={publicTrust}
+            authenticityVerified={advertiser.authenticity_verified}
+            publishedSince={advertiser.created_at}
+          />
+
           {/* Profile Voice Presentation Player */}
           {advertiser.audio_presentation_url && (
             <ProfileAudioPlayer
@@ -903,7 +945,7 @@ export function ProfileViewClient({
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Star size={22} color="var(--accent-gold)" fill="var(--accent-gold)" />
+              <Star size={22} color="var(--accent-gold)" fill="var(--accent-gold)" aria-hidden="true" />
               <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0 }}>
                 Avaliações da Comunidade
                 {reviewsData?.summary.total_reviews ? ` (${reviewsData.summary.total_reviews})` : ''}
@@ -919,20 +961,42 @@ export function ProfileViewClient({
           </Button>
         </div>
 
-        {/* Rating Summary Card */}
+        {/* Rating Summary Card & Distribution */}
         {reviewsData && reviewsData.summary.total_reviews > 0 && (
           <Card variant="glass" padding="lg" style={{ marginBottom: '1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'center' }}>
-              <div style={{ textAlign: 'center', borderRight: '1px solid var(--border-subtle)' }}>
-                <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--accent-gold)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', alignItems: 'center' }}>
+              {/* Overall Score */}
+              <div style={{ textAlign: 'center', borderRight: '1px solid var(--border-subtle)', paddingRight: '1rem' }}>
+                <div
+                  style={{ fontSize: '2.75rem', fontWeight: 900, color: 'var(--accent-gold)', lineHeight: 1 }}
+                  aria-label={`Avaliação média de ${reviewsData.summary.avg_overall} estrelas em 5, baseada em ${reviewsData.summary.total_reviews} avaliações`}
+                >
                   {reviewsData.summary.avg_overall}
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Média Geral ({reviewsData.summary.total_reviews} avaliações)
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '2px', margin: '0.4rem 0' }}>
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      size={16}
+                      color="var(--accent-gold)"
+                      fill={s <= Math.round(reviewsData.summary.avg_overall) ? 'var(--accent-gold)' : 'transparent'}
+                      aria-hidden="true"
+                    />
+                  ))}
                 </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  {reviewsData.summary.total_reviews} avaliação(ões)
+                </div>
+
+                {reviewsData.summary.total_reviews < 3 && (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <Badge variant="gold">Poucas avaliações</Badge>
+                  </div>
+                )}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem' }}>
+              {/* Dimensional Metrics */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.85rem', borderRight: '1px solid var(--border-subtle)', paddingRight: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: 'var(--text-secondary)' }}>Comunicação:</span>
                   <strong>{reviewsData.summary.avg_communication} / 5.0</strong>
@@ -946,24 +1010,130 @@ export function ProfileViewClient({
                   <strong>{reviewsData.summary.avg_professionalism} / 5.0</strong>
                 </div>
               </div>
+
+              {/* Star Distribution Bars */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.775rem' }}>
+                {(['5', '4', '3', '2', '1'] as const).map((starKey) => {
+                  const count = starDistribution[starKey] || 0;
+                  const pct = reviewsData.summary.total_reviews > 0
+                    ? Math.round((count / reviewsData.summary.total_reviews) * 100)
+                    : 0;
+
+                  return (
+                    <div key={starKey} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ width: '40px', color: 'var(--text-secondary)', textAlign: 'right' }}>
+                        {starKey} ★
+                      </span>
+                      <div style={{ flex: 1, height: '6px', background: 'var(--bg-tertiary)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div
+                          style={{ width: `${pct}%`, height: '100%', background: 'var(--accent-gold)', borderRadius: '3px', transition: 'width 0.3s ease' }}
+                        />
+                      </div>
+                      <span style={{ width: '28px', color: 'var(--text-muted)', fontSize: '0.725rem' }}>
+                        {count}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </Card>
         )}
 
+        {/* Review Filter Tabs */}
+        {reviewsData && reviewsData.reviews.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: '0.25rem' }}>
+              Filtrar por:
+            </span>
+            <button
+              type="button"
+              onClick={() => setReviewFilter('recent')}
+              style={{
+                padding: '0.35rem 0.75rem',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                border: '1px solid',
+                borderColor: reviewFilter === 'recent' ? 'var(--accent-gold)' : 'var(--border-subtle)',
+                background: reviewFilter === 'recent' ? 'rgba(212, 175, 55, 0.15)' : 'var(--bg-input)',
+                color: reviewFilter === 'recent' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              Mais Recentes
+            </button>
+            <button
+              type="button"
+              onClick={() => setReviewFilter('highest_rating')}
+              style={{
+                padding: '0.35rem 0.75rem',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                border: '1px solid',
+                borderColor: reviewFilter === 'highest_rating' ? 'var(--accent-gold)' : 'var(--border-subtle)',
+                background: reviewFilter === 'highest_rating' ? 'rgba(212, 175, 55, 0.15)' : 'var(--bg-input)',
+                color: reviewFilter === 'highest_rating' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              Maior Nota
+            </button>
+            <button
+              type="button"
+              onClick={() => setReviewFilter('lowest_rating')}
+              style={{
+                padding: '0.35rem 0.75rem',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                border: '1px solid',
+                borderColor: reviewFilter === 'lowest_rating' ? 'var(--accent-gold)' : 'var(--border-subtle)',
+                background: reviewFilter === 'lowest_rating' ? 'rgba(212, 175, 55, 0.15)' : 'var(--bg-input)',
+                color: reviewFilter === 'lowest_rating' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              Menor Nota
+            </button>
+            <button
+              type="button"
+              onClick={() => setReviewFilter('with_response')}
+              style={{
+                padding: '0.35rem 0.75rem',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                border: '1px solid',
+                borderColor: reviewFilter === 'with_response' ? 'var(--accent-gold)' : 'var(--border-subtle)',
+                background: reviewFilter === 'with_response' ? 'rgba(212, 175, 55, 0.15)' : 'var(--bg-input)',
+                color: reviewFilter === 'with_response' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              Com Resposta
+            </button>
+          </div>
+        )}
+
         {/* Reviews List */}
-        {reviewsData && reviewsData.reviews.length > 0 ? (
+        {filteredReviews.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {reviewsData.reviews.map((rev) => (
+            {filteredReviews.map((rev) => (
               <Card key={rev.id} variant="glass" padding="md">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Badge variant="neutral">{rev.reviewer_label}</Badge>
+                    <Badge variant="neutral">Usuário Autenticado</Badge>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                       {new Date(rev.created_at).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--accent-gold)', fontWeight: 700, fontSize: '0.9rem' }}>
-                    <Star size={14} fill="var(--accent-gold)" />
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--accent-gold)', fontWeight: 700, fontSize: '0.9rem' }}
+                    aria-label={`Nota ${rev.rating_overall} de 5 estrelas`}
+                  >
+                    <Star size={14} fill="var(--accent-gold)" aria-hidden="true" />
                     {rev.rating_overall}
                   </div>
                 </div>
@@ -998,7 +1168,9 @@ export function ProfileViewClient({
         ) : (
           <div style={{ textAlign: 'center', padding: '2rem 1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: 0 }}>
-              Este anúncio ainda não possui avaliações moderadas. Seja o primeiro a avaliar!
+              {reviewsData && reviewsData.reviews.length > 0
+                ? 'Nenhuma avaliação encontrada com o filtro selecionado.'
+                : 'Este anúncio ainda não possui avaliações moderadas. Seja o primeiro a avaliar!'}
             </p>
           </div>
         )}

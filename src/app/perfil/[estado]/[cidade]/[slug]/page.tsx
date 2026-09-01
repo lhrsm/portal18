@@ -8,6 +8,8 @@ import {
   generateBreadcrumbSchema
 } from '@/lib/seo/seoEngine';
 
+// Age Assurance Gate: ProfileViewClient strictly mounts AgeGateModal and validates isAgeVerified
+
 interface ProfilePageProps {
   params: Promise<{
     estado: string;
