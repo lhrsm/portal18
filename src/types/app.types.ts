@@ -1051,3 +1051,66 @@ export interface ReviewInput {
   rating_professionalism: number;
   comment?: string;
 }
+
+// ============================================================================
+// Phase 27G Models — Commercial Admin & Operations Control Center
+// ============================================================================
+
+export interface AdminCommercialOverview {
+  success: boolean;
+  timestamp: string;
+  metrics: {
+    total_advertisers: number;
+    active_trials: number;
+    trials_ending_soon: number;
+    limited_mode_advertisers: number;
+    active_advertiser_subs: number;
+    active_consumer_subs: number;
+    pending_referrals: number;
+    referrals_manual_review: number;
+    active_campaigns: number;
+    pending_reviews: number;
+    reviews_delayed: number;
+    inventory_slots_total: number;
+    inventory_slots_reserved: number;
+    inventory_utilization_percent: number;
+  };
+  payment_readiness: {
+    status: 'disabled' | 'active' | 'homologation';
+    kill_switch_active: boolean;
+    message: string;
+    charges_real: number;
+    provider: string;
+    currency: string;
+  };
+  policy_versions: {
+    commercial_catalog: string;
+    consumer_catalog: string;
+    ranking_policy: string;
+    referral_policy: string;
+    pricing_policy: string;
+  };
+}
+
+export interface OperationalAlert {
+  id: string;
+  title: string;
+  description: string;
+  severity: 'info' | 'warning' | 'critical';
+  domain: 'trials' | 'referrals' | 'inventory' | 'reviews' | 'payments' | 'analytics';
+  action_href?: string;
+  action_label?: string;
+}
+
+export interface PaymentReadinessCheckItem {
+  id: string;
+  name: string;
+  description: string;
+  status: 'passed' | 'blocked' | 'warning';
+  evidence: string;
+}
+
+export interface CommercialExportOptions {
+  type: 'subscriptions' | 'campaigns' | 'referrals' | 'reviews';
+  format: 'csv' | 'json';
+}

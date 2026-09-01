@@ -1,58 +1,55 @@
-# RUNBOOK DE ATIVAÇÃO DE PROCESSADOR DE PAGAMENTOS EM PRODUÇÃO
+# PORTAL18 — RUNBOOK: PAYMENT PROVIDER ACTIVATION & GATEWAY GOVERNANCE
 
-**Objetivo:** Procedimento sequencial e seguro para ativação de gateway de pagamento aprovado comercialmente.  
-**Classificação:** Operações & Segurança Financeira  
-
----
-
-## 1. PRÉ-REQUISITOS OBRIGATÓRIOS (GATES)
-
-Antes de alterar qualquer variável de ambiente em produção:
-
-- [ ] Contrato comercial assinado com a processadora homologada para o segmento 18+.
-- [ ] Conta de produção ativada com limites e regras de saque definidas.
-- [ ] Chaves de API de produção (`PAYMENT_API_KEY`, `PAYMENT_MERCHANT_ID`, `PAYMENT_WEBHOOK_SECRET`) geradas e armazenadas com segurança.
-- [ ] Configuração do Webhook da processadora apontando para:
-  `https://portalnacional.com.br/api/webhooks/payments`
-- [ ] Validação dos eventos assinados configurados para: `payment.paid`, `payment.failed`, `subscription.renewed`, `chargeback.created`.
+## 1. Overview
+This document specifies the strict operational procedure required to activate a commercial payment gateway on Portal18.
+Until this procedure is formally executed in a certified launch window, **PAYMENTS REMAIN DISABLED** via the active Kill Switch.
 
 ---
 
-## 2. PROCEDIMENTO DE ATIVAÇÃO PASSO A PASSO
+## 2. Invariants & Pre-requisites
+1. **Zero Mock Charges**: No simulated charges or mock credit card transactions in production.
+2. **Age Assurance Primacy**: Subscriptions or payments NEVER grant an exemption from Age Assurance (ECA Digital).
+3. **Idempotency**: All webhook handlers must guarantee idempotency (`checkout_session_id` or `payment_intent_id` deduplication).
+4. **Kill Switch Authority**: Only `super_admin` with approved release tag may toggle the payment kill switch.
 
-### PASSO 1: Configuração das Variáveis de Ambiente no Vercel (Production)
+---
+
+## 3. Activation Runbook Steps
+
+### Step 1: Gateway Provider Selection & Sandbox Setup
+- Choose PCI-DSS Level 1 compliant gateway provider (e.g. Asaas, Pagar.me, Stripe Brasil, Mercado Pago).
+- Obtain sandbox API credentials (Public Key, Secret Key, Webhook Secret).
+- Ensure provider supports Pix (instant settlement BRL) and Credit Card (tokenized with 3D Secure 2.0).
+
+### Step 2: Environment Configuration
+Configure secure environment variables:
 ```bash
-PAYMENT_PROVIDER=<nome_do_provider_homologado>
-PAYMENT_ENVIRONMENT=production
-PAYMENT_API_KEY=<chave_privada_producao>
-PAYMENT_MERCHANT_ID=<identificador_de_comerciante>
-PAYMENT_WEBHOOK_SECRET=<segredo_hmac_webhook>
-PAYMENTS_ENABLED=true
+NEXT_PUBLIC_PAYMENT_PROVIDER="<provider_name>"
+PAYMENT_SECRET_KEY="<provider_secret_key>"
+PAYMENT_WEBHOOK_SIGNING_SECRET="<webhook_signing_secret>"
+PORTAL18_PAYMENT_KILL_SWITCH="false" # Only toggle in Step 5
 ```
 
-### PASSO 2: Teste de Transação em Baixo Valor (Canary Test)
-1. Executar um checkout real de baixo valor (R$ 1,00 a R$ 5,00) via PIX e via Cartão em conta de teste interna.
-2. Confirmar recebimento do webhook no endpoint `/api/webhooks/payments`.
-3. Inspecionar a tabela `public.payments` e verificar:
-   - `status = 'paid'`
-   - `amount` correto em centavos
-   - Chave de idempotência registrada
-   - Zero dados de cartão expostos nos logs.
+### Step 3: Webhook Verification Smoke Test
+- Send signed test webhook event (`charge.success`, `subscription.renewed`, `refund.processed`).
+- Verify signature validation in `/api/webhooks/payments`.
+- Verify database state updates in `public.subscriptions` and `public.payment_transactions`.
+- Verify duplicate payload rejection (idempotency test).
 
-### PASSO 3: Teste de Reembolso (Refund Test)
-1. No painel `/admin/payments`, executar o estorno administrativo do valor de teste.
-2. Confirmar a devolução na conta de origem e a atualização para `status = 'refunded'`.
+### Step 4: End-to-End Production Checkout Smoke Test
+- Execute a single real R$ 1,00 test transaction on live environment.
+- Confirm subscription lifecycle transitions (`active`, `current_period_end` calculated accurately).
+- Immediately issue an administrative refund (`refunded` status verified in ledger).
 
-### PASSO 4: Liberação Geral de Checkout
-1. Remover restrição de acesso Canary.
-2. Monitorar a taxa de conversão e eventos de erro nos primeiros 60 minutos através dos logs estruturados.
+### Step 5: Formal Commercial Launch & Monitoring
+- Disable kill switch (`PORTAL18_PAYMENT_KILL_SWITCH="false"`).
+- Monitor webhook delivery rates and error logs in `/admin/commercial`.
+- If error rate exceeds 1% within 1 hour: trigger Rollback & Kill Switch re-activation immediately.
 
 ---
 
-## 3. PROCEDIMENTO DE EMERGÊNCIA (KILL SWITCH ROLLBACK)
-
-Em caso de anomalia grave na adquirente, invasão de chaves ou divergência generalizada de conciliação:
-1. Definir imediatamente na Vercel:
-   `PAYMENTS_ENABLED=false`
-2. Efetuar o redeploy instantâneo.
-3. O portal manterá a navegação, login e cadastros funcionando normalmente, exibindo mensagem amigável de manutenção na área de pagamentos.
+## 4. Rollback & Emergency Kill Switch Procedure
+If unexpected billing behavior occurs:
+1. Set `PORTAL18_PAYMENT_KILL_SWITCH="true"` in production environment.
+2. All checkout CTA buttons will immediately fallback to `"Assinaturas em fase de homologação controlada"`.
+3. Webhook endpoint switches to fail-safe ingestion logging without automated mutation.
