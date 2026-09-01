@@ -52,6 +52,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const navItems = [
     { href: '/admin', label: 'Painel Geral', icon: <LayoutDashboard size={18} />, allowed: isModerator },
     { href: '/admin/commercial', label: 'Centro Comercial', icon: <Crown size={18} />, allowed: isAdmin },
+    { href: '/admin/growth/seo', label: 'Crescimento & SEO', icon: <Compass size={18} />, allowed: isAdmin },
     { href: '/admin/analytics', label: 'Analytics & Funil', icon: <BarChart3 size={18} />, allowed: isAdmin },
     { href: '/admin/moderation/profiles', label: 'Fila de Perfis', icon: <UserCheck size={18} />, allowed: isModerator },
     { href: '/admin/moderation/media', label: 'Fila de Mídias', icon: <ImageIcon size={18} />, allowed: isModerator },
