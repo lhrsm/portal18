@@ -8,15 +8,15 @@ import { SecurityEvent } from '@/types/app.types';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  Activity, 
-  ArrowLeft, 
-  ShieldCheck, 
-  KeyRound, 
-  Lock, 
-  Smartphone, 
-  AlertCircle, 
-  Clock 
+import {
+  Activity,
+  ArrowLeft,
+  ShieldCheck,
+  KeyRound,
+  Lock,
+  Smartphone,
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 
 export default function SecurityActivityPage() {

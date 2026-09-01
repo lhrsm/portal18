@@ -1,7 +1,7 @@
 import { PaymentProvider } from '../provider';
-import { 
-  CreateCheckoutParams, 
-  CheckoutSessionResult, 
+import {
+  CreateCheckoutParams,
+  CheckoutSessionResult,
   CreatePixPaymentParams,
   PixPaymentResult,
   CreateCardPaymentParams,
@@ -9,11 +9,12 @@ import {
   CreateSubscriptionParams,
   SubscriptionProviderResult,
   NormalizedPaymentDetails,
-  WebhookPaymentEventData, 
+  WebhookPaymentEventData,
   RefundResult,
   ProviderCapabilityMatrix,
   PaymentProviderMetadata,
-  ProviderHealthCheckResult 
+  ProviderHealthCheckResult,
+  SandboxCapabilityTestResult
 } from '../types';
 
 export class StripePaymentProvider implements PaymentProvider {
@@ -50,14 +51,16 @@ export class StripePaymentProvider implements PaymentProvider {
     return {
       code: this.code,
       name: this.name,
-      description: 'Provedor internacional de pagamentos. POLÍTICA ATUAL PROÍBE PRODUTOS OU SERVIÇOS ADULTOS.',
+      description: 'Provedor internacional de pagamentos. POLÍTICA DE NEGÓCIOS RESTRITOS PROÍBE CATEGORIA ADULTA.',
       website: 'https://stripe.com',
-      technical_status: 'rejected',
+      is_internal_driver: false,
+      technical_status: 'PRODUCTION_BLOCKED',
       commercial_status: 'rejected',
       compliance_status: 'rejected',
-      overall_status: 'rejected',
-      is_sandbox_enabled: false,
-      is_production_enabled: false,
+      adult_business_review_status: 'rejected',
+      is_sandbox_configured: false,
+      is_production_configured: false,
+      is_production_eligible: false, // STRICTLY INELIGIBLE
       priority: 9999,
       supported_methods: [],
       capabilities: this.capabilities,
@@ -74,6 +77,7 @@ export class StripePaymentProvider implements PaymentProvider {
       },
       health_status: 'unavailable',
       last_health_check: new Date().toISOString(),
+      last_sandbox_test: null,
     };
   }
 
@@ -120,7 +124,7 @@ export class StripePaymentProvider implements PaymentProvider {
       providerRefundReference: '',
       status: 'failed',
       amount: 0,
-      failureReason: 'Provedor Stripe não suportado pelo modelo de negócio.',
+      failureReason: 'Provedor Stripe proibido pelo modelo de negócio.',
     };
   }
 
@@ -138,6 +142,20 @@ export class StripePaymentProvider implements PaymentProvider {
       latencyMs: 0,
       message: 'Provedor desativado por restrição de política de negócios adultos.',
       checkedAt: new Date().toISOString(),
+    };
+  }
+
+  async testSandboxCapabilities(): Promise<SandboxCapabilityTestResult> {
+    return {
+      providerCode: this.code,
+      passedCount: 0,
+      failedCount: 1,
+      skippedCount: 0,
+      overallStatus: 'PRODUCTION_BLOCKED',
+      testedAt: new Date().toISOString(),
+      certifications: [
+        { key: 'policy_check', name: 'Avaliação de Política Adulta', category: 'security', status: 'failed', errorDetail: 'Proibição explícita na política de uso aceitável Stripe.' },
+      ],
     };
   }
 }

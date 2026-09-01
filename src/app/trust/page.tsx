@@ -5,16 +5,16 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { 
-  ShieldCheck, 
-  Lock, 
-  FileText, 
-  ShieldAlert, 
-  UserCheck, 
-  Trash2, 
-  Scale, 
-  Eye, 
-  ArrowRight 
+import {
+  ShieldCheck,
+  Lock,
+  FileText,
+  ShieldAlert,
+  UserCheck,
+  Trash2,
+  Scale,
+  Eye,
+  ArrowRight
 } from 'lucide-react';
 
 export default function TrustCenterHub() {

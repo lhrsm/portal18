@@ -8,12 +8,12 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  ShieldCheck, 
-  ShieldAlert, 
-  Lock, 
-  ArrowRight, 
-  UserCheck, 
+import {
+  ShieldCheck,
+  ShieldAlert,
+  Lock,
+  ArrowRight,
+  UserCheck,
   CheckCircle2
 } from 'lucide-react';
 

@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 5 MANDATORY TEST SUITE (Sections 78-86 Verification)
  * ============================================================================
- * 
+ *
  * Verifies all 23 mandatory criteria:
  * - KYC-01: User without advertiser profile calls session creation -> DENIED
  * - KYC-02: Advertiser creates own session -> PASS

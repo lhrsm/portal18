@@ -16,19 +16,19 @@ import { AudioPresentationManager } from '@/components/advertiser/MediaCenter/Au
 import { AuthenticityVideoManager } from '@/components/advertiser/MediaCenter/AuthenticityVideoManager';
 import { entitlementService } from '@/services/entitlementService';
 import { AdvertiserEntitlements } from '@/types/app.types';
-import { 
-  Image as ImageIcon, 
-  Video as VideoIcon, 
-  UploadCloud, 
-  Trash2, 
-  Star, 
-  ArrowUp, 
-  ArrowDown, 
-  ShieldCheck, 
-  Clock, 
-  AlertTriangle, 
-  Plus, 
-  Play, 
+import {
+  Image as ImageIcon,
+  Video as VideoIcon,
+  UploadCloud,
+  Trash2,
+  Star,
+  ArrowUp,
+  ArrowDown,
+  ShieldCheck,
+  Clock,
+  AlertTriangle,
+  Plus,
+  Play,
   Sparkles,
   Lock,
   Mic,

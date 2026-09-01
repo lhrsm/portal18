@@ -36,12 +36,12 @@ export function Sheet({ isOpen, onClose, title, children, className, id }: Sheet
 
   return (
     <>
-      <div 
-        className="sheet-overlay" 
-        onClick={onClose} 
-        aria-hidden="true" 
+      <div
+        className="sheet-overlay"
+        onClick={onClose}
+        aria-hidden="true"
       />
-      <div 
+      <div
         id={id}
         role="dialog"
         aria-modal="true"
@@ -50,10 +50,10 @@ export function Sheet({ isOpen, onClose, title, children, className, id }: Sheet
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
           {title && <h3 style={{ fontSize: '1.3rem', margin: 0 }}>{title}</h3>}
-          <button 
-            type="button" 
-            onClick={onClose} 
-            className="toast-close-btn" 
+          <button
+            type="button"
+            onClick={onClose}
+            className="toast-close-btn"
             aria-label="Fechar painel lateral"
           >
             ×

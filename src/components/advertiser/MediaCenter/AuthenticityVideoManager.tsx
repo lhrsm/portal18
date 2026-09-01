@@ -8,15 +8,15 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useToast } from '@/hooks/useToast';
-import { 
-  ShieldCheck, 
-  Video, 
-  Sparkles, 
-  Clock, 
-  AlertTriangle, 
-  UploadCloud, 
-  Camera, 
-  CheckCircle2, 
+import {
+  ShieldCheck,
+  Video,
+  Sparkles,
+  Clock,
+  AlertTriangle,
+  UploadCloud,
+  Camera,
+  CheckCircle2,
   HelpCircle,
   RotateCcw,
   Lock

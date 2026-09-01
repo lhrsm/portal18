@@ -11,16 +11,16 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  AlertTriangle, 
-  ArrowLeft, 
-  CheckCircle2, 
-  ShieldAlert, 
-  RefreshCw, 
-  Filter, 
-  UserX, 
-  Check, 
-  X 
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  ShieldAlert,
+  RefreshCw,
+  Filter,
+  UserX,
+  Check,
+  X
 } from 'lucide-react';
 
 export default function AdminRiskQueuePage() {

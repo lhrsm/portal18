@@ -56,7 +56,7 @@ runTest(
 runTest(
   'RPC get_admin_commercial_overview aggregates real advertiser and trial metrics',
   'Commercial Overview RPC',
-  () => 
+  () =>
     migrationContent.includes('get_admin_commercial_overview') &&
     migrationContent.includes('total_advertisers') &&
     migrationContent.includes('active_trials') &&
@@ -67,7 +67,7 @@ runTest(
 runTest(
   'RPC get_admin_commercial_overview aggregates consumer premium and referral metrics',
   'Consumer & Referral RPC',
-  () => 
+  () =>
     migrationContent.includes('active_consumer_subs') &&
     migrationContent.includes('pending_referrals') &&
     migrationContent.includes('referrals_manual_review'),
@@ -77,7 +77,7 @@ runTest(
 runTest(
   'RPC get_admin_commercial_overview aggregates inventory slots and utilization',
   'Inventory RPC',
-  () => 
+  () =>
     migrationContent.includes('inventory_slots_total') &&
     migrationContent.includes('inventory_slots_reserved') &&
     migrationContent.includes('inventory_utilization_percent'),
@@ -87,7 +87,7 @@ runTest(
 runTest(
   'RPC get_admin_commercial_overview reports payment readiness disabled state',
   'Payment Readiness RPC',
-  () => 
+  () =>
     migrationContent.includes('payment_readiness') &&
     migrationContent.includes("'disabled'") &&
     migrationContent.includes('kill_switch_active'),
@@ -103,7 +103,7 @@ const typesContent = fs.existsSync(typesPath) ? fs.readFileSync(typesPath, 'utf8
 runTest(
   'AdminCommercialOverview, OperationalAlert, and PaymentReadinessCheckItem exported in app.types.ts',
   'TypeScript Types',
-  () => 
+  () =>
     typesContent.includes('AdminCommercialOverview') &&
     typesContent.includes('OperationalAlert') &&
     typesContent.includes('PaymentReadinessCheckItem') &&
@@ -117,7 +117,7 @@ const serviceContent = fs.existsSync(servicePath) ? fs.readFileSync(servicePath,
 runTest(
   'adminCommercialService implements getCommercialOverview, getOperationalAlerts, and exportCommercialData',
   'Domain Service',
-  () => 
+  () =>
     fs.existsSync(servicePath) &&
     serviceContent.includes('getCommercialOverview') &&
     serviceContent.includes('getOperationalAlerts') &&
@@ -135,7 +135,7 @@ const commercialPageContent = fs.existsSync(commercialPagePath) ? fs.readFileSyn
 runTest(
   'Commercial Control Center (/admin/commercial) exists with master operational tabs',
   'Commercial Admin UI',
-  () => 
+  () =>
     fs.existsSync(commercialPagePath) &&
     commercialPageContent.includes('Centro de Operações Comerciais') &&
     commercialPageContent.includes('Visão Geral & Alertas') &&
@@ -147,7 +147,7 @@ runTest(
 runTest(
   'Commercial Control Center renders real operational alerts without fake mock data',
   'Operational Alerts UI',
-  () => 
+  () =>
     commercialPageContent.includes('OperationalAlert') &&
     commercialPageContent.includes('handleExport') &&
     commercialPageContent.includes('KILL SWITCH ATIVO'),
@@ -160,7 +160,7 @@ const adminLayoutContent = fs.existsSync(adminLayoutPath) ? fs.readFileSync(admi
 runTest(
   'AdminLayout includes Centro Comercial and Fila de Avaliações in navigation',
   'Admin Navigation',
-  () => 
+  () =>
     adminLayoutContent.includes('/admin/commercial') &&
     adminLayoutContent.includes('Centro Comercial') &&
     adminLayoutContent.includes('/admin/moderation/reviews'),
@@ -176,7 +176,7 @@ const paymentRunbookContent = fs.existsSync(paymentRunbookPath) ? fs.readFileSyn
 runTest(
   'Payment provider activation runbook exists with security and rollback steps',
   'Operations Runbook',
-  () => 
+  () =>
     fs.existsSync(paymentRunbookPath) &&
     paymentRunbookContent.includes('PAYMENT PROVIDER ACTIVATION') &&
     paymentRunbookContent.includes('Rollback & Emergency Kill Switch'),
@@ -189,7 +189,7 @@ const checklistContent = fs.existsSync(checklistPath) ? fs.readFileSync(checklis
 runTest(
   'Commercial launch checklist exists with legal review and invariant checks',
   'Launch Checklist',
-  () => 
+  () =>
     fs.existsSync(checklistPath) &&
     checklistContent.includes('COMMERCIAL LAUNCH CHECKLIST') &&
     checklistContent.includes('Legal & Compliance Review Flags'),

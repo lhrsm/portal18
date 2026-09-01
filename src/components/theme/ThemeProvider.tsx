@@ -37,7 +37,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const resolved = initialPref === 'system' ? getSystemTheme() : initialPref;
       setResolvedTheme(resolved);
       document.documentElement.setAttribute('data-theme', resolved);
-      
+
       // Update meta theme-color tag
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {

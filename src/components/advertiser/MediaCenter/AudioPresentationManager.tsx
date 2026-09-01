@@ -7,16 +7,16 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Mic, 
-  Square, 
-  Play, 
-  Pause, 
-  Trash2, 
-  UploadCloud, 
-  Clock, 
-  ShieldCheck, 
-  AlertTriangle, 
+import {
+  Mic,
+  Square,
+  Play,
+  Pause,
+  Trash2,
+  UploadCloud,
+  Clock,
+  ShieldCheck,
+  AlertTriangle,
   Sparkles,
   Lock,
   RotateCcw,
@@ -78,10 +78,10 @@ export function AudioPresentationManager({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioChunksRef.current = [];
 
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm') 
-        ? 'audio/webm' 
-        : MediaRecorder.isTypeSupported('audio/mp4') 
-        ? 'audio/mp4' 
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : MediaRecorder.isTypeSupported('audio/mp4')
+        ? 'audio/mp4'
         : '';
 
       const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
@@ -316,8 +316,8 @@ export function AudioPresentationManager({
             </div>
           </div>
 
-          <audio 
-            controls 
+          <audio
+            controls
             src={existingAudio?.storage_path || audioPresentationUrl || undefined}
             style={{ maxHeight: '36px', minWidth: '220px' }}
           />

@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 9 MANDATORY TEST SUITE (Sections 134-141 Verification)
  * ============================================================================
- * 
+ *
  * Verifies all 28 mandatory criteria:
  * - FAV-01: Add favorite
  * - FAV-02: Prevent duplicate favorite

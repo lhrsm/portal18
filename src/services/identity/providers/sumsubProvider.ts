@@ -1,10 +1,10 @@
 import crypto from 'crypto';
 import { IdentityVerificationProvider } from '../provider';
-import { 
-  CreateSessionParams, 
-  VerificationSessionResult, 
-  WebhookEventData, 
-  VerificationResult 
+import {
+  CreateSessionParams,
+  VerificationSessionResult,
+  WebhookEventData,
+  VerificationResult
 } from '../types';
 import { VerificationStatus } from '@/types/app.types';
 

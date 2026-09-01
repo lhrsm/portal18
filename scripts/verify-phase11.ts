@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 11 MANDATORY TEST SUITE (Sections 128-144 Verification)
  * ============================================================================
- * 
+ *
  * Verifies all mandatory criteria:
  * - MFA-01: Ativar MFA corretamente
  * - MFA-02: Código incorreto rejeitado

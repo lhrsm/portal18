@@ -9,16 +9,16 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Users, 
-  ArrowLeft, 
-  Bell, 
-  BellOff, 
-  UserMinus, 
-  MapPin, 
-  ExternalLink, 
-  ShieldCheck, 
-  AlertCircle 
+import {
+  Users,
+  ArrowLeft,
+  Bell,
+  BellOff,
+  UserMinus,
+  MapPin,
+  ExternalLink,
+  ShieldCheck,
+  AlertCircle
 } from 'lucide-react';
 
 interface FollowingCardItem {

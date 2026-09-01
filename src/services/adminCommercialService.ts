@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/client';
-import { 
-  AdminCommercialOverview, 
-  OperationalAlert, 
+import {
+  AdminCommercialOverview,
+  OperationalAlert,
   PaymentReadinessCheckItem,
-  CommercialExportOptions 
+  CommercialExportOptions
 } from '@/types/app.types';
 
 export const adminCommercialService = {
@@ -262,10 +262,10 @@ export const adminCommercialService = {
       const { data } = await supabase
         .from('subscriptions')
         .select('id, advertiser_id, status, plan_id, current_period_start, current_period_end, trial_end, created_at');
-      
+
       const rows = data || [];
       const header = 'Subscription ID,Advertiser ID,Status,Plan ID,Period Start,Period End,Trial End,Created At\n';
-      const body = rows.map((r: any) => 
+      const body = rows.map((r: any) =>
         `"${r.id}","${r.advertiser_id}","${r.status}","${r.plan_id || ''}","${r.current_period_start || ''}","${r.current_period_end || ''}","${r.trial_end || ''}","${r.created_at}"`
       ).join('\n');
       return header + body;
@@ -275,10 +275,10 @@ export const adminCommercialService = {
       const { data } = await supabase
         .from('campaigns')
         .select('id, advertiser_id, placement, status, start_date, end_date, created_at');
-      
+
       const rows = data || [];
       const header = 'Campaign ID,Advertiser ID,Placement,Status,Start Date,End Date,Created At\n';
-      const body = rows.map((r: any) => 
+      const body = rows.map((r: any) =>
         `"${r.id}","${r.advertiser_id}","${r.placement}","${r.status}","${r.start_date || ''}","${r.end_date || ''}","${r.created_at}"`
       ).join('\n');
       return header + body;
@@ -288,10 +288,10 @@ export const adminCommercialService = {
       const { data } = await supabase
         .from('advertiser_referrals')
         .select('id, referrer_advertiser_id, referred_advertiser_id, status, risk_status, bonus_days_granted, created_at');
-      
+
       const rows = data || [];
       const header = 'Referral ID,Referrer ID,Referred ID,Status,Risk Status,Bonus Days,Created At\n';
-      const body = rows.map((r: any) => 
+      const body = rows.map((r: any) =>
         `"${r.id}","${r.referrer_advertiser_id}","${r.referred_advertiser_id}","${r.status}","${r.risk_status}","${r.bonus_days_granted}","${r.created_at}"`
       ).join('\n');
       return header + body;

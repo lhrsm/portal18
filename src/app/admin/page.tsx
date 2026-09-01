@@ -9,16 +9,16 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  Users, 
-  Megaphone, 
-  UserCheck, 
-  Clock, 
-  Image as ImageIcon, 
-  AlertTriangle, 
-  ShieldAlert, 
-  FileCheck2, 
-  Ban, 
+import {
+  Users,
+  Megaphone,
+  UserCheck,
+  Clock,
+  Image as ImageIcon,
+  AlertTriangle,
+  ShieldAlert,
+  FileCheck2,
+  Ban,
   ArrowRight,
   Sparkles,
   CheckCircle2,

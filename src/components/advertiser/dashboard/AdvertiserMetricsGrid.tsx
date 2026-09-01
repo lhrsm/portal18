@@ -1,16 +1,16 @@
 'use client';
 
 import React from 'react';
-import { 
-  Eye, 
-  Phone, 
-  Heart, 
-  Users, 
-  TrendingUp, 
-  TrendingDown, 
-  MessageCircle, 
-  Send, 
-  Percent 
+import {
+  Eye,
+  Phone,
+  Heart,
+  Users,
+  TrendingUp,
+  TrendingDown,
+  MessageCircle,
+  Send,
+  Percent
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';

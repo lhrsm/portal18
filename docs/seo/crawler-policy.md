@@ -1,8 +1,8 @@
 # Portal18 — AI Crawler & Search Engine Policy
 
-**Last Reviewed:** 2026-08-30  
-**Status:** Active  
-**Standard:** Robots Exclusion Protocol & RFC 9309  
+**Last Reviewed:** 2026-08-30
+**Status:** Active
+**Standard:** Robots Exclusion Protocol & RFC 9309
 
 ---
 

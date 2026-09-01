@@ -47,12 +47,12 @@ export function ThemeToggle({ variant = 'dropdown' }: ThemeToggleProps) {
                 type="button"
                 onClick={() => setThemePreference(opt.value)}
                 className={`btn ${isSelected ? 'btn-primary' : 'btn-secondary'}`}
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  gap: '0.35rem', 
-                  padding: '0.5rem', 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.35rem',
+                  padding: '0.5rem',
                   fontSize: '0.8rem',
                   minHeight: '44px'
                 }}
@@ -68,10 +68,10 @@ export function ThemeToggle({ variant = 'dropdown' }: ThemeToggleProps) {
     );
   }
 
-  const currentIcon = !isHydrated 
-    ? <Moon size={16} /> 
-    : resolvedTheme === 'dark' 
-      ? <Moon size={16} color="var(--accent-gold)" /> 
+  const currentIcon = !isHydrated
+    ? <Moon size={16} />
+    : resolvedTheme === 'dark'
+      ? <Moon size={16} color="var(--accent-gold)" />
       : <Sun size={16} color="var(--accent-gold)" />;
 
   return (

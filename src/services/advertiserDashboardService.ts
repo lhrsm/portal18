@@ -1,12 +1,12 @@
 import { createClient } from '@/lib/supabase/client';
-import { 
-  AdvertiserProfile, 
-  AdvertiserMedia, 
-  AdvertiserContact, 
-  Category, 
-  BrazilState, 
+import {
+  AdvertiserProfile,
+  AdvertiserMedia,
+  AdvertiserContact,
+  Category,
+  BrazilState,
   BrazilCity,
-  VerificationRequest 
+  VerificationRequest
 } from '@/types/app.types';
 
 export interface DashboardMetricsSummary {

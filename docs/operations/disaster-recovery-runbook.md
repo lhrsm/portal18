@@ -1,8 +1,8 @@
 # RUNBOOK OPERACIONAL — PLANO DE RECUPERAÇÃO DE DESASTRES (DISASTER RECOVERY & RESTORE)
 
-**Release:** Portal Nacional 18+  
-**Versão do Documento:** 1.0  
-**Classificação:** Confidencial / Operações & Infraestrutura  
+**Release:** Portal Nacional 18+
+**Versão do Documento:** 1.0
+**Classificação:** Confidencial / Operações & Infraestrutura
 
 ---
 

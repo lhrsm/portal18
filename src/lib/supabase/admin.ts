@@ -5,7 +5,7 @@ import { Database } from '@/types/database.types';
 /**
  * Admin Supabase Client (Service Role)
  * STRICTLY SERVER-SIDE ONLY!
- * 
+ *
  * Never export or import this into any client-side components.
  * Bypasses RLS for maintenance, system triggers, automated moderation jobs, and background workers.
  */

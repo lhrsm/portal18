@@ -10,15 +10,15 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  ListFilter, 
-  ArrowLeft, 
-  Plus, 
-  Trash2, 
-  FolderPlus, 
-  ExternalLink, 
-  X, 
-  Users 
+import {
+  ListFilter,
+  ArrowLeft,
+  Plus,
+  Trash2,
+  FolderPlus,
+  ExternalLink,
+  X,
+  Users
 } from 'lucide-react';
 
 interface UserListWithCount extends UserList {

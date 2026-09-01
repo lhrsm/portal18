@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 12 — RELEASE CANDIDATE FINAL AUDIT SUITE (Sections 1-177)
  * ============================================================================
- * 
+ *
  * Verifies all pre-production criteria for Release Candidate sign-off:
  * - RC Identifier & Build Metadata
  * - Source control & Secret scan check

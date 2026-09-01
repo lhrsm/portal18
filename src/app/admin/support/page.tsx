@@ -11,15 +11,15 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Headphones, 
-  ArrowLeft, 
-  Clock, 
-  CheckCircle2, 
-  AlertCircle, 
-  Filter, 
-  RefreshCw, 
-  ExternalLink 
+import {
+  Headphones,
+  ArrowLeft,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Filter,
+  RefreshCw,
+  ExternalLink
 } from 'lucide-react';
 
 export default function AdminSupportPage() {

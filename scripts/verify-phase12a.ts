@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 12A — FORENSIC RELEASE CANDIDATE VALIDATION SUITE (Gates 1-16)
  * ============================================================================
- * 
+ *
  * Technically proves and verifies all claims from the release candidate:
  * - Gate 1: Next.js Active LTS (16.3.3) with 0 vulnerabilities
  * - Gate 2: Supabase Auth / Cookie forensics (@supabase/ssr standard)

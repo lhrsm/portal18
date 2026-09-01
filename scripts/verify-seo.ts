@@ -3,11 +3,11 @@ import path from 'path';
 import robots from '../src/app/robots';
 import sitemap from '../src/app/sitemap';
 import { GET as getLlmsTxt } from '../src/app/llms.txt/route';
-import { 
-  getCanonicalBaseUrl, 
-  generateWebSiteSchema, 
-  generateOrganizationSchema, 
-  generateBreadcrumbSchema 
+import {
+  getCanonicalBaseUrl,
+  generateWebSiteSchema,
+  generateOrganizationSchema,
+  generateBreadcrumbSchema
 } from '../src/lib/seo/seoEngine';
 
 function assert(condition: boolean, message: string) {
@@ -32,7 +32,7 @@ async function verifySeoAndAiDiscovery() {
   const robotsConfig = robots();
   assert(Boolean(robotsConfig.sitemap), 'robots.txt specifies a sitemap URL');
   assert(String(robotsConfig.sitemap).endsWith('/sitemap.xml'), 'Sitemap URL ends with /sitemap.xml');
-  
+
   const defaultRule = Array.isArray(robotsConfig.rules) ? robotsConfig.rules[0] : robotsConfig.rules;
   assert(Boolean(defaultRule), 'Robots contains at least one ruleset');
   const disallowList = (defaultRule as any).disallow;
@@ -47,7 +47,7 @@ async function verifySeoAndAiDiscovery() {
   console.log('\n--- 3. Testing Dynamic sitemap.ts Content & Publication Gate ---');
   const sitemapEntries = await sitemap();
   assert(Array.isArray(sitemapEntries) && sitemapEntries.length > 0, `Sitemap generated ${sitemapEntries.length} URLs`);
-  
+
   // Check static routes
   const urls = sitemapEntries.map((e) => e.url);
   assert(urls.includes(baseUrl), 'Sitemap includes Home URL');
@@ -70,11 +70,11 @@ async function verifySeoAndAiDiscovery() {
   assert(hasCategory, 'Sitemap includes category directories');
 
   // Security Check: No private / admin / auth routes in sitemap
-  const hasPrivate = urls.some((u) => 
-    u.includes('/admin') || 
-    u.includes('/advertiser') || 
-    u.includes('/account') || 
-    u.includes('/api') || 
+  const hasPrivate = urls.some((u) =>
+    u.includes('/admin') ||
+    u.includes('/advertiser') ||
+    u.includes('/account') ||
+    u.includes('/api') ||
     u.includes('/login') ||
     u.includes('/callback')
   );
@@ -120,7 +120,7 @@ async function verifySeoAndAiDiscovery() {
   console.log('\n--- 6. Testing Noindex Protection on Private Layouts ---');
   const adminLayout = fs.readFileSync(path.join(process.cwd(), 'src/app/admin/layout.tsx'), 'utf-8');
   assert(adminLayout.includes('index: false'), '/admin/layout.tsx sets index: false');
-  
+
   const advertiserLayout = fs.readFileSync(path.join(process.cwd(), 'src/app/advertiser/layout.tsx'), 'utf-8');
   assert(advertiserLayout.includes('index: false'), '/advertiser/layout.tsx sets index: false');
 

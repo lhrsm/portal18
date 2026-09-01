@@ -84,7 +84,7 @@ async function runVerification() {
 
   // 4. TAXONOMY DECOUPLING & FILTERING
   console.log('\n--- 4. Testing Taxonomy Filtering (Gender, Target Audience, Service Modalities) ---');
-  
+
   // Test filtering by identity = homens
   const menDiscovery = await publicProfilesService.getPublicAdvertisers({ gender: 'homens' });
   const allMenMatch = menDiscovery.data.every((p) => p.gender === 'homens' || (p.gender as any) === 'masculino');

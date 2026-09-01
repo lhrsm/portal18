@@ -7,11 +7,11 @@ import { ageVerificationService } from '@/services/ageVerification/ageVerificati
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { 
-  ShieldAlert, 
-  ShieldCheck, 
-  Lock, 
-  ArrowRight, 
+import {
+  ShieldAlert,
+  ShieldCheck,
+  Lock,
+  ArrowRight,
   UserCheck
 } from 'lucide-react';
 
@@ -22,11 +22,11 @@ export interface AgeGateModalProps {
   onClose?: () => void;
 }
 
-export function AgeGateModal({ 
-  isOpen = true, 
+export function AgeGateModal({
+  isOpen = true,
   returnUrl = '/',
   onVerified,
-  onClose 
+  onClose
 }: AgeGateModalProps) {
   const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<'new' | 'returning' | null>(null);
@@ -87,13 +87,13 @@ export function AgeGateModal({
             <Badge variant="ruby"><ShieldAlert size={12} /> 18+</Badge>
             <Badge variant="gold"><Lock size={12} /> ECA DIGITAL</Badge>
           </div>
-          <h2 
+          <h2
             id="age-assurance-title"
             style={{ fontSize: 'clamp(1.4rem, 4vw, 1.75rem)', fontWeight: 800, marginBottom: '0.35rem', letterSpacing: '-0.02em', lineHeight: 1.2 }}
           >
             Verificação de Maioridade
           </h2>
-          <p 
+          <p
             id="age-assurance-desc"
             style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.45, margin: 0 }}
           >

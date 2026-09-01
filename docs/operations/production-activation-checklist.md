@@ -1,9 +1,9 @@
 # CHECKLIST & PROTOCOLO DE ATIVAÇÃO EM PRODUÇÃO (GO-LIVE)
 
-**Projeto:** Portal Nacional de Entretenimento Adulto 18+  
-**Versão:** 2.0 (Pós-Fase 22)  
-**Data:** 27 de Agosto de 2026  
-**Status Operacional Atual:** `CLOSED BETA / GO WITH RESTRICTIONS`  
+**Projeto:** Portal Nacional de Entretenimento Adulto 18+
+**Versão:** 2.0 (Pós-Fase 22)
+**Data:** 27 de Agosto de 2026
+**Status Operacional Atual:** `CLOSED BETA / GO WITH RESTRICTIONS`
 
 ---
 

@@ -56,7 +56,7 @@ runTest(
 runTest(
   'billing_periods table created and seeded with 7, 30, and 90 days',
   'Billing Periods',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.billing_periods') &&
     migrationContent.includes('7_days') &&
     migrationContent.includes('30_days') &&
@@ -67,7 +67,7 @@ runTest(
 runTest(
   'plan_pricing table created with policy versioning and integer cents in BRL',
   'Price Versioning',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.plan_pricing') &&
     migrationContent.includes('price_cents integer NOT NULL') &&
     migrationContent.includes('policy_version') &&
@@ -78,7 +78,7 @@ runTest(
 runTest(
   'Seed data populates multi-period pricing for Essencial, Destaque, Premium, and VIP',
   'Pricing Matrix',
-  () => 
+  () =>
     migrationContent.includes('v_p_essencial') &&
     migrationContent.includes('v_p_destaque') &&
     migrationContent.includes('v_p_premium') &&
@@ -89,7 +89,7 @@ runTest(
 runTest(
   'RPC get_commercial_catalog returns active plans with pricing matrix and boost products',
   'Catalog RPC',
-  () => 
+  () =>
     migrationContent.includes('get_commercial_catalog') &&
     migrationContent.includes('jsonb_object_agg') &&
     migrationContent.includes('boost_products'),
@@ -99,7 +99,7 @@ runTest(
 runTest(
   'RPC get_advertiser_commercial_summary returns lifecycle, entitlements, and usage meters',
   'Advertiser Summary RPC',
-  () => 
+  () =>
     migrationContent.includes('get_advertiser_commercial_summary') &&
     migrationContent.includes('v_photo_count') &&
     migrationContent.includes('v_video_count') &&
@@ -116,7 +116,7 @@ const typesContent = fs.existsSync(typesPath) ? fs.readFileSync(typesPath, 'utf8
 runTest(
   'BillingPeriod, PlanPeriodPricing, CatalogPlan, CommercialCatalog exported in app.types.ts',
   'TypeScript Models',
-  () => 
+  () =>
     typesContent.includes('BillingPeriod') &&
     typesContent.includes('PlanPeriodPricing') &&
     typesContent.includes('CatalogPlan') &&
@@ -130,7 +130,7 @@ const serviceContent = fs.existsSync(servicePath) ? fs.readFileSync(servicePath,
 runTest(
   'commercialCatalogService implements getCatalog and getAdvertiserCommercialSummary',
   'Services',
-  () => 
+  () =>
     fs.existsSync(servicePath) &&
     serviceContent.includes('getCatalog') &&
     serviceContent.includes('getAdvertiserCommercialSummary'),
@@ -146,7 +146,7 @@ const publicPlansContent = fs.existsSync(publicPlansPath) ? fs.readFileSync(publ
 runTest(
   'Public Plans page (/plans) includes billing period selector, comparison table, and trial banner',
   'Public Plans UI',
-  () => 
+  () =>
     fs.existsSync(publicPlansPath) &&
     publicPlansContent.includes('selectedPeriodSlug') &&
     publicPlansContent.includes('Comparativo Completo de Recursos') &&
@@ -160,7 +160,7 @@ const subscriptionContent = fs.existsSync(subscriptionPath) ? fs.readFileSync(su
 runTest(
   'Advertiser Subscription page displays real usage meters, referral bonus days, and active entitlements',
   'Advertiser UI',
-  () => 
+  () =>
     fs.existsSync(subscriptionPath) &&
     subscriptionContent.includes('Fotos na Galeria') &&
     subscriptionContent.includes('Vídeos Comerciais') &&
@@ -174,7 +174,7 @@ const promoteContent = fs.existsSync(promotePath) ? fs.readFileSync(promotePath,
 runTest(
   'Boost Marketplace (/advertiser/promote) uses neutral Megaphone badge and ethical copy',
   'Boost Marketplace UI',
-  () => 
+  () =>
     fs.existsSync(promotePath) &&
     promoteContent.includes('Megaphone') &&
     promoteContent.includes('RECURSO EM HOMOLOGAÇÃO'),
@@ -187,7 +187,7 @@ const adminPlansContent = fs.existsSync(adminPlansPath) ? fs.readFileSync(adminP
 runTest(
   'Admin Plans page displays multi-period pricing matrix and entitlement limits',
   'Admin UI',
-  () => 
+  () =>
     fs.existsSync(adminPlansPath) &&
     adminPlansContent.includes('Precificação por Período') &&
     adminPlansContent.includes('Limite de Fotos'),

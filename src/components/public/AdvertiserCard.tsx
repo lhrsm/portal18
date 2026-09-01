@@ -15,21 +15,21 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { ReportModal } from '@/components/public/ReportModal';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Heart, 
-  MapPin, 
-  ShieldCheck, 
-  Sparkles, 
-  Clock, 
-  Eye, 
-  MoreVertical, 
-  Users, 
-  ListPlus, 
-  UserX, 
-  ShieldAlert, 
-  EyeOff, 
-  Check, 
-  X 
+import {
+  Heart,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
+  Clock,
+  Eye,
+  MoreVertical,
+  Users,
+  ListPlus,
+  UserX,
+  ShieldAlert,
+  EyeOff,
+  Check,
+  X
 } from 'lucide-react';
 
 export interface AdvertiserCardProps {
@@ -38,10 +38,10 @@ export interface AdvertiserCardProps {
   initialFollowing?: boolean;
 }
 
-export function AdvertiserCard({ 
-  advertiser, 
+export function AdvertiserCard({
+  advertiser,
   initialFavorite = false,
-  initialFollowing = false 
+  initialFollowing = false
 }: AdvertiserCardProps) {
   const router = useRouter();
   const { user, profile } = useAuth();

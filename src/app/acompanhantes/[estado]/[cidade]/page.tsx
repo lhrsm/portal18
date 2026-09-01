@@ -9,12 +9,12 @@ import { AdvertiserCard } from '@/components/public/AdvertiserCard';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { 
-  MapPin, 
-  Sparkles, 
-  Navigation, 
-  Tag, 
-  Megaphone, 
+import {
+  MapPin,
+  Sparkles,
+  Navigation,
+  Tag,
+  Megaphone,
   ChevronRight,
   SlidersHorizontal,
   Flame,
@@ -300,8 +300,8 @@ export default async function CityDirectoryPage({ params, searchParams }: CityPa
 
       {/* 6. COMPACT ADVERTISER PROMO BANNER */}
       <section style={{ marginBottom: '2.5rem' }}>
-        <Card variant="elevated" padding="md" style={{ 
-          background: 'linear-gradient(135deg, rgba(229, 185, 92, 0.12) 0%, rgba(18, 22, 31, 0.95) 100%)', 
+        <Card variant="elevated" padding="md" style={{
+          background: 'linear-gradient(135deg, rgba(229, 185, 92, 0.12) 0%, rgba(18, 22, 31, 0.95) 100%)',
           border: '1px solid rgba(229, 185, 92, 0.35)',
           padding: '1.25rem 1.5rem'
         }}>

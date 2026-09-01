@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { publicProfilesService } from '@/services/publicProfilesService';
 import { ProfileViewClient } from './ProfileViewClient';
-import { 
-  getCanonicalBaseUrl, 
-  generateBreadcrumbSchema 
+import {
+  getCanonicalBaseUrl,
+  generateBreadcrumbSchema
 } from '@/lib/seo/seoEngine';
 
 interface ProfilePageProps {
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
   const cityName = adv.city_name || citySlug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   const stateCode = adv.state_code || stateSlug.toUpperCase();
   const title = `${adv.stage_name} em ${cityName}, ${stateCode} | Portal18`;
-  const description = adv.headline 
+  const description = adv.headline
     ? `${adv.stage_name} em ${cityName}, ${stateCode}: "${adv.headline}". Perfil verificado 18+, modalidades de atendimento e contato direto.`
     : `Consulte o perfil verificado de ${adv.stage_name} em ${cityName}, ${stateCode}. Fotos moderadas, modalidades de atendimento e contato direto no Portal18.`;
 

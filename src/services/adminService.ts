@@ -1,13 +1,13 @@
 import { createClient } from '@/lib/supabase/client';
-import { 
-  AdminDashboardMetrics, 
-  AdvertiserProfile, 
-  AdvertiserMedia, 
-  Report, 
-  AuditLog, 
-  Profile, 
-  UserRole, 
-  ModerationNote 
+import {
+  AdminDashboardMetrics,
+  AdvertiserProfile,
+  AdvertiserMedia,
+  Report,
+  AuditLog,
+  Profile,
+  UserRole,
+  ModerationNote
 } from '@/types/app.types';
 
 export interface PendingProfileQueueItem extends AdvertiserProfile {
@@ -75,13 +75,13 @@ export const adminService = {
   },
 
   // 2. Profiles Moderation Queue (Enhanced with SLA, Assignee, Media count, Reports)
-  async getPendingProfilesQueue(filters: { 
-    search?: string; 
-    stateId?: string; 
-    filterType?: 'all' | 'assigned_to_me' | 'unassigned' | 'kyc_review' | 'critical'; 
-    sort?: 'oldest' | 'newest' | 'priority'; 
-    limit?: number; 
-    page?: number 
+  async getPendingProfilesQueue(filters: {
+    search?: string;
+    stateId?: string;
+    filterType?: 'all' | 'assigned_to_me' | 'unassigned' | 'kyc_review' | 'critical';
+    sort?: 'oldest' | 'newest' | 'priority';
+    limit?: number;
+    page?: number
   } = {}) {
     const supabase = createClient();
     const limit = filters.limit || 20;
@@ -292,12 +292,12 @@ export const adminService = {
   },
 
   async requestChangesProfile(
-    advertiserId: string, 
+    advertiserId: string,
     feedback: string,
     sectionNotes?: SectionReviewFeedback
   ): Promise<{ success: boolean; error?: string }> {
     const supabase = createClient();
-    
+
     // Format structured section feedback if provided
     let fullFeedback = feedback.trim();
     if (sectionNotes) {

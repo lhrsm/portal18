@@ -11,16 +11,16 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Scale, 
-  ArrowLeft, 
-  Download, 
-  Trash2, 
-  ShieldAlert, 
-  Clock, 
-  CheckCircle2, 
-  Lock, 
-  Plus 
+import {
+  Scale,
+  ArrowLeft,
+  Download,
+  Trash2,
+  ShieldAlert,
+  Clock,
+  CheckCircle2,
+  Lock,
+  Plus
 } from 'lucide-react';
 
 export default function AdminPrivacyDashboard() {

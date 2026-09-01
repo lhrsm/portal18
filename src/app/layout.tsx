@@ -10,10 +10,10 @@ import { AccessibilityControlCenter } from '@/components/accessibility/Accessibi
 import { ThemeProvider, ThemeScript } from '@/components/theme/ThemeProvider';
 import { PWAInstallProvider } from '@/components/pwa/PWAInstallProvider';
 import { PWAInstallPrompt } from '@/components/pwa/PWAInstallPrompt';
-import { 
-  getCanonicalBaseUrl, 
-  SEO_CONFIG, 
-  generateWebSiteSchema, 
+import {
+  getCanonicalBaseUrl,
+  SEO_CONFIG,
+  generateWebSiteSchema,
   generateOrganizationSchema,
   getSiteVerificationMetadata
 } from '@/lib/seo/seoEngine';

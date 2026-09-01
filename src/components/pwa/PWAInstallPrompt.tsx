@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/Button';
 import { Download, X, Share2, PlusSquare, Smartphone } from 'lucide-react';
 
 export function PWAInstallPrompt() {
-  const { 
-    showPrompt, 
-    showIOSInstructions, 
-    promptToInstall, 
-    dismissPrompt, 
+  const {
+    showPrompt,
+    showIOSInstructions,
+    promptToInstall,
+    dismissPrompt,
     closeIOSInstructions,
-    isIOS 
+    isIOS
   } = usePWAInstall();
 
   return (

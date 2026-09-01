@@ -1,6 +1,6 @@
-import { 
-  CreateCheckoutParams, 
-  CheckoutSessionResult, 
+import {
+  CreateCheckoutParams,
+  CheckoutSessionResult,
   CreatePixPaymentParams,
   PixPaymentResult,
   CreateCardPaymentParams,
@@ -8,11 +8,12 @@ import {
   CreateSubscriptionParams,
   SubscriptionProviderResult,
   NormalizedPaymentDetails,
-  WebhookPaymentEventData, 
+  WebhookPaymentEventData,
   RefundResult,
   ProviderCapabilityMatrix,
   PaymentProviderMetadata,
-  ProviderHealthCheckResult
+  ProviderHealthCheckResult,
+  SandboxCapabilityTestResult
 } from './types';
 
 export interface PaymentProvider {
@@ -80,4 +81,9 @@ export interface PaymentProvider {
    * Performs an isolated health check without initiating real transactions.
    */
   healthCheck(): Promise<ProviderHealthCheckResult>;
+
+  /**
+   * Runs an automated sandbox certification test across capabilities when credentials are present.
+   */
+  testSandboxCapabilities(): Promise<SandboxCapabilityTestResult>;
 }

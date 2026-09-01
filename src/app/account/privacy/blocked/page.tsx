@@ -9,12 +9,12 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  UserX, 
-  ArrowLeft, 
-  Unlock, 
-  MapPin, 
-  ShieldCheck 
+import {
+  UserX,
+  ArrowLeft,
+  Unlock,
+  MapPin,
+  ShieldCheck
 } from 'lucide-react';
 
 interface BlockedItem {

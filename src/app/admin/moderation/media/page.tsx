@@ -12,16 +12,16 @@ import { Select } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
 import { authenticityService } from '@/services/authenticityService';
-import { 
-  Image as ImageIcon, 
+import {
+  Image as ImageIcon,
   Video as VideoIcon,
   Volume2,
-  Check, 
-  AlertTriangle, 
-  Eye, 
-  ShieldCheck, 
-  Sparkles, 
-  Clock, 
+  Check,
+  AlertTriangle,
+  Eye,
+  ShieldCheck,
+  Sparkles,
+  Clock,
   Ban,
   Crown
 } from 'lucide-react';

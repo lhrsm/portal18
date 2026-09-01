@@ -9,13 +9,13 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Star, 
-  ShieldCheck, 
-  CheckCircle2, 
-  XCircle, 
-  AlertTriangle, 
-  MessageSquare, 
+import {
+  Star,
+  ShieldCheck,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  MessageSquare,
   Clock,
   Trash2
 } from 'lucide-react';
@@ -55,8 +55,8 @@ export default function AdminReviewModerationPage() {
     }
   };
 
-  const filteredReviews = filterStatus === 'all' 
-    ? reviews 
+  const filteredReviews = filterStatus === 'all'
+    ? reviews
     : reviews.filter((r) => r.status === filterStatus);
 
   const pendingCount = reviews.filter((r) => r.status === 'submitted' || r.status === 'pending_review').length;

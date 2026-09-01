@@ -1,9 +1,9 @@
 # RUNBOOK OPERACIONAL: ATIVAÇÃO DE PROVEDOR DE AGE ASSURANCE (ECA DIGITAL)
 
-**Plataforma:** Portal Nacional 18+  
-**Responsável Técnico:** Equipe de Segurança & Compliance  
-**Data:** 28 de Agosto de 2026  
-**Ambiente:** Homologação $\rightarrow$ Produção  
+**Plataforma:** Portal Nacional 18+
+**Responsável Técnico:** Equipe de Segurança & Compliance
+**Data:** 28 de Agosto de 2026
+**Ambiente:** Homologação $\rightarrow$ Produção
 
 ---
 

@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { 
-  ShieldCheck, 
-  Eye, 
-  Keyboard, 
-  Sparkles, 
-  HelpCircle, 
-  ChevronRight, 
+import {
+  ShieldCheck,
+  Eye,
+  Keyboard,
+  Sparkles,
+  HelpCircle,
+  ChevronRight,
   MessageSquare,
   Contrast,
   SlidersHorizontal,

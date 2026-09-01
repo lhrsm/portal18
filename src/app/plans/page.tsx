@@ -11,13 +11,13 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Check, 
+import {
+  Check,
   X,
-  Crown, 
-  Zap, 
-  ShieldCheck, 
-  ArrowRight, 
+  Crown,
+  Zap,
+  ShieldCheck,
+  ArrowRight,
   Info,
   HelpCircle,
   ChevronDown,

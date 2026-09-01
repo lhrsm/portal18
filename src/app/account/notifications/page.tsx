@@ -10,16 +10,16 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Bell, 
-  ArrowLeft, 
-  CheckCheck, 
-  Sliders, 
-  ShieldCheck, 
-  Sparkles, 
-  AlertTriangle, 
-  Info, 
-  UserCheck 
+import {
+  Bell,
+  ArrowLeft,
+  CheckCheck,
+  Sliders,
+  ShieldCheck,
+  Sparkles,
+  AlertTriangle,
+  Info,
+  UserCheck
 } from 'lucide-react';
 
 export default function NotificationsPage() {

@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/client';
 import { PaymentProviderRegistry } from './registry';
-import { 
-  PaymentProviderMetadata, 
-  ProviderHomologationStage, 
-  ProviderHealthCheckResult 
+import {
+  PaymentProviderMetadata,
+  ProviderHomologationStage,
+  ProviderHealthCheckResult,
+  SandboxCapabilityTestResult
 } from './types';
 
 export const multiGatewayService = {
@@ -86,5 +87,27 @@ export const multiGatewayService = {
     }
 
     return provider.healthCheck();
+  },
+
+  /**
+   * Executes an automated sandbox capability test suite on a registered provider.
+   */
+  async runSandboxCertification(code: string): Promise<SandboxCapabilityTestResult> {
+    const provider = PaymentProviderRegistry.get(code);
+    if (!provider) {
+      return {
+        providerCode: code,
+        passedCount: 0,
+        failedCount: 1,
+        skippedCount: 0,
+        overallStatus: 'NOT_CONFIGURED',
+        testedAt: new Date().toISOString(),
+        certifications: [
+          { key: 'init', name: 'Carregamento do Adaptador', category: 'authentication', status: 'failed', errorDetail: 'Provedor não encontrado no registro.' },
+        ],
+      };
+    }
+
+    return provider.testSandboxCapabilities();
   },
 };

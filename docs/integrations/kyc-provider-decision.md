@@ -1,10 +1,10 @@
 # DECISÃO ARQUITETURAL & SELEÇÃO DE PROVEDOR KYC
 
-**Fornecedor Selecionado:** SUMSUB  
-**Status Técnico:** READY (Adapter & Webhook implementados)  
-**Status Comercial:** PENDING (Aguardando contratação e credenciais de produção)  
-**Ambiente Ativo:** SANDBOX (`KYC_ENVIRONMENT=sandbox`)  
-**Production Gate:** `production_verification_enabled = false`  
+**Fornecedor Selecionado:** SUMSUB
+**Status Técnico:** READY (Adapter & Webhook implementados)
+**Status Comercial:** PENDING (Aguardando contratação e credenciais de produção)
+**Ambiente Ativo:** SANDBOX (`KYC_ENVIRONMENT=sandbox`)
+**Production Gate:** `production_verification_enabled = false`
 
 ---
 

@@ -3,14 +3,14 @@
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAccessibility, FontScale } from './AccessibilityProvider';
-import { 
-  Accessibility, 
-  X, 
-  RotateCcw, 
-  Contrast, 
-  Type, 
-  Sparkles, 
-  SlidersHorizontal, 
+import {
+  Accessibility,
+  X,
+  RotateCcw,
+  Contrast,
+  Type,
+  Sparkles,
+  SlidersHorizontal,
   Link as LinkIcon,
   ExternalLink,
   Check
@@ -91,7 +91,7 @@ export function AccessibilityControlCenter() {
 
       {/* Accessibility Control Panel (Modal / Dialog) */}
       {isPanelOpen && (
-        <div 
+        <div
           className="a11y-modal-backdrop"
           onClick={handleClose}
           aria-hidden="true"

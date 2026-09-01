@@ -11,15 +11,15 @@ import { Button } from '@/components/ui/Button';
 import { FormField } from '@/components/ui/FormField';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  AlertTriangle, 
-  ShieldAlert, 
-  ArrowLeft, 
-  CheckCircle2, 
-  UserCheck, 
-  Ban, 
-  ExternalLink, 
-  Clock 
+import {
+  AlertTriangle,
+  ShieldAlert,
+  ArrowLeft,
+  CheckCircle2,
+  UserCheck,
+  Ban,
+  ExternalLink,
+  Clock
 } from 'lucide-react';
 
 export default function AdminReportDetailPage() {

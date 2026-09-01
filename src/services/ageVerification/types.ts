@@ -2,15 +2,15 @@ export type AgeBand = 'unknown' | 'under_18' | '18_plus';
 
 export type AgeAssuranceLevel = 'low' | 'medium' | 'high' | 'very_high';
 
-export type AgeGateState = 
-  | 'unverified' 
-  | 'starting' 
-  | 'redirecting' 
-  | 'processing' 
-  | 'verified' 
-  | 'failed' 
-  | 'underage' 
-  | 'expired' 
+export type AgeGateState =
+  | 'unverified'
+  | 'starting'
+  | 'redirecting'
+  | 'processing'
+  | 'verified'
+  | 'failed'
+  | 'underage'
+  | 'expired'
   | 'unavailable';
 
 export interface AgeVerificationResult {

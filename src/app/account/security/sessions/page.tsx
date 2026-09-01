@@ -10,16 +10,16 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Smartphone, 
-  Laptop, 
-  ArrowLeft, 
-  LogOut, 
-  ShieldCheck, 
-  Clock, 
-  MapPin, 
-  CheckCircle2, 
-  AlertTriangle 
+import {
+  Smartphone,
+  Laptop,
+  ArrowLeft,
+  LogOut,
+  ShieldCheck,
+  Clock,
+  MapPin,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function AccountSessionsPage() {

@@ -16,15 +16,15 @@ import { AdvertiserRejectionBanner } from '@/components/advertiser/dashboard/Adv
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  User, 
-  Camera, 
-  Phone, 
-  MapPin, 
-  Settings, 
-  HelpCircle, 
-  ShieldCheck, 
-  Sparkles, 
+import {
+  User,
+  Camera,
+  Phone,
+  MapPin,
+  Settings,
+  HelpCircle,
+  ShieldCheck,
+  Sparkles,
   ArrowRight,
   Megaphone
 } from 'lucide-react';

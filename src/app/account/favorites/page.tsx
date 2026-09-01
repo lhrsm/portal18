@@ -9,16 +9,16 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Heart, 
-  ArrowLeft, 
-  Trash2, 
-  MapPin, 
-  ExternalLink, 
-  ShieldCheck, 
-  CheckSquare, 
-  Square, 
-  AlertCircle 
+import {
+  Heart,
+  ArrowLeft,
+  Trash2,
+  MapPin,
+  ExternalLink,
+  ShieldCheck,
+  CheckSquare,
+  Square,
+  AlertCircle
 } from 'lucide-react';
 
 interface FavoriteCardItem {

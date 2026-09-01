@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/client';
-import { 
-  CommunicationChannel, 
-  CommunicationCategory, 
-  CommunicationPriority, 
-  CommunicationJob 
+import {
+  CommunicationChannel,
+  CommunicationCategory,
+  CommunicationPriority,
+  CommunicationJob
 } from '@/types/app.types';
 import { emailProvider } from './emailProvider';
 

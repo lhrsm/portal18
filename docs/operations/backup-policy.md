@@ -1,8 +1,8 @@
 # POLÍTICA DE BACKUP E RETENÇÃO DE DADOS
 
-**Portal:** Portal Nacional de Entretenimento Adulto 18+  
-**Versão:** 1.0  
-**Data:** 27 de Agosto de 2026  
+**Portal:** Portal Nacional de Entretenimento Adulto 18+
+**Versão:** 1.0
+**Data:** 27 de Agosto de 2026
 
 ---
 

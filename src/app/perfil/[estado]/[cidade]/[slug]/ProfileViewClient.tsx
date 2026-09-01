@@ -23,16 +23,16 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  ShieldCheck, 
-  MapPin, 
-  Heart, 
-  Share2, 
-  ShieldAlert, 
-  Phone, 
-  Send, 
-  MessageCircle, 
-  Sparkles, 
+import {
+  ShieldCheck,
+  MapPin,
+  Heart,
+  Share2,
+  ShieldAlert,
+  Phone,
+  Send,
+  MessageCircle,
+  Sparkles,
   ChevronRight,
   Maximize2,
   CheckCircle2,
@@ -476,13 +476,13 @@ export function ProfileViewClient({
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem', marginBottom: '3rem', alignItems: 'start' }}>
         {/* Left Column: 3:4 Aspect-Ratio Gallery & Interactive Thumbnails */}
         <div>
-          <div 
-            style={{ 
-              position: 'relative', 
-              width: '100%', 
-              aspectRatio: '3 / 4', 
-              borderRadius: 'var(--radius-lg)', 
-              overflow: 'hidden', 
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              aspectRatio: '3 / 4',
+              borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden',
               background: 'var(--bg-secondary)',
               border: '1px solid var(--border-subtle)',
               boxShadow: '0 16px 36px rgba(0,0,0,0.6)',
@@ -637,10 +637,10 @@ export function ProfileViewClient({
 
             {/* Headline Banner */}
             {advertiser.headline && (
-              <div style={{ 
-                padding: '0.85rem 1rem', 
-                borderRadius: 'var(--radius-md)', 
-                background: 'rgba(255, 255, 255, 0.03)', 
+              <div style={{
+                padding: '0.85rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(255, 255, 255, 0.03)',
                 borderLeft: '3px solid var(--accent-gold)',
                 color: 'var(--text-primary)',
                 fontSize: '0.925rem',
@@ -661,8 +661,8 @@ export function ProfileViewClient({
           )}
 
           {/* Primary WhatsApp Conversion Card */}
-          <Card variant="elevated" padding="md" style={{ 
-            background: 'linear-gradient(135deg, rgba(37, 211, 102, 0.12) 0%, rgba(18, 22, 31, 0.9) 100%)', 
+          <Card variant="elevated" padding="md" style={{
+            background: 'linear-gradient(135deg, rgba(37, 211, 102, 0.12) 0%, rgba(18, 22, 31, 0.9) 100%)',
             border: '1px solid rgba(37, 211, 102, 0.35)',
             boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
           }}>
@@ -684,15 +684,15 @@ export function ProfileViewClient({
                   onClick={() => handleContactClick('whatsapp')}
                   style={{ textDecoration: 'none' }}
                 >
-                  <Button 
-                    variant="primary" 
-                    size="lg" 
-                    leftIcon={<MessageCircle size={20} />} 
-                    style={{ 
-                      width: '100%', 
-                      background: '#25d366', 
-                      color: '#000', 
-                      fontWeight: 800, 
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    leftIcon={<MessageCircle size={20} />}
+                    style={{
+                      width: '100%',
+                      background: '#25d366',
+                      color: '#000',
+                      fontWeight: 800,
                       fontSize: '1rem',
                       minHeight: '48px',
                       boxShadow: '0 4px 16px rgba(37, 211, 102, 0.4)'

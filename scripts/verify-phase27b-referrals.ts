@@ -56,7 +56,7 @@ runTest(
 runTest(
   'advertiser_profiles extended with unique referral_code and referred_by_code',
   'Database Schema',
-  () => 
+  () =>
     migrationContent.includes('referral_code text UNIQUE') &&
     migrationContent.includes('referred_by_code text'),
   'Colunas de referral_code ausentes em advertiser_profiles'
@@ -65,7 +65,7 @@ runTest(
 runTest(
   'referral_attributions table created for first-party tracking',
   'Attribution',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.referral_attributions') &&
     migrationContent.includes('visitor_attribution_token text NOT NULL'),
   'Tabela referral_attributions ausente'
@@ -74,7 +74,7 @@ runTest(
 runTest(
   'referrals table created with self-referral prevention constraint (referrer_profile_id <> referred_profile_id)',
   'Anti-Fraud & Integrity',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.referrals') &&
     migrationContent.includes('referrals_no_self_referral CHECK (referrer_profile_id <> referred_profile_id)'),
   'Constraint de proibição de autoindicação ausente na tabela referrals'
@@ -83,7 +83,7 @@ runTest(
 runTest(
   'referral_rewards immutable ledger table created with UNIQUE(referral_id) constraint',
   'Reward Ledger & Idempotency',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.referral_rewards') &&
     migrationContent.includes('referral_id uuid NOT NULL UNIQUE REFERENCES public.referrals'),
   'Tabela referral_rewards ou constraint de idempotência única ausente'
@@ -92,7 +92,7 @@ runTest(
 runTest(
   'RPC get_or_create_advertiser_referral_code generates 8-character CSPRNG alphanumeric code',
   'Referral Code Generation',
-  () => 
+  () =>
     migrationContent.includes('get_or_create_advertiser_referral_code') &&
     migrationContent.includes('encode(gen_random_bytes(4), \'hex\')'),
   'RPC de geração de código de indicação ausente ou sem CSPRNG'
@@ -101,7 +101,7 @@ runTest(
 runTest(
   'RPC track_referral_click implements first-referrer-wins attribution policy',
   'Attribution Policy',
-  () => 
+  () =>
     migrationContent.includes('track_referral_click') &&
     migrationContent.includes('Primeiro referenciador preservado'),
   'RPC track_referral_click não preserva primeiro referenciador'
@@ -110,7 +110,7 @@ runTest(
 runTest(
   'RPC bind_referral_on_advertiser_creation checks self-referral and single-account binding',
   'Anti-Fraud & Onboarding',
-  () => 
+  () =>
     migrationContent.includes('bind_referral_on_advertiser_creation') &&
     migrationContent.includes('Autoindicação não permitida') &&
     migrationContent.includes('Conta já vinculada'),
@@ -120,7 +120,7 @@ runTest(
 runTest(
   'RPC evaluate_referral_qualifications requires profile active + published + 48h maturation delay',
   'Qualification Engine',
-  () => 
+  () =>
     migrationContent.includes('evaluate_referral_qualifications') &&
     migrationContent.includes("INTERVAL '48 hours'") &&
     migrationContent.includes('bonus_days') &&
@@ -131,7 +131,7 @@ runTest(
 runTest(
   'RPC revoke_referral_reward records mandatory reason, audit log and blocks referral status',
   'Reward Revocation',
-  () => 
+  () =>
     migrationContent.includes('revoke_referral_reward') &&
     migrationContent.includes("status = 'revoked'") &&
     migrationContent.includes('referral_reward_revoked'),
@@ -141,7 +141,7 @@ runTest(
 runTest(
   'RPC get_advertiser_entitlements factors in active granted referral bonus days',
   'Entitlement Integration',
-  () => 
+  () =>
     migrationContent.includes('get_advertiser_entitlements') &&
     migrationContent.includes('referral_rewards') &&
     migrationContent.includes('bonus_days_active'),
@@ -157,7 +157,7 @@ const typesContent = fs.existsSync(typesPath) ? fs.readFileSync(typesPath, 'utf8
 runTest(
   'ReferralState, ReferralReward, ReferralStats exported in app.types.ts',
   'TypeScript Models',
-  () => 
+  () =>
     typesContent.includes('ReferralState') &&
     typesContent.includes('ReferralReward') &&
     typesContent.includes('ReferralStats'),
@@ -170,7 +170,7 @@ const serviceContent = fs.existsSync(servicePath) ? fs.readFileSync(servicePath,
 runTest(
   'referralService implements stats, sanitized history, attribution tracking, and admin actions',
   'Services',
-  () => 
+  () =>
     fs.existsSync(servicePath) &&
     serviceContent.includes('getAdvertiserReferralStats') &&
     serviceContent.includes('getReferralHistory') &&
@@ -189,7 +189,7 @@ const dashboardCompContent = fs.existsSync(dashboardCompPath) ? fs.readFileSync(
 runTest(
   'ReferralDashboard component displays copy link, Web Share API, KPIs, and sanitized history without PII',
   'Advertiser UI',
-  () => 
+  () =>
     fs.existsSync(dashboardCompPath) &&
     dashboardCompContent.includes('navigator.share') &&
     dashboardCompContent.includes('handleCopyLink') &&
@@ -213,7 +213,7 @@ const adminReferralsContent = fs.existsSync(adminReferralsPagePath) ? fs.readFil
 runTest(
   'Admin Referrals Page exists with filters, batch evaluation trigger, and revocation modal',
   'Admin Operations',
-  () => 
+  () =>
     fs.existsSync(adminReferralsPagePath) &&
     adminReferralsContent.includes('handleEvaluateBatch') &&
     adminReferralsContent.includes('handleConfirmRevoke'),
@@ -226,7 +226,7 @@ runTest(
 runTest(
   'Zero monetary payouts, zero cash, zero wallets (Bonus Days only)',
   'Commercial Integrity',
-  () => 
+  () =>
     !migrationContent.includes('cashback') &&
     !migrationContent.includes('pix_payout') &&
     migrationContent.includes('bonus_days'),

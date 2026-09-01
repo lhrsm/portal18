@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 6 MANDATORY TEST SUITE (Sections 119-127 Verification)
  * ============================================================================
- * 
+ *
  * Verifies all 25 mandatory criteria:
  * - PAY-01: Frontend alters amount -> IGNORED (backend uses database amount)
  * - PAY-02: Inactive product -> DENIED

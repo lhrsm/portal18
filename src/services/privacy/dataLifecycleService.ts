@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/client';
-import { 
-  DataExportRequest, 
-  AccountDeletionRequest, 
-  LegalHold, 
-  DataRetentionPolicy 
+import {
+  DataExportRequest,
+  AccountDeletionRequest,
+  LegalHold,
+  DataRetentionPolicy
 } from '@/types/app.types';
 
 export const dataLifecycleService = {

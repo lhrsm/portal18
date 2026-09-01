@@ -1,9 +1,9 @@
 # DECISÃO ARQUITETURAL & POLÍTICA DE SELEÇÃO DE PROCESSAMENTO FINANCEIRO
 
-**Status Comercial:** PROVIDER NOT YET COMMERCIALLY APPROVED  
-**Status Técnico:** READY (Camada desacoplada, RPCs de checkout, conciliação e webhooks)  
-**Kill Switch Ativo:** `payments_enabled = false`  
-**Cobrança Real:** DESATIVADA  
+**Status Comercial:** PROVIDER NOT YET COMMERCIALLY APPROVED
+**Status Técnico:** READY (Camada desacoplada, RPCs de checkout, conciliação e webhooks)
+**Kill Switch Ativo:** `payments_enabled = false`
+**Cobrança Real:** DESATIVADA
 
 ---
 

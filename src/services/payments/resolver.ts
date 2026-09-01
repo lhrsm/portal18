@@ -6,6 +6,7 @@ export interface ResolveProviderParams {
   productType: 'advertiser_subscription' | 'consumer_subscription' | 'boost' | 'campaign';
   paymentMethod: 'pix' | 'credit_card' | 'recurring_card' | 'boost_instant';
   environment?: 'sandbox' | 'production';
+  allowMockDriver?: boolean;
 }
 
 export interface ResolveProviderResult {
@@ -13,28 +14,31 @@ export interface ResolveProviderResult {
   provider: PaymentProvider | null;
   routeRule?: PaymentRouteRule;
   error?: string;
+  reconciliationRequired?: boolean;
 }
 
 export class PaymentProviderResolver {
   /**
-   * Resolves the appropriate PaymentProvider adapter based on business model rules,
-   * tripartite homologation approval (Technical + Commercial + Compliance), and Kill Switch status.
+   * Resolves the appropriate PaymentProvider adapter based on strict homologation rules,
+   * capability matrices, and Kill Switch status.
+   *
+   * STRICT INVARIANT: NO AUTOMATIC CROSS-PROVIDER RETRIES ON CHARGE TIMEOUTS.
    */
   public static async resolve(params: ResolveProviderParams): Promise<ResolveProviderResult> {
     const isKillSwitchActive = process.env.PORTAL18_PAYMENT_KILL_SWITCH !== 'false';
 
-    // 1. If Kill Switch is active, always return safe unconfigured mock provider
+    // 1. If Kill Switch is active, always return safe Internal Test Driver (mock)
     if (isKillSwitchActive) {
-      const mockProvider = PaymentProviderRegistry.get('unconfigured');
-      if (mockProvider) {
+      const mockDriver = PaymentProviderRegistry.get('unconfigured');
+      if (mockDriver) {
         return {
           success: true,
-          provider: mockProvider,
+          provider: mockDriver,
         };
       }
     }
 
-    // 2. Query registered providers and select the highest priority approved provider
+    // 2. Query registered providers and evaluate production eligibility
     const allProviders = PaymentProviderRegistry.getAll();
     const env = params.environment || (process.env.NODE_ENV === 'production' ? 'production' : 'sandbox');
 
@@ -44,33 +48,62 @@ export class PaymentProviderResolver {
         continue;
       }
 
+      if (provider.code === 'unconfigured') {
+        // Internal test driver is not eligible for production financial traffic
+        if (env === 'production') continue;
+      }
+
       const metadata = await provider.getMetadata();
 
-      // Tripartite Homologation Requirement
-      const isApproved = 
-        metadata.technical_status === 'approved' &&
-        metadata.commercial_status === 'approved' &&
-        metadata.compliance_status === 'approved';
+      // In production, require full certification + commercial + compliance + adult-business acceptance
+      if (env === 'production') {
+        const isEligible =
+          metadata.technical_status === 'PRODUCTION_APPROVED' &&
+          metadata.commercial_status === 'approved' &&
+          metadata.compliance_status === 'approved' &&
+          metadata.adult_business_review_status === 'approved' &&
+          metadata.is_production_configured &&
+          metadata.health_status === 'healthy';
 
-      const isEnvEnabled = env === 'production' 
-        ? metadata.is_production_enabled 
-        : metadata.is_sandbox_enabled;
+        const methodKey = params.paymentMethod === 'pix' ? 'pix' : 'credit_card';
+        const supportsMethod = metadata.capabilities[methodKey] === 'supported';
 
-      const isHealthy = metadata.health_status !== 'unavailable';
+        if (isEligible && supportsMethod) {
+          return {
+            success: true,
+            provider,
+          };
+        }
+      } else {
+        // In sandbox environment, require configured credentials and supported method
+        const isSandboxReady =
+          (metadata.technical_status === 'CONFIGURED' || metadata.technical_status === 'SANDBOX_READY' || metadata.technical_status === 'SANDBOX_PASSED') &&
+          metadata.is_sandbox_configured;
 
-      // Check method support
-      const methodKey = params.paymentMethod === 'pix' ? 'pix' : 'credit_card';
-      const supportsMethod = metadata.capabilities[methodKey] === 'supported';
+        const methodKey = params.paymentMethod === 'pix' ? 'pix' : 'credit_card';
+        const supportsMethod = metadata.capabilities[methodKey] === 'supported';
 
-      if (isApproved && isEnvEnabled && isHealthy && supportsMethod) {
+        if (isSandboxReady && supportsMethod) {
+          return {
+            success: true,
+            provider,
+          };
+        }
+      }
+    }
+
+    // If allowMockDriver is true in sandbox/test environments, fallback to internal test driver
+    if (env === 'sandbox' && params.allowMockDriver !== false) {
+      const mockDriver = PaymentProviderRegistry.get('unconfigured');
+      if (mockDriver) {
         return {
           success: true,
-          provider,
+          provider: mockDriver,
         };
       }
     }
 
-    // If no provider satisfies all strict approval criteria, reject fail-closed
+    // Fail closed
     return {
       success: false,
       provider: null,

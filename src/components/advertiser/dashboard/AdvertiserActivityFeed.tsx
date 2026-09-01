@@ -1,14 +1,14 @@
 'use client';
 
 import React from 'react';
-import { 
-  Activity, 
-  ShieldCheck, 
-  Camera, 
-  MessageCircle, 
-  Heart, 
-  Eye, 
-  Sparkles 
+import {
+  Activity,
+  ShieldCheck,
+  Camera,
+  MessageCircle,
+  Heart,
+  Eye,
+  Sparkles
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { ActivityEvent } from '@/services/advertiserDashboardService';

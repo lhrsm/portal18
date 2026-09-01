@@ -1,16 +1,16 @@
 'use client';
 
 import React from 'react';
-import { 
-  ShieldCheck, 
-  MapPin, 
-  Phone, 
-  MessageCircle, 
-  Send, 
-  Globe, 
-  Camera, 
-  Edit3, 
-  Eye, 
+import {
+  ShieldCheck,
+  MapPin,
+  Phone,
+  MessageCircle,
+  Send,
+  Globe,
+  Camera,
+  Edit3,
+  Eye,
   Sparkles,
   CheckCircle2,
   AlertTriangle

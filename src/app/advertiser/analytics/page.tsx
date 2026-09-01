@@ -10,12 +10,12 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  BarChart3, 
-  Eye, 
-  Phone, 
-  TrendingUp, 
-  MessageCircle, 
+import {
+  BarChart3,
+  Eye,
+  Phone,
+  TrendingUp,
+  MessageCircle,
   Sparkles,
   CheckCircle2,
   AlertCircle,

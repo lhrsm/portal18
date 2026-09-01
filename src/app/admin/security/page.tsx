@@ -12,17 +12,17 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  ShieldAlert, 
-  ArrowLeft, 
-  ToggleLeft, 
-  ToggleRight, 
-  Activity, 
-  AlertTriangle, 
-  Plus, 
-  RefreshCw, 
-  Lock, 
-  Server 
+import {
+  ShieldAlert,
+  ArrowLeft,
+  ToggleLeft,
+  ToggleRight,
+  Activity,
+  AlertTriangle,
+  Plus,
+  RefreshCw,
+  Lock,
+  Server
 } from 'lucide-react';
 
 export default function AdminSecurityCenterPage() {
@@ -78,7 +78,7 @@ export default function AdminSecurityCenterPage() {
     }
 
     const nextState = !sw.enabled;
-    const confirmMsg = nextState 
+    const confirmMsg = nextState
       ? `ATENÇÃO: Deseja ATIVAR a trava de segurança [${sw.switch_key}]? Isto bloqueará recursos da plataforma.`
       : `Deseja desativar a trava [${sw.switch_key}] e restaurar a operação normal?`;
 

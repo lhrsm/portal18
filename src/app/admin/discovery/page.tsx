@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
+import {
   Sparkles,
   RefreshCw,
   Sliders,

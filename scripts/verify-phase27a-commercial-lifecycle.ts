@@ -57,7 +57,7 @@ const migrationContent = fs.existsSync(migrationPath) ? fs.readFileSync(migratio
 runTest(
   'advertiser_profiles extended with trial_used, trial_started_at, authenticity_verified and audio_presentation_url',
   'Database Schema',
-  () => 
+  () =>
     migrationContent.includes('trial_used boolean') &&
     migrationContent.includes('trial_started_at timestamptz') &&
     migrationContent.includes('authenticity_verified boolean') &&
@@ -68,7 +68,7 @@ runTest(
 runTest(
   'authenticity_challenges table created with high-entropy code and 15-min TTL constraint',
   'Database Schema',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.authenticity_challenges') &&
     migrationContent.includes('challenge_code text') &&
     migrationContent.includes('expires_at timestamptz'),
@@ -78,7 +78,7 @@ runTest(
 runTest(
   'RPC get_advertiser_entitlements evaluates trial, active, grace_period, limited and suspended',
   'Server Entitlements',
-  () => 
+  () =>
     migrationContent.includes('get_advertiser_entitlements') &&
     migrationContent.includes('trial') &&
     migrationContent.includes('grace_period') &&
@@ -90,7 +90,7 @@ runTest(
 runTest(
   'RPC get_public_advertiser_contacts filters contacts strictly server-side (full vs limited vs hidden)',
   'Contact Security',
-  () => 
+  () =>
     migrationContent.includes('get_public_advertiser_contacts') &&
     migrationContent.includes('contacts_strategy') &&
     migrationContent.includes('is_visible = true'),
@@ -100,7 +100,7 @@ runTest(
 runTest(
   'RPC approve_advertiser_profile triggers 7-day trial idempotently on first publication only',
   'Trial Idempotency',
-  () => 
+  () =>
     migrationContent.includes('approve_advertiser_profile') &&
     migrationContent.includes('trial_used') &&
     migrationContent.includes("INTERVAL '7 days'"),
@@ -116,7 +116,7 @@ const typesContent = fs.existsSync(typesPath) ? fs.readFileSync(typesPath, 'utf8
 runTest(
   'CommercialLifecycleState and AuthenticityChallenge exported in app.types.ts',
   'TypeScript Types',
-  () => 
+  () =>
     typesContent.includes('CommercialLifecycleState') &&
     typesContent.includes('AuthenticityChallenge') &&
     typesContent.includes('TrustBadges'),
@@ -126,7 +126,7 @@ runTest(
 runTest(
   'AdvertiserEntitlements enhanced with audio_allowed, commercial_video_allowed, contacts_strategy, is_trial',
   'TypeScript Types',
-  () => 
+  () =>
     typesContent.includes('audio_allowed') &&
     typesContent.includes('commercial_video_allowed') &&
     typesContent.includes('contacts_strategy') &&
@@ -145,7 +145,7 @@ const mediaServicePath = path.join(rootDir, 'src', 'services', 'mediaService.ts'
 runTest(
   'commercialLifecycleService implemented with getCommercialLifecycle and status badges',
   'Services',
-  () => 
+  () =>
     fs.existsSync(lifecycleServicePath) &&
     fs.readFileSync(lifecycleServicePath, 'utf8').includes('getCommercialLifecycle'),
   'commercialLifecycleService ausente ou incompleto'
@@ -154,7 +154,7 @@ runTest(
 runTest(
   'authenticityService implemented with generateChallenge, submitVideo, and reviewChallenge',
   'Services',
-  () => 
+  () =>
     fs.existsSync(authenticityServicePath) &&
     fs.readFileSync(authenticityServicePath, 'utf8').includes('generateChallenge') &&
     fs.readFileSync(authenticityServicePath, 'utf8').includes('submitVideo'),
@@ -164,7 +164,7 @@ runTest(
 runTest(
   'contactsService implements getPublicContacts via server RPC',
   'Services',
-  () => 
+  () =>
     fs.existsSync(contactsServicePath) &&
     fs.readFileSync(contactsServicePath, 'utf8').includes('getPublicContacts') &&
     fs.readFileSync(contactsServicePath, 'utf8').includes('get_public_advertiser_contacts'),
@@ -194,7 +194,7 @@ const audioPlayerPath = path.join(rootDir, 'src', 'components', 'public', 'Profi
 runTest(
   'AudioPresentationManager component handles MediaRecorder audio recording, pause, stop, and upload',
   'Advertiser UI',
-  () => 
+  () =>
     fs.existsSync(audioManagerPath) &&
     fs.readFileSync(audioManagerPath, 'utf8').includes('MediaRecorder') &&
     fs.readFileSync(audioManagerPath, 'utf8').includes('uploadAudioPresentation'),
@@ -204,7 +204,7 @@ runTest(
 runTest(
   'AuthenticityVideoManager displays dynamic single-use challenge code and secure submission',
   'Advertiser UI',
-  () => 
+  () =>
     fs.existsSync(authenticityManagerPath) &&
     fs.readFileSync(authenticityManagerPath, 'utf8').includes('generateChallenge') &&
     fs.readFileSync(authenticityManagerPath, 'utf8').includes('submitVideo'),
@@ -224,7 +224,7 @@ runTest(
 runTest(
   'ProfileAudioPlayer component exists and provides accessible audio playback controls',
   'Public Profile UI',
-  () => 
+  () =>
     fs.existsSync(audioPlayerPath) &&
     fs.readFileSync(audioPlayerPath, 'utf8').includes('aria-label') &&
     fs.readFileSync(audioPlayerPath, 'utf8').includes('togglePlay'),

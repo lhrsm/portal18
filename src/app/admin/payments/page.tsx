@@ -11,14 +11,14 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  CreditCard, 
-  DollarSign, 
-  TrendingUp, 
-  RotateCcw, 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle 
+import {
+  CreditCard,
+  DollarSign,
+  TrendingUp,
+  RotateCcw,
+  CheckCircle2,
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function AdminPaymentsPage() {

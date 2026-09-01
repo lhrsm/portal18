@@ -12,16 +12,16 @@ import { mediaQuotaService } from '@/services/media/quotaService';
 import { verificationService } from '@/services/verificationService';
 import { completenessService } from '@/services/completenessService';
 import { onboardingAnalytics } from '@/services/telemetry/onboardingAnalytics';
-import { 
-  BrazilState, 
-  BrazilCity, 
-  Category, 
-  AdvertiserProfile, 
-  AdvertiserContact, 
-  AdvertiserMedia, 
+import {
+  BrazilState,
+  BrazilCity,
+  Category,
+  AdvertiserProfile,
+  AdvertiserContact,
+  AdvertiserMedia,
   MediaQuota,
   CompletenessResult,
-  ContactType 
+  ContactType
 } from '@/types/app.types';
 import { OnboardingStepper, ONBOARDING_STEPS } from '@/components/advertiser/OnboardingStepper';
 import { OnboardingPreviewCard } from '@/components/advertiser/OnboardingPreviewCard';
@@ -35,16 +35,16 @@ import { Badge } from '@/components/ui/Badge';
 import { Alert } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  User, 
-  ShieldCheck, 
-  MapPin, 
-  Tag, 
-  FileText, 
-  Phone, 
-  Camera, 
-  CheckCircle2, 
-  ArrowRight, 
+import {
+  User,
+  ShieldCheck,
+  MapPin,
+  Tag,
+  FileText,
+  Phone,
+  Camera,
+  CheckCircle2,
+  ArrowRight,
   ArrowLeft,
   RefreshCw,
   Check,

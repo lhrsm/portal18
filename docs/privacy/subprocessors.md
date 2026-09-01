@@ -1,9 +1,9 @@
 # REGISTRO DE SUBOPERADORES DE DADOS (SUBPROCESSORS)
 
-**Plataforma:** Portal Nacional 18+  
-**Versão:** 1.0  
-**Data de Publicação:** 27 de Agosto de 2026  
-**Conformidade:** LGPD (Lei 13.709/2018) & Marco Civil da Internet (Lei 12.965/2014)  
+**Plataforma:** Portal Nacional 18+
+**Versão:** 1.0
+**Data de Publicação:** 27 de Agosto de 2026
+**Conformidade:** LGPD (Lei 13.709/2018) & Marco Civil da Internet (Lei 12.965/2014)
 
 ---
 

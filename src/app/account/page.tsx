@@ -13,17 +13,17 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  User, 
-  Key, 
-  Heart, 
-  Users, 
-  History, 
-  ListFilter, 
-  Bell, 
-  Sliders, 
-  Shield, 
-  Megaphone, 
+import {
+  User,
+  Key,
+  Heart,
+  Users,
+  History,
+  ListFilter,
+  Bell,
+  Sliders,
+  Shield,
+  Megaphone,
   ArrowRight,
   Sparkles,
   CheckCircle2,

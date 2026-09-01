@@ -9,14 +9,14 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  History, 
-  ArrowLeft, 
-  Trash2, 
-  ExternalLink, 
-  MapPin, 
-  Clock, 
-  ShieldAlert 
+import {
+  History,
+  ArrowLeft,
+  Trash2,
+  ExternalLink,
+  MapPin,
+  Clock,
+  ShieldAlert
 } from 'lucide-react';
 
 interface HistoryItem {

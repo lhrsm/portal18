@@ -8,15 +8,15 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Users, 
-  Copy, 
-  Share2, 
-  Gift, 
-  Clock, 
-  CheckCircle2, 
-  ShieldAlert, 
-  HelpCircle, 
+import {
+  Users,
+  Copy,
+  Share2,
+  Gift,
+  Clock,
+  CheckCircle2,
+  ShieldAlert,
+  HelpCircle,
   Sparkles,
   Info,
   Check

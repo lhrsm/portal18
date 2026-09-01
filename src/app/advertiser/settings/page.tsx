@@ -11,18 +11,18 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Settings, 
-  Eye, 
-  EyeOff, 
-  PauseCircle, 
-  ShieldCheck, 
-  Check, 
-  Shield, 
-  Key, 
-  Bell, 
-  User, 
-  ArrowRight 
+import {
+  Settings,
+  Eye,
+  EyeOff,
+  PauseCircle,
+  ShieldCheck,
+  Check,
+  Shield,
+  Key,
+  Bell,
+  User,
+  ArrowRight
 } from 'lucide-react';
 
 export default function AdvertiserSettingsPage() {

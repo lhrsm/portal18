@@ -1,12 +1,12 @@
 import { createClient } from '@/lib/supabase/client';
-import { 
-  SubscriptionPlan, 
-  Subscription, 
-  Payment, 
-  PromotionProduct, 
-  AdvertiserCampaign, 
-  AdvertiserEntitlements, 
-  CheckoutResponse 
+import {
+  SubscriptionPlan,
+  Subscription,
+  Payment,
+  PromotionProduct,
+  AdvertiserCampaign,
+  AdvertiserEntitlements,
+  CheckoutResponse
 } from '@/types/app.types';
 
 export const billingService = {

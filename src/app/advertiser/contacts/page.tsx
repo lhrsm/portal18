@@ -15,17 +15,17 @@ import { Badge } from '@/components/ui/Badge';
 import { Alert } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Phone, 
-  MessageCircle, 
-  Send, 
-  Globe, 
-  Plus, 
-  Trash2, 
-  Star, 
-  Eye, 
-  EyeOff, 
-  CheckCircle2 
+import {
+  Phone,
+  MessageCircle,
+  Send,
+  Globe,
+  Plus,
+  Trash2,
+  Star,
+  Eye,
+  EyeOff,
+  CheckCircle2
 } from 'lucide-react';
 
 export default function AdvertiserContactsPage() {

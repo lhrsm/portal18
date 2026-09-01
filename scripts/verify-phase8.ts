@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 8 MANDATORY TEST SUITE (Sections 106-113 Verification)
  * ============================================================================
- * 
+ *
  * Verifies all 26 mandatory criteria:
  * - GEO-01: City search
  * - GEO-02: Radius 25 km proximity search

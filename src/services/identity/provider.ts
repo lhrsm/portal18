@@ -1,8 +1,8 @@
-import { 
-  CreateSessionParams, 
-  VerificationSessionResult, 
-  WebhookEventData, 
-  VerificationResult 
+import {
+  CreateSessionParams,
+  VerificationSessionResult,
+  WebhookEventData,
+  VerificationResult
 } from './types';
 
 export interface IdentityVerificationProvider {

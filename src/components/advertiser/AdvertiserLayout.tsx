@@ -9,19 +9,19 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
-import { 
-  LayoutDashboard, 
-  User, 
-  Image as ImageIcon, 
-  MapPin, 
-  Phone, 
-  ShieldCheck, 
-  BarChart3, 
-  Settings, 
-  Eye, 
-  Menu, 
-  X, 
-  Sparkles, 
+import {
+  LayoutDashboard,
+  User,
+  Image as ImageIcon,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  BarChart3,
+  Settings,
+  Eye,
+  Menu,
+  X,
+  Sparkles,
   ArrowLeft,
   Gift
 } from 'lucide-react';

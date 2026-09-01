@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 1 MANDATORY TEST SUITE (Section 57 Verification)
  * ============================================================================
- * 
+ *
  * Verifies all 17 mandatory criteria:
  * - AUTH-01: User registration creates auth.users, profiles, role=user
  * - AUTH-02: Self admin role escalation on signup -> DENIED

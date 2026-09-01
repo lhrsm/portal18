@@ -12,13 +12,13 @@ import { Sheet } from '@/components/ui/Sheet';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Search, 
-  Filter, 
-  MapPin, 
-  Navigation, 
-  RotateCcw, 
-  Tag, 
+import {
+  Search,
+  Filter,
+  MapPin,
+  Navigation,
+  RotateCcw,
+  Tag,
   SlidersHorizontal,
   Video,
   CheckCircle2,
@@ -143,7 +143,7 @@ function ExploreContent() {
     } else {
       params.set(key, value);
     }
-    
+
     // Reset city if state changes
     if (key === 'estado') {
       params.delete('cidade');

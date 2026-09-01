@@ -1,8 +1,8 @@
 # RELATÓRIO COMPARATIVO DE GATEWAYS DE PAGAMENTO & PROCESSAMENTO FINANCEIRO
 
-**Projeto:** Portal Nacional de Entretenimento Adulto 18+  
-**Data:** 27 de Agosto de 2026  
-**Classificação:** Documento Técnico & Análise Comercial  
+**Projeto:** Portal Nacional de Entretenimento Adulto 18+
+**Data:** 27 de Agosto de 2026
+**Classificação:** Documento Técnico & Análise Comercial
 
 ---
 

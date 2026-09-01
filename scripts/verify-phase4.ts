@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 4 MANDATORY TEST SUITE (Sections 94-99 Verification)
  * ============================================================================
- * 
+ *
  * Verifies all 24 mandatory criteria:
  * - ADMIN-01: User accesses /admin -> DENIED
  * - ADMIN-02: Advertiser accesses /admin -> DENIED

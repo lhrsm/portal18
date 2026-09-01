@@ -8,15 +8,15 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Sparkles, 
-  RefreshCw, 
-  Clock, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Image as ImageIcon, 
-  Video as VideoIcon, 
-  HardDrive 
+import {
+  Sparkles,
+  RefreshCw,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  HardDrive
 } from 'lucide-react';
 
 export default function AdminMediaProcessingPage() {

@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/client';
-import { 
-  SupportCategory, 
-  SupportTicket, 
-  SupportTicketMessage, 
-  CommunicationPriority, 
-  SupportTicketStatus 
+import {
+  SupportCategory,
+  SupportTicket,
+  SupportTicketMessage,
+  CommunicationPriority,
+  SupportTicketStatus
 } from '@/types/app.types';
 import { communicationService } from '../communication/communicationService';
 
@@ -25,7 +25,7 @@ export const supportService = {
       const supabase = createClient();
 
       // Backend calculates priority (Section 54)
-      const priority: CommunicationPriority = 
+      const priority: CommunicationPriority =
         params.category === 'security' ? 'critical' :
         params.category === 'privacy' || params.category === 'report' ? 'high' : 'normal';
 

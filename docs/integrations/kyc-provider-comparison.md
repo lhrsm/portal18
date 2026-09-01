@@ -1,8 +1,8 @@
 # RELATÓRIO COMPARATIVO DE PROVEDORES DE VERIFICAÇÃO DE IDENTIDADE (KYC 18+)
 
-**Projeto:** Portal Nacional de Entretenimento Adulto 18+  
-**Data:** 27 de Agosto de 2026  
-**Classificação:** Documento Técnico de Arquitetura & Conformidade  
+**Projeto:** Portal Nacional de Entretenimento Adulto 18+
+**Data:** 27 de Agosto de 2026
+**Classificação:** Documento Técnico de Arquitetura & Conformidade
 
 ---
 

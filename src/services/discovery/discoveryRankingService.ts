@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/client';
-import { 
-  CommercialInventorySlot, 
-  DiscoveryEventType, 
-  RankingDiagnostics 
+import {
+  CommercialInventorySlot,
+  DiscoveryEventType,
+  RankingDiagnostics
 } from '@/types/app.types';
 
 export const discoveryRankingService = {

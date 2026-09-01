@@ -164,7 +164,7 @@ export const DEMO_PUBLIC_ADVERTISERS: PublicAdvertiser[] = RAW_DEMO_DEFINITIONS.
   const advertiserId = `demo-adv-${String(idx + 1).padStart(4, '0')}`;
   const profileId = `demo-prof-${String(idx + 1).padStart(4, '0')}`;
   const primaryPhoto = DEMO_PHOTO_URLS[def.photoIndex % DEMO_PHOTO_URLS.length];
-  
+
   const categoryIds = def.categorySlugs
     .map((slug) => DEMO_CATEGORIES.find((c) => c.slug === slug)?.id)
     .filter(Boolean) as string[];

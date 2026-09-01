@@ -1,6 +1,7 @@
 import { PaymentStatus, SubscriptionStatus, PaymentType, BillingInterval } from '@/types/app.types';
 
 export type ProviderCapabilityStatus = 'supported' | 'unsupported' | 'unknown' | 'requires_approval';
+export type CapabilityCertificationStatus = 'supported' | 'unsupported' | 'unknown' | 'not_tested' | 'passed' | 'failed';
 
 export interface ProviderCapabilityMatrix {
   pix: ProviderCapabilityStatus;
@@ -27,17 +28,43 @@ export interface ProviderCapabilityMatrix {
   settlement_reports: ProviderCapabilityStatus;
 }
 
-export type ProviderHomologationStage =
+export type TechnicalHomologationStatus =
+  | 'NOT_CONFIGURED'
+  | 'CONFIGURED'
+  | 'SANDBOX_READY'
+  | 'SANDBOX_TESTING'
+  | 'SANDBOX_PASSED'
+  | 'SANDBOX_PARTIAL'
+  | 'SANDBOX_FAILED'
+  | 'PRODUCTION_REVIEW'
+  | 'PRODUCTION_APPROVED'
+  | 'PRODUCTION_BLOCKED';
+
+export type ProviderHomologationStage = TechnicalHomologationStatus;
+
+export type CommercialApprovalStatus =
   | 'candidate'
-  | 'technical_review'
   | 'commercial_review'
-  | 'compliance_review'
-  | 'sandbox_ready'
-  | 'homologating'
   | 'approved'
   | 'rejected'
   | 'suspended'
-  | 'deprecated';
+  | 'NOT_APPLICABLE';
+
+export type ComplianceApprovalStatus =
+  | 'candidate'
+  | 'compliance_review'
+  | 'approved'
+  | 'rejected'
+  | 'suspended'
+  | 'NOT_APPLICABLE';
+
+export type AdultBusinessReviewStatus =
+  | 'not_reviewed'
+  | 'under_review'
+  | 'approved'
+  | 'rejected'
+  | 'restricted'
+  | 'not_applicable';
 
 export type PaymentFailureCategory =
   | 'insufficient_funds'
@@ -87,24 +114,37 @@ export interface BusinessModelReviewData {
   approved_products: string[];
 }
 
+export interface DetailedCapabilityCertification {
+  key: string;
+  name: string;
+  category: 'authentication' | 'payment_methods' | 'webhooks' | 'lifecycle' | 'security';
+  status: CapabilityCertificationStatus;
+  testedAt?: string;
+  errorDetail?: string;
+}
+
 export interface PaymentProviderMetadata {
   id?: string;
   code: string;
   name: string;
   description: string;
   website: string;
-  technical_status: ProviderHomologationStage;
-  commercial_status: ProviderHomologationStage;
-  compliance_status: ProviderHomologationStage;
-  overall_status: ProviderHomologationStage;
-  is_sandbox_enabled: boolean;
-  is_production_enabled: boolean;
+  is_internal_driver?: boolean;
+  technical_status: TechnicalHomologationStatus;
+  commercial_status: CommercialApprovalStatus;
+  compliance_status: ComplianceApprovalStatus;
+  adult_business_review_status: AdultBusinessReviewStatus;
+  is_sandbox_configured: boolean;
+  is_production_configured: boolean;
+  is_production_eligible: boolean;
   priority: number;
   supported_methods: string[];
   capabilities: ProviderCapabilityMatrix;
+  detailed_certifications?: DetailedCapabilityCertification[];
   business_model_review: BusinessModelReviewData;
   health_status: ProviderHealthState;
   last_health_check?: string | null;
+  last_sandbox_test?: string | null;
 }
 
 export interface CreateCheckoutParams {
@@ -227,6 +267,16 @@ export interface ProviderHealthCheckResult {
   latencyMs: number;
   message?: string;
   checkedAt: string;
+}
+
+export interface SandboxCapabilityTestResult {
+  providerCode: string;
+  passedCount: number;
+  failedCount: number;
+  skippedCount: number;
+  certifications: DetailedCapabilityCertification[];
+  overallStatus: TechnicalHomologationStatus;
+  testedAt: string;
 }
 
 export interface PaymentRouteRule {

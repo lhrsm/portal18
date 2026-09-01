@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 10 MANDATORY TEST SUITE (Sections 148-156 Verification)
  * ============================================================================
- * 
+ *
  * Verifies all 32 mandatory criteria:
  * - EMAIL-01: Valid transactional event creates communication job
  * - EMAIL-02: Marketing disabled suppresses marketing emails

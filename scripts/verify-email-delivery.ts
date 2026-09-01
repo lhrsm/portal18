@@ -23,7 +23,7 @@ export async function runEmailDeliveryVerification(): Promise<EmailCheckResult[]
   // 1. TEMPLATE INVENTORY & DISCREET SUBJECT AUDIT
   const forbiddenKeywords = ['adulto', 'acompanhante', 'sexo', 'erótico', 'sensual', 'garota', 'privê', 'nude'];
   const templateKeys = Object.keys(DISCREET_TEMPLATES);
-  
+
   let allSubjectsDiscreet = true;
   const violatingTemplates: string[] = [];
 

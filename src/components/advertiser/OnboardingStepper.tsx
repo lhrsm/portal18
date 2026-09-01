@@ -1,14 +1,14 @@
 'use client';
 
 import React from 'react';
-import { 
-  User, 
-  ShieldCheck, 
-  MapPin, 
-  Tag, 
-  FileText, 
-  Phone, 
-  Camera, 
+import {
+  User,
+  ShieldCheck,
+  MapPin,
+  Tag,
+  FileText,
+  Phone,
+  Camera,
   CheckCircle2,
   Check
 } from 'lucide-react';

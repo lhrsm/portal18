@@ -34,8 +34,8 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined' || typeof navigator === 'undefined') return;
 
-    const isStandaloneMode = 
-      window.matchMedia('(display-mode: standalone)').matches || 
+    const isStandaloneMode =
+      window.matchMedia('(display-mode: standalone)').matches ||
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Boolean((navigator as any).standalone) ||
       document.referrer.includes('android-app://');

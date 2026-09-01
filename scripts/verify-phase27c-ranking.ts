@@ -56,7 +56,7 @@ runTest(
 runTest(
   'commercial_inventory_slots table created with placements and scope types',
   'Inventory Engine',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.commercial_inventory_slots') &&
     migrationContent.includes('homepage_featured') &&
     migrationContent.includes('city_top') &&
@@ -68,7 +68,7 @@ runTest(
 runTest(
   'discovery_impression_events table created for viewable impression and click attribution',
   'Viewability & Analytics',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.discovery_impression_events') &&
     migrationContent.includes('organic_impression') &&
     migrationContent.includes('sponsored_impression') &&
@@ -79,7 +79,7 @@ runTest(
 runTest(
   'advertiser_ranking_scores extended with component signals and bayesian_ctr',
   'Ranking Signals',
-  () => 
+  () =>
     migrationContent.includes('bayesian_ctr numeric(6,4)') &&
     migrationContent.includes('new_profile_boost numeric(5,2)') &&
     migrationContent.includes('policy_version text NOT NULL'),
@@ -89,7 +89,7 @@ runTest(
 runTest(
   'RPC recalculate_organic_ranking_scores implements Bayesian smoothed CTR without plan bias',
   'Organic Scoring',
-  () => 
+  () =>
     migrationContent.includes('recalculate_organic_ranking_scores') &&
     migrationContent.includes('v_smoothed_ctr :=') &&
     migrationContent.includes('v_quality_score') &&
@@ -100,7 +100,7 @@ runTest(
 runTest(
   'RPC record_discovery_event filters bots, crawlers, and self-views with deduplication',
   'Bot & Self-View Exclusion',
-  () => 
+  () =>
     migrationContent.includes('record_discovery_event') &&
     migrationContent.includes('bot_excluded') &&
     migrationContent.includes('self_or_staff_view_excluded') &&
@@ -111,7 +111,7 @@ runTest(
 runTest(
   'RPC search_profiles_discovery_v2 enforces Eligibility Gate (profile_status=active, public, not deleted)',
   'Eligibility Gate',
-  () => 
+  () =>
     migrationContent.includes('search_profiles_discovery_v2') &&
     migrationContent.includes("ap.profile_status = 'active'") &&
     migrationContent.includes("ap.visibility = 'public'") &&
@@ -122,7 +122,7 @@ runTest(
 runTest(
   'RPC search_profiles_discovery_v2 respects Hard Search Filter Constraints (State, City, Category)',
   'Search Constraints',
-  () => 
+  () =>
     migrationContent.includes('p_state_code IS NULL OR lower(s.code) = lower(p_state_code)') &&
     migrationContent.includes('p_city_slug IS NULL OR c.slug = p_city_slug') &&
     migrationContent.includes('p_category_slug IS NULL OR EXISTS'),
@@ -132,7 +132,7 @@ runTest(
 runTest(
   'RPC search_profiles_discovery_v2 applies inventory slot limits (max_sponsored_slots) and staggered ranking',
   'Sponsored Placement & Fairness',
-  () => 
+  () =>
     migrationContent.includes('v_max_sponsored_slots') &&
     migrationContent.includes('ro.organic_rank <= v_max_sponsored_slots') &&
     migrationContent.includes('is_sponsored boolean'),
@@ -142,7 +142,7 @@ runTest(
 runTest(
   'RPC diagnose_advertiser_ranking provides staff score breakdown without leaking secret keys',
   'Staff Diagnostics',
-  () => 
+  () =>
     migrationContent.includes('diagnose_advertiser_ranking') &&
     migrationContent.includes('is_eligible') &&
     migrationContent.includes('ineligibility_reasons') &&
@@ -159,7 +159,7 @@ const typesContent = fs.existsSync(typesPath) ? fs.readFileSync(typesPath, 'utf8
 runTest(
   'CommercialInventorySlot, DiscoveryImpressionEvent, RankingDiagnostics exported in app.types.ts',
   'TypeScript Models',
-  () => 
+  () =>
     typesContent.includes('CommercialInventorySlot') &&
     typesContent.includes('DiscoveryImpressionEvent') &&
     typesContent.includes('RankingDiagnostics') &&
@@ -173,7 +173,7 @@ const serviceContent = fs.existsSync(servicePath) ? fs.readFileSync(servicePath,
 runTest(
   'discoveryRankingService implements batch calculation, event recording, inventory management, and diagnostics',
   'Services',
-  () => 
+  () =>
     fs.existsSync(servicePath) &&
     serviceContent.includes('recalculateRankingScores') &&
     serviceContent.includes('recordDiscoveryEvent') &&
@@ -201,7 +201,7 @@ const cardContent = fs.existsSync(cardPath) ? fs.readFileSync(cardPath, 'utf8') 
 runTest(
   'AdvertiserCard implements IntersectionObserver viewable impression tracking and accessible Patrocinado badge',
   'Public Card UI',
-  () => 
+  () =>
     cardContent.includes('IntersectionObserver') &&
     cardContent.includes('recordDiscoveryEvent') &&
     cardContent.includes('Patrocinado'),
@@ -214,7 +214,7 @@ const adminDiscoveryContent = fs.existsSync(adminDiscoveryPath) ? fs.readFileSyn
 runTest(
   'Admin Discovery Page includes inventory slot management and ranking diagnostics tool',
   'Admin UI',
-  () => 
+  () =>
     fs.existsSync(adminDiscoveryPath) &&
     adminDiscoveryContent.includes('Inventário Comercial de Slots') &&
     adminDiscoveryContent.includes('Diagnóstico de Ranking') &&
@@ -228,7 +228,7 @@ runTest(
 runTest(
   'Payment does not substitute eligibility & Organic score is plan-independent',
   'Commercial Integrity',
-  () => 
+  () =>
     !migrationContent.includes('subscription_tier *') &&
     migrationContent.includes('ro.has_active_campaign AND ro.organic_rank <= v_max_sponsored_slots'),
   'Score orgânico indevidamente atrelado a pagamentos'

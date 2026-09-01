@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 2 MANDATORY TEST SUITE (Section 81 Verification)
  * ============================================================================
- * 
+ *
  * Verifies all 18 mandatory criteria:
  * - PUBLIC-01: Anon opens home -> PASS
  * - PUBLIC-02: Anon opens explore -> only public profiles returned

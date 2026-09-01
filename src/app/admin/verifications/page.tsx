@@ -11,15 +11,15 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  FileCheck2, 
-  ShieldCheck, 
-  ShieldAlert, 
-  Clock, 
-  AlertTriangle, 
-  UserCheck, 
-  Lock, 
-  ExternalLink 
+import {
+  FileCheck2,
+  ShieldCheck,
+  ShieldAlert,
+  Clock,
+  AlertTriangle,
+  UserCheck,
+  Lock,
+  ExternalLink
 } from 'lucide-react';
 
 export default function AdminVerificationsPage() {

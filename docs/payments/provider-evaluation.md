@@ -1,15 +1,15 @@
 # PORTAL18 — MULTI-GATEWAY PAYMENT PROVIDER EVALUATION & HOMOLOGATION DOSSIER
 
-> **Document Classification**: Restricted / Financial Architecture & Compliance  
-> **Platform**: Portal18 (Classificados Adultos & Conteúdo Digital 18+)  
-> **Status**: Evaluation & Homologation Foundation (Phase 28A)  
+> **Document Classification**: Restricted / Financial Architecture & Compliance
+> **Platform**: Portal18 (Classificados Adultos & Conteúdo Digital 18+)
+> **Status**: Evaluation & Homologation Foundation (Phase 28A)
 > **Active Rule**: `PORTAL18_PAYMENT_KILL_SWITCH=true` (Zero real charges, zero card collection)
 
 ---
 
 ## 1. Executive Summary & Architectural Invariants
 
-Portal18 operates as a high-trust, age-assured (ECA Digital / 18+) national marketplace platform for independent advertisers and verified consumer members. 
+Portal18 operates as a high-trust, age-assured (ECA Digital / 18+) national marketplace platform for independent advertisers and verified consumer members.
 
 ### Core Architectural Invariants:
 1. **Decoupled Commercial Domain**: Portal18’s business entities (`subscriptions`, `orders`, `consumer_subscriptions`, `boosts`, `entitlements`) are strictly decoupled from external Payment Service Providers (PSPs). No PSP is the source of truth for platform entitlements.

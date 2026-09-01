@@ -1,8 +1,8 @@
 # POLÍTICA COMERCIAL, ASSINATURAS E GESTÃO FINANCEIRA
 
-**Portal:** Portal Nacional de Entretenimento Adulto 18+  
-**Versão:** 1.0  
-**Data:** 27 de Agosto de 2026  
+**Portal:** Portal Nacional de Entretenimento Adulto 18+
+**Versão:** 1.0
+**Data:** 27 de Agosto de 2026
 
 ---
 

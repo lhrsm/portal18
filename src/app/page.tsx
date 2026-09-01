@@ -17,20 +17,20 @@ import { CityAutocomplete } from '@/components/public/CityAutocomplete';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { 
-  Search, 
-  Sparkles, 
-  MapPin, 
-  Tag, 
-  ShieldCheck, 
-  Megaphone, 
-  Lock, 
-  ArrowRight, 
-  CheckCircle2, 
-  Star, 
-  Compass, 
-  Users, 
-  Building, 
+import {
+  Search,
+  Sparkles,
+  MapPin,
+  Tag,
+  ShieldCheck,
+  Megaphone,
+  Lock,
+  ArrowRight,
+  CheckCircle2,
+  Star,
+  Compass,
+  Users,
+  Building,
   UserCheck,
   ChevronDown,
   ChevronUp
@@ -249,8 +249,8 @@ export default function HomePage() {
   return (
     <div className="home-container" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', paddingBottom: '3.5rem' }}>
       {/* 1. HERO ORIENTADO À DESCOBERTA (Sections 5, 6, 7 & 8) */}
-      <section style={{ 
-        paddingTop: '1.5rem', 
+      <section style={{
+        paddingTop: '1.5rem',
         paddingBottom: '1.25rem',
         background: 'radial-gradient(ellipse at 50% 0%, rgba(229, 185, 92, 0.08) 0%, transparent 70%)'
       }}>

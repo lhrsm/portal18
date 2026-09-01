@@ -9,14 +9,14 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useToast } from '@/hooks/useToast';
-import { 
-  ArrowLeft, 
-  ThumbsUp, 
-  ThumbsDown, 
-  MessageSquare, 
-  Check, 
-  BookOpen, 
-  ArrowRight 
+import {
+  ArrowLeft,
+  ThumbsUp,
+  ThumbsDown,
+  MessageSquare,
+  Check,
+  BookOpen,
+  ArrowRight
 } from 'lucide-react';
 
 export default function HelpArticlePage() {

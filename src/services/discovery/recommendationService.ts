@@ -38,14 +38,14 @@ export const recommendationService = {
     }
 
     const { publicProfilesService } = await import('@/services/publicProfilesService');
-    const fallback = await publicProfilesService.getPublicAdvertisers({ 
-      city: citySlug, 
+    const fallback = await publicProfilesService.getPublicAdvertisers({
+      city: citySlug,
       state: stateSlug,
-      limit: limit + 4 
+      limit: limit + 4
     });
 
     let validFallback = fallback.data.filter((p) => p.advertiser_id !== advertiserId && Boolean(p.primary_photo_url));
-    
+
     // If not enough in the same city, get from general pool
     if (validFallback.length < limit) {
       const generalFallback = await publicProfilesService.getPublicAdvertisers({ limit: limit + 4 });

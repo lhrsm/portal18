@@ -7,16 +7,16 @@ import { Incident } from '@/types/app.types';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  Activity, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Clock, 
-  Server, 
-  ShieldCheck, 
-  Image as ImageIcon, 
-  CreditCard, 
-  Bell 
+import {
+  Activity,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Server,
+  ShieldCheck,
+  Image as ImageIcon,
+  CreditCard,
+  Bell
 } from 'lucide-react';
 
 export default function PlatformStatusPage() {

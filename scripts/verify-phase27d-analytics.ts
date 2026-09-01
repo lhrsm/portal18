@@ -56,7 +56,7 @@ runTest(
 runTest(
   'RPC get_advertiser_funnel_analytics computes 3-step funnel (impressions -> profile_views -> contact_clicks)',
   'Funnel Computation',
-  () => 
+  () =>
     migrationContent.includes('get_advertiser_funnel_analytics') &&
     migrationContent.includes('v_impressions') &&
     migrationContent.includes('v_views') &&
@@ -67,7 +67,7 @@ runTest(
 runTest(
   'RPC get_advertiser_funnel_analytics protects against Zero Denominator (0% instead of NaN)',
   'Mathematical Integrity',
-  () => 
+  () =>
     migrationContent.includes('IF v_impressions > 0 THEN') &&
     migrationContent.includes('IF v_views > 0 THEN'),
   'Cálculo de taxas não possui proteção contra divisão por zero'
@@ -76,7 +76,7 @@ runTest(
 runTest(
   'RPC get_advertiser_funnel_analytics computes comparison trends with previous equivalent period',
   'Period Trends',
-  () => 
+  () =>
     migrationContent.includes('v_prev_impressions') &&
     migrationContent.includes('v_prev_views') &&
     migrationContent.includes('v_impressions_trend'),
@@ -86,7 +86,7 @@ runTest(
 runTest(
   'RPC get_advertiser_funnel_analytics breaks down discovery sources (organic vs sponsored)',
   'Source Attribution',
-  () => 
+  () =>
     migrationContent.includes('v_organic_impr') &&
     migrationContent.includes('v_sponsored_impr') &&
     migrationContent.includes("'organic'") &&
@@ -97,7 +97,7 @@ runTest(
 runTest(
   'RPC get_advertiser_funnel_analytics breaks down contact channels (WhatsApp, Telegram, Phone)',
   'Channel Attribution',
-  () => 
+  () =>
     migrationContent.includes("WHERE channel = 'whatsapp'") &&
     migrationContent.includes("WHERE channel = 'telegram'") &&
     migrationContent.includes("WHERE channel = 'phone'"),
@@ -107,7 +107,7 @@ runTest(
 runTest(
   'RPC get_advertiser_funnel_analytics generates deterministic performance insights with minimum sample guard',
   'Insights Engine',
-  () => 
+  () =>
     migrationContent.includes('v_insights') &&
     migrationContent.includes('IF v_views >= 5 THEN') &&
     migrationContent.includes('trend_views_up'),
@@ -117,7 +117,7 @@ runTest(
 runTest(
   'RPC get_advertiser_funnel_analytics enforces strict cross-user isolation and authorization',
   'Security & RLS',
-  () => 
+  () =>
     migrationContent.includes('v_adv.profile_id <> v_profile_id AND NOT public.is_staff()') &&
     migrationContent.includes('RAISE EXCEPTION'),
   'RPC não valida autorização de acesso ao perfil'
@@ -126,7 +126,7 @@ runTest(
 runTest(
   'RPC get_admin_platform_analytics aggregates platform discovery health without visitor PII',
   'Admin Analytics',
-  () => 
+  () =>
     migrationContent.includes('get_admin_platform_analytics') &&
     migrationContent.includes('sponsored_share_percent') &&
     migrationContent.includes('active_advertisers'),
@@ -142,7 +142,7 @@ const typesContent = fs.existsSync(typesPath) ? fs.readFileSync(typesPath, 'utf8
 runTest(
   'AdvertiserFunnelAnalytics, FunnelTotals, and AdminPlatformAnalytics exported in app.types.ts',
   'TypeScript Models',
-  () => 
+  () =>
     typesContent.includes('AdvertiserFunnelAnalytics') &&
     typesContent.includes('FunnelTotals') &&
     typesContent.includes('AdminPlatformAnalytics') &&
@@ -156,7 +156,7 @@ const serviceContent = fs.existsSync(servicePath) ? fs.readFileSync(servicePath,
 runTest(
   'advertiserAnalyticsService implements getFunnelAnalytics and getAdminPlatformAnalytics',
   'Services',
-  () => 
+  () =>
     fs.existsSync(servicePath) &&
     serviceContent.includes('getFunnelAnalytics') &&
     serviceContent.includes('getAdminPlatformAnalytics'),
@@ -172,7 +172,7 @@ const advertiserAnalyticsContent = fs.existsSync(advertiserAnalyticsPath) ? fs.r
 runTest(
   'Advertiser Analytics Center page exists with KPI cards, 3-step funnel visualizer, and time series',
   'Advertiser UI',
-  () => 
+  () =>
     fs.existsSync(advertiserAnalyticsPath) &&
     advertiserAnalyticsContent.includes('Funil de Conversão do Anúncio') &&
     advertiserAnalyticsContent.includes('Desempenho ao Longo do Tempo') &&
@@ -197,7 +197,7 @@ const adminAnalyticsContent = fs.existsSync(adminAnalyticsPath) ? fs.readFileSyn
 runTest(
   'Admin Analytics Dashboard page exists with discovery distribution and funnel',
   'Admin UI',
-  () => 
+  () =>
     fs.existsSync(adminAnalyticsPath) &&
     adminAnalyticsContent.includes('Analytics da Plataforma & Descoberta') &&
     adminAnalyticsContent.includes('Distribuição de Tráfego de Descoberta'),
@@ -210,7 +210,7 @@ runTest(
 runTest(
   'Contact interactions are explicitly labeled as Contact Intent (not sales or guaranteed clients)',
   'Commercial Ethics',
-  () => 
+  () =>
     advertiserAnalyticsContent.includes('Intenções de Contato') &&
     !advertiserAnalyticsContent.includes('Vendas Conquistadas'),
   'Terminologia incorreta ou enganosa de conversão'

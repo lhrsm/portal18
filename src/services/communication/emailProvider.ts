@@ -1,6 +1,6 @@
 /**
  * EMAIL PROVIDER ABSTRACTION & DISCREET TEMPLATE ENGINE (Sections 11-18)
- * 
+ *
  * Provides an agnostic interface for transactional and marketing email delivery.
  * All subject lines and message previews are discreet and never disclose adult context.
  */

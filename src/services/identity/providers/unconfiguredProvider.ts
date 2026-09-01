@@ -1,9 +1,9 @@
 import { IdentityVerificationProvider } from '../provider';
-import { 
-  CreateSessionParams, 
-  VerificationSessionResult, 
-  WebhookEventData, 
-  VerificationResult 
+import {
+  CreateSessionParams,
+  VerificationSessionResult,
+  WebhookEventData,
+  VerificationResult
 } from '../types';
 
 export class UnconfiguredIdentityVerificationProvider implements IdentityVerificationProvider {

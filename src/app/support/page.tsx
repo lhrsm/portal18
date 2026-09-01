@@ -10,14 +10,14 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  MessageSquare, 
-  Plus, 
-  Clock, 
-  CheckCircle2, 
-  AlertCircle, 
-  HelpCircle, 
-  ArrowRight 
+import {
+  MessageSquare,
+  Plus,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  HelpCircle,
+  ArrowRight
 } from 'lucide-react';
 
 export default function SupportHubPage() {

@@ -11,15 +11,15 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Alert } from '@/components/ui/Alert';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Megaphone, 
-  ShieldCheck, 
-  Search, 
-  MessageCircle, 
-  Sliders, 
-  Lock, 
-  BarChart3, 
-  Sparkles, 
+import {
+  Megaphone,
+  ShieldCheck,
+  Search,
+  MessageCircle,
+  Sliders,
+  Lock,
+  BarChart3,
+  Sparkles,
   ArrowRight,
   CheckCircle2,
   Camera,

@@ -1,7 +1,7 @@
 import { PaymentProvider } from '../provider';
-import { 
-  CreateCheckoutParams, 
-  CheckoutSessionResult, 
+import {
+  CreateCheckoutParams,
+  CheckoutSessionResult,
   CreatePixPaymentParams,
   PixPaymentResult,
   CreateCardPaymentParams,
@@ -9,16 +9,17 @@ import {
   CreateSubscriptionParams,
   SubscriptionProviderResult,
   NormalizedPaymentDetails,
-  WebhookPaymentEventData, 
+  WebhookPaymentEventData,
   RefundResult,
   ProviderCapabilityMatrix,
   PaymentProviderMetadata,
-  ProviderHealthCheckResult
+  ProviderHealthCheckResult,
+  SandboxCapabilityTestResult
 } from '../types';
 
 export class UnconfiguredPaymentProvider implements PaymentProvider {
   readonly code = 'unconfigured';
-  readonly name = 'Unconfigured Mock Adapter (Kill Switch)';
+  readonly name = 'Internal Test Driver (Local / Sandbox Mock)';
   readonly environment: 'sandbox' | 'production' = 'sandbox';
 
   readonly capabilities: ProviderCapabilityMatrix = {
@@ -49,14 +50,16 @@ export class UnconfiguredPaymentProvider implements PaymentProvider {
     return {
       code: this.code,
       name: this.name,
-      description: 'Driver simulado seguro com Kill Switch 100% ativo para homologação.',
+      description: 'Driver simulado de testes internos para desenvolvimento e suites automatizadas. NÃO É PROVEDOR FINANCEIRO.',
       website: 'https://portal18.com.br',
-      technical_status: 'approved',
-      commercial_status: 'approved',
-      compliance_status: 'approved',
-      overall_status: 'approved',
-      is_sandbox_enabled: true,
-      is_production_enabled: false,
+      is_internal_driver: true,
+      technical_status: 'SANDBOX_PASSED',
+      commercial_status: 'NOT_APPLICABLE',
+      compliance_status: 'NOT_APPLICABLE',
+      adult_business_review_status: 'not_applicable',
+      is_sandbox_configured: true,
+      is_production_configured: false,
+      is_production_eligible: false, // NEVER ELIGIBLE FOR PRODUCTION
       priority: 999,
       supported_methods: ['pix', 'credit_card', 'recurring_card'],
       capabilities: this.capabilities,
@@ -67,17 +70,17 @@ export class UnconfiguredPaymentProvider implements PaymentProvider {
         boost_products_disclosed: true,
         reviewed_at: '2026-09-01T00:00:00Z',
         reviewed_by: 'Architecture Lead',
-        reference_number: 'MOCK-SAFE-01',
-        notes: 'Driver de homologação com Kill Switch obrigatório.',
+        reference_number: 'INTERNAL-MOCK-TEST-DRIVER',
+        notes: 'Driver de teste local / CI. Bloqueado de seleção em produção.',
         approved_products: ['plans_7_30_90', 'consumer_premium', 'boosts'],
       },
       health_status: 'healthy',
       last_health_check: new Date().toISOString(),
+      last_sandbox_test: new Date().toISOString(),
     };
   }
 
   async createCheckout(params: CreateCheckoutParams): Promise<CheckoutSessionResult> {
-    // Kill Switch Guard: Always reject real execution if active
     if (process.env.PORTAL18_PAYMENT_KILL_SWITCH !== 'false') {
       const token = `mock_session_${params.orderNumber}_${Date.now()}`;
       const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
@@ -195,9 +198,30 @@ export class UnconfiguredPaymentProvider implements PaymentProvider {
   async healthCheck(): Promise<ProviderHealthCheckResult> {
     return {
       status: 'healthy',
-      latencyMs: 12,
-      message: 'Unconfigured mock adapter active with zero real transaction output.',
+      latencyMs: 8,
+      message: 'Internal Test Driver active with zero real charges.',
       checkedAt: new Date().toISOString(),
+    };
+  }
+
+  async testSandboxCapabilities(): Promise<SandboxCapabilityTestResult> {
+    return {
+      providerCode: this.code,
+      passedCount: 8,
+      failedCount: 0,
+      skippedCount: 0,
+      overallStatus: 'SANDBOX_PASSED',
+      testedAt: new Date().toISOString(),
+      certifications: [
+        { key: 'auth', name: 'Autenticação Interna', category: 'authentication', status: 'passed' },
+        { key: 'pix_gen', name: 'Geração PIX Mock', category: 'payment_methods', status: 'passed' },
+        { key: 'card_auth', name: 'Autorização Cartão Mock', category: 'payment_methods', status: 'passed' },
+        { key: 'sub_create', name: 'Assinatura Mock', category: 'lifecycle', status: 'passed' },
+        { key: 'refund', name: 'Estorno Mock', category: 'lifecycle', status: 'passed' },
+        { key: 'webhook', name: 'Assinatura Webhook', category: 'webhooks', status: 'passed' },
+        { key: 'idempotency', name: 'Idempotência', category: 'security', status: 'passed' },
+        { key: 'kill_switch', name: 'Kill Switch Guard', category: 'security', status: 'passed' },
+      ],
     };
   }
 }

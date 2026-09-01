@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/client';
-import { 
-  Report, 
-  ReportSeverity, 
-  ReportStatus, 
-  ProfileStatus, 
-  Visibility, 
+import {
+  Report,
+  ReportSeverity,
+  ReportStatus,
+  ProfileStatus,
+  Visibility,
   VerificationStatus,
   AdvertiserProfile
 } from '@/types/app.types';

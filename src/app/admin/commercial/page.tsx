@@ -6,12 +6,12 @@ import { adminCommercialService } from '@/services/adminCommercialService';
 import { commercialCatalogService } from '@/services/commercialCatalogService';
 import { consumerSubscriptionService } from '@/services/consumerSubscriptionService';
 import { discoveryRankingService } from '@/services/discovery/discoveryRankingService';
-import { 
-  AdminCommercialOverview, 
-  OperationalAlert, 
+import {
+  AdminCommercialOverview,
+  OperationalAlert,
   PaymentReadinessCheckItem,
-  CatalogPlan, 
-  BillingPeriod, 
+  CatalogPlan,
+  BillingPeriod,
   ConsumerPlan,
   CommercialInventorySlot
 } from '@/types/app.types';
@@ -22,20 +22,20 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Crown, 
-  Layers, 
-  Clock, 
-  ShieldCheck, 
-  AlertTriangle, 
+import {
+  Crown,
+  Layers,
+  Clock,
+  ShieldCheck,
+  AlertTriangle,
   AlertCircle,
-  FileCheck2, 
-  Users, 
-  Gift, 
-  Compass, 
-  Star, 
-  Download, 
-  FileSpreadsheet, 
+  FileCheck2,
+  Users,
+  Gift,
+  Compass,
+  Star,
+  Download,
+  FileSpreadsheet,
   ShieldAlert,
   CreditCard,
   Lock,
@@ -187,11 +187,11 @@ export default function AdminCommercialOperationsPage() {
           {alerts.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {alerts.map((alt) => (
-                <Card 
-                  key={alt.id} 
-                  variant="glass" 
-                  padding="md" 
-                  style={{ 
+                <Card
+                  key={alt.id}
+                  variant="glass"
+                  padding="md"
+                  style={{
                     borderLeft: `4px solid ${alt.severity === 'critical' ? 'var(--accent-ruby)' : alt.severity === 'warning' ? 'var(--accent-gold)' : 'var(--color-info)'}`,
                     backgroundColor: 'rgba(255, 255, 255, 0.02)'
                   }}
@@ -585,10 +585,10 @@ export default function AdminCommercialOperationsPage() {
               <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                 Relatório CSV com histórico de ciclos, planos e status de assinantes.
               </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                fullWidth 
+              <Button
+                variant="outline"
+                size="sm"
+                fullWidth
                 disabled={isExporting}
                 onClick={() => handleExport('subscriptions')}
               >
@@ -604,10 +604,10 @@ export default function AdminCommercialOperationsPage() {
               <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                 Relatório CSV de campanhas de destaque e utilização de posições.
               </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                fullWidth 
+              <Button
+                variant="outline"
+                size="sm"
+                fullWidth
                 disabled={isExporting}
                 onClick={() => handleExport('campaigns')}
               >
@@ -623,10 +623,10 @@ export default function AdminCommercialOperationsPage() {
               <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                 Relatório CSV do ledger de indicações e bônus concedidos.
               </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                fullWidth 
+              <Button
+                variant="outline"
+                size="sm"
+                fullWidth
                 disabled={isExporting}
                 onClick={() => handleExport('referrals')}
               >

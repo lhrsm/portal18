@@ -346,15 +346,15 @@ export interface CheckoutResponse {
 // ============================================================================
 
 export type CommunicationChannel = 'in_app' | 'email' | 'push';
-export type CommunicationCategory = 
-  | 'security' 
-  | 'transactional' 
-  | 'account' 
-  | 'verification' 
-  | 'billing' 
-  | 'profile' 
-  | 'moderation' 
-  | 'platform' 
+export type CommunicationCategory =
+  | 'security'
+  | 'transactional'
+  | 'account'
+  | 'verification'
+  | 'billing'
+  | 'profile'
+  | 'moderation'
+  | 'platform'
   | 'marketing';
 
 export type CommunicationJobStatus = 'pending' | 'processing' | 'sent' | 'failed' | 'cancelled' | 'dead_letter';
@@ -438,16 +438,16 @@ export interface HelpArticle {
   category_slug?: string;
 }
 
-export type SupportCategory = 
-  | 'account' 
-  | 'security' 
-  | 'verification' 
-  | 'profile' 
-  | 'media' 
-  | 'billing' 
-  | 'technical' 
-  | 'privacy' 
-  | 'report' 
+export type SupportCategory =
+  | 'account'
+  | 'security'
+  | 'verification'
+  | 'profile'
+  | 'media'
+  | 'billing'
+  | 'technical'
+  | 'privacy'
+  | 'report'
   | 'other';
 
 export type SupportTicketStatus = 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed';
@@ -532,7 +532,7 @@ export interface DataRetentionPolicy {
 // Phase 11 Models — Advanced Security, MFA, Sessions, Risk Engine & Incidents
 // ============================================================================
 
-export type SecurityEventType = 
+export type SecurityEventType =
   | 'login_success'
   | 'login_failed'
   | 'password_reset_requested'
@@ -553,7 +553,7 @@ export type SecurityEventType =
 
 export type SecuritySeverity = 'info' | 'low' | 'medium' | 'high' | 'critical';
 
-export type RiskType = 
+export type RiskType =
   | 'account_abuse'
   | 'fake_profile'
   | 'impersonation'

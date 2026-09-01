@@ -7,20 +7,20 @@ import { HelpCategory, HelpArticle } from '@/types/app.types';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { 
-  Search, 
-  HelpCircle, 
-  BookOpen, 
-  MessageSquare, 
-  ShieldCheck, 
-  Lock, 
-  Compass, 
-  User, 
-  Megaphone, 
-  Camera, 
-  Sparkles, 
-  ShieldAlert, 
-  ArrowRight 
+import {
+  Search,
+  HelpCircle,
+  BookOpen,
+  MessageSquare,
+  ShieldCheck,
+  Lock,
+  Compass,
+  User,
+  Megaphone,
+  Camera,
+  Sparkles,
+  ShieldAlert,
+  ArrowRight
 } from 'lucide-react';
 
 export default function HelpCenterPage() {

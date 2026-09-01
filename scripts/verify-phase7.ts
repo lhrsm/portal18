@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 7 MANDATORY TEST SUITE (Sections 137-147 Verification)
  * ============================================================================
- * 
+ *
  * Verifies all 25 mandatory media pipeline, video, security & CDN criteria:
  * - MEDIA-IMG-01: Valid JPEG -> uploaded, processed, pending moderation
  * - MEDIA-IMG-02: EXIF GPS -> GPS removed

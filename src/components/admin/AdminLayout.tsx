@@ -8,18 +8,18 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
-import { 
-  ShieldAlert, 
-  LayoutDashboard, 
-  UserCheck, 
-  Image as ImageIcon, 
-  AlertTriangle, 
-  FileCheck2, 
-  Users, 
-  FileSpreadsheet, 
-  Tag, 
-  Settings, 
-  Menu, 
+import {
+  ShieldAlert,
+  LayoutDashboard,
+  UserCheck,
+  Image as ImageIcon,
+  AlertTriangle,
+  FileCheck2,
+  Users,
+  FileSpreadsheet,
+  Tag,
+  Settings,
+  Menu,
   Lock,
   Crown,
   CreditCard,

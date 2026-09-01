@@ -2,19 +2,19 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { 
-  ShieldCheck, 
-  MapPin, 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle, 
-  ShieldAlert, 
-  ExternalLink, 
-  Copy, 
-  Check, 
-  ArrowRight, 
-  Sparkles, 
-  Camera, 
+import {
+  ShieldCheck,
+  MapPin,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  ShieldAlert,
+  ExternalLink,
+  Copy,
+  Check,
+  ArrowRight,
+  Sparkles,
+  Camera,
   LifeBuoy,
   Share2
 } from 'lucide-react';

@@ -1,9 +1,9 @@
 # COMPARATIVO TÉCNICO E REGULATÓRIO DE PROVEDORES DE AGE ASSURANCE (ECA DIGITAL & LGPD)
 
-**Documento:** Análise de Viabilidade Técnica, Comercial e de Privacidade  
-**Plataforma:** Portal Nacional 18+  
-**Data:** 28 de Agosto de 2026  
-**Finalidade:** Seleção e homologação de provedor de Verificação de Maioridade para Visitantes  
+**Documento:** Análise de Viabilidade Técnica, Comercial e de Privacidade
+**Plataforma:** Portal Nacional 18+
+**Data:** 28 de Agosto de 2026
+**Finalidade:** Seleção e homologação de provedor de Verificação de Maioridade para Visitantes
 
 ---
 

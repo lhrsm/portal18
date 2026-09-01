@@ -12,20 +12,20 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  ShieldCheck, 
-  ArrowLeft, 
-  Lock, 
-  History, 
-  Sparkles, 
-  UserX, 
-  Download, 
-  Trash2, 
-  CheckCircle2, 
-  FileText, 
-  AlertTriangle, 
-  X, 
-  RotateCcw 
+import {
+  ShieldCheck,
+  ArrowLeft,
+  Lock,
+  History,
+  Sparkles,
+  UserX,
+  Download,
+  Trash2,
+  CheckCircle2,
+  FileText,
+  AlertTriangle,
+  X,
+  RotateCcw
 } from 'lucide-react';
 
 export default function PrivacyPage() {

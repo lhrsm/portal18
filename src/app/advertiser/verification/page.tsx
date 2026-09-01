@@ -10,17 +10,17 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
-import { 
-  ShieldCheck, 
-  ShieldAlert, 
-  Clock, 
-  AlertTriangle, 
-  FileCheck2, 
-  CheckCircle2, 
-  ArrowRight, 
-  RefreshCw, 
-  Lock, 
-  ArrowLeft 
+import {
+  ShieldCheck,
+  ShieldAlert,
+  Clock,
+  AlertTriangle,
+  FileCheck2,
+  CheckCircle2,
+  ArrowRight,
+  RefreshCw,
+  Lock,
+  ArrowLeft
 } from 'lucide-react';
 
 export default function AdvertiserVerificationPage() {

@@ -2,7 +2,7 @@
  * ============================================================================
  * MANDATORY SECURITY TEST SUITE (Section 39 Verification)
  * ============================================================================
- * 
+ *
  * Executes automated verification of all required security tests:
  * - Test A: Cross-user profile editing (User A -> User B) -> DENIED
  * - Test B: Cross-advertiser profile editing (Adv A -> Adv B) -> DENIED

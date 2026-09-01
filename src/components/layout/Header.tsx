@@ -8,16 +8,16 @@ import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Sheet } from '@/components/ui/Sheet';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { 
-  Menu, 
-  User, 
-  Megaphone, 
-  LogOut, 
-  Search, 
-  ShieldCheck, 
-  Heart, 
-  MapPin, 
-  Tag, 
+import {
+  Menu,
+  User,
+  Megaphone,
+  LogOut,
+  Search,
+  ShieldCheck,
+  Heart,
+  MapPin,
+  Tag,
   Home,
   HelpCircle,
   Users,
@@ -141,10 +141,10 @@ export function Header() {
       </header>
 
       {/* Mobile Drawer Navigation */}
-      <Sheet 
+      <Sheet
         id="mobile-nav-drawer"
-        isOpen={mobileMenuOpen} 
-        onClose={() => setMobileMenuOpen(false)} 
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
         title="Menu Principal"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '0.5rem 0' }}>

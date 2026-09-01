@@ -2,7 +2,7 @@
  * ============================================================================
  * PHASE 3 MANDATORY TEST SUITE (Section 95-98 Verification)
  * ============================================================================
- * 
+ *
  * Verifies all 19 mandatory criteria:
  * - ADV-PROFILE-01: Advertiser alters own stage name -> PASS
  * - ADV-PROFILE-02: Advertiser attempts to edit profile of another user -> DENIED

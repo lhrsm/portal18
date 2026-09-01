@@ -8,14 +8,14 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { 
-  BarChart3, 
-  Eye, 
-  Phone, 
-  Layers, 
-  TrendingUp, 
-  Sparkles, 
-  Users, 
+import {
+  BarChart3,
+  Eye,
+  Phone,
+  Layers,
+  TrendingUp,
+  Sparkles,
+  Users,
   Megaphone,
   CheckCircle2,
   ShieldCheck,

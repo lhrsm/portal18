@@ -56,7 +56,7 @@ runTest(
 runTest(
   'consumer_plans table created and seeded with Free and Premium tiers',
   'Consumer Plans',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.consumer_plans') &&
     migrationContent.includes('Portal18 Free') &&
     migrationContent.includes('Portal18 Premium'),
@@ -66,7 +66,7 @@ runTest(
 runTest(
   'consumer_plan_pricing table created with policy versioning and integer cents BRL',
   'Pricing Matrix',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.consumer_plan_pricing') &&
     migrationContent.includes('price_cents integer NOT NULL') &&
     migrationContent.includes('uq_consumer_plan_period_policy'),
@@ -76,7 +76,7 @@ runTest(
 runTest(
   'consumer_subscriptions table created independently from advertiser subscriptions',
   'Domain Separation',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.consumer_subscriptions') &&
     migrationContent.includes('user_profile_id uuid NOT NULL REFERENCES public.profiles(id)') &&
     migrationContent.includes('plan_id uuid NOT NULL REFERENCES public.consumer_plans(id)'),
@@ -86,7 +86,7 @@ runTest(
 runTest(
   'advertiser_media extended with audience column (public, age_verified, consumer_premium, private)',
   'Media Audience',
-  () => 
+  () =>
     migrationContent.includes('audience text NOT NULL DEFAULT') &&
     migrationContent.includes('consumer_premium') &&
     migrationContent.includes('idx_adv_media_audience'),
@@ -96,7 +96,7 @@ runTest(
 runTest(
   'advertiser_reviews table created with structured dimensional ratings and self-review guard trigger',
   'Reviews Schema',
-  () => 
+  () =>
     migrationContent.includes('CREATE TABLE IF NOT EXISTS public.advertiser_reviews') &&
     migrationContent.includes('rating_communication') &&
     migrationContent.includes('rating_accuracy') &&
@@ -109,7 +109,7 @@ runTest(
 runTest(
   'RPC get_consumer_catalog returns consumer plans with multi-period pricing',
   'Catalog RPC',
-  () => 
+  () =>
     migrationContent.includes('get_consumer_catalog') &&
     migrationContent.includes('consumer_plans') &&
     migrationContent.includes('consumer_plan_pricing'),
@@ -119,7 +119,7 @@ runTest(
 runTest(
   'RPC get_consumer_entitlements evaluates server-authoritative member entitlements',
   'Entitlements RPC',
-  () => 
+  () =>
     migrationContent.includes('get_consumer_entitlements') &&
     migrationContent.includes('can_watch_premium_videos') &&
     migrationContent.includes('full_review_access'),
@@ -129,7 +129,7 @@ runTest(
 runTest(
   'RPC get_profile_reviews respects viewer entitlement (truncated preview vs full text)',
   'Review Entitlement RPC',
-  () => 
+  () =>
     migrationContent.includes('get_profile_reviews') &&
     migrationContent.includes('v_can_see_full_text') &&
     migrationContent.includes('is_truncated'),
@@ -139,7 +139,7 @@ runTest(
 runTest(
   'RPC submit_advertiser_review sanitizes input and queues for moderation',
   'Review Submission RPC',
-  () => 
+  () =>
     migrationContent.includes('submit_advertiser_review') &&
     migrationContent.includes('regexp_replace') &&
     migrationContent.includes("'submitted'"),
@@ -155,7 +155,7 @@ const typesContent = fs.existsSync(typesPath) ? fs.readFileSync(typesPath, 'utf8
 runTest(
   'ConsumerPlan, ConsumerSubscription, ConsumerEntitlements, AdvertiserReview exported in app.types.ts',
   'TypeScript Types',
-  () => 
+  () =>
     typesContent.includes('ConsumerPlan') &&
     typesContent.includes('ConsumerSubscription') &&
     typesContent.includes('ConsumerEntitlements') &&
@@ -170,7 +170,7 @@ const consumerServiceContent = fs.existsSync(consumerServicePath) ? fs.readFileS
 runTest(
   'consumerSubscriptionService implements getCatalog and getConsumerEntitlements',
   'Consumer Service',
-  () => 
+  () =>
     fs.existsSync(consumerServicePath) &&
     consumerServiceContent.includes('getCatalog') &&
     consumerServiceContent.includes('getConsumerEntitlements'),
@@ -183,7 +183,7 @@ const reviewServiceContent = fs.existsSync(reviewServicePath) ? fs.readFileSync(
 runTest(
   'reviewService implements getProfileReviews, submitReview, getAdminReviewQueue, and moderateReview',
   'Review Service',
-  () => 
+  () =>
     fs.existsSync(reviewServicePath) &&
     reviewServiceContent.includes('getProfileReviews') &&
     reviewServiceContent.includes('submitReview') &&
@@ -201,7 +201,7 @@ const premiumPageContent = fs.existsSync(premiumPagePath) ? fs.readFileSync(prem
 runTest(
   'Presentation page (/premium) includes period selector, feature cards, and transparent FAQ',
   'Premium Presentation UI',
-  () => 
+  () =>
     fs.existsSync(premiumPagePath) &&
     premiumPageContent.includes('selectedPeriodSlug') &&
     premiumPageContent.includes('Vídeos Exclusivos') &&
@@ -215,7 +215,7 @@ const accountPageContent = fs.existsSync(accountPagePath) ? fs.readFileSync(acco
 runTest(
   'User Account page displays Portal18 Premium member status and benefit summary',
   'Account UI',
-  () => 
+  () =>
     fs.existsSync(accountPagePath) &&
     accountPageContent.includes('Portal18 Premium') &&
     accountPageContent.includes('consumerEntitlements'),
@@ -228,7 +228,7 @@ const profileClientContent = fs.existsSync(profileClientPath) ? fs.readFileSync(
 runTest(
   'ProfileViewClient renders exclusive video locked cards and moderated reviews with submission modal',
   'Profile Client UI',
-  () => 
+  () =>
     fs.existsSync(profileClientPath) &&
     profileClientContent.includes('Vídeo Exclusivo Premium') &&
     profileClientContent.includes('Avaliações da Comunidade') &&
@@ -242,7 +242,7 @@ const galleryPageContent = fs.existsSync(galleryPagePath) ? fs.readFileSync(gall
 runTest(
   'Advertiser Gallery page allows designating video audience (18+ Público vs Premium)',
   'Gallery UI',
-  () => 
+  () =>
     fs.existsSync(galleryPagePath) &&
     galleryPageContent.includes('handleToggleVideoAudience') &&
     galleryPageContent.includes('consumer_premium'),
@@ -255,7 +255,7 @@ const adminReviewsContent = fs.existsSync(adminReviewsPath) ? fs.readFileSync(ad
 runTest(
   'Admin Review Moderation page allows filtering and approving/rejecting submitted reviews',
   'Admin Moderation UI',
-  () => 
+  () =>
     fs.existsSync(adminReviewsPath) &&
     adminReviewsContent.includes('Moderação de Avaliações') &&
     adminReviewsContent.includes('handleModerate'),

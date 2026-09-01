@@ -13,18 +13,18 @@ import { FormField } from '@/components/ui/FormField';
 import { Badge } from '@/components/ui/Badge';
 import { Alert } from '@/components/ui/Alert';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Lock, 
-  ShieldCheck, 
-  Smartphone, 
-  ArrowLeft, 
-  KeyRound, 
-  Activity, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Copy, 
-  RefreshCw, 
-  X 
+import {
+  Lock,
+  ShieldCheck,
+  Smartphone,
+  ArrowLeft,
+  KeyRound,
+  Activity,
+  CheckCircle2,
+  AlertTriangle,
+  Copy,
+  RefreshCw,
+  X
 } from 'lucide-react';
 
 export default function AccountSecurityPage() {

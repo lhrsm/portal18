@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PaymentProviderFactory } from '@/services/payments/factory';
 import { PaymentProviderRegistry } from '@/services/payments/registry';
+import { PaymentStateMachine } from '@/services/payments/stateMachine';
+import { NormalizedPaymentStatus } from '@/services/payments/types';
 import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: NextRequest) {
@@ -40,8 +42,33 @@ export async function POST(req: NextRequest) {
     // 4. Parse Normalized Event
     const event = await provider.parseWebhookEvent(headers, rawBody);
 
-    // 5. Invoke Secure Database RPC (Idempotency Guard + Replay Protection)
+    // 5. Query Current Local Payment State for Monotonic Transition Check
     const supabase = await createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: existingPayment } = await (supabase.from('payments') as any)
+      .select('status')
+      .eq('provider_payment_reference', event.providerPaymentReference)
+      .maybeSingle();
+
+    const paymentRecord = existingPayment as { status?: string } | null;
+    if (paymentRecord?.status) {
+      const currentStatus = paymentRecord.status as NormalizedPaymentStatus;
+      const nextStatus = (event.status || 'pending') as NormalizedPaymentStatus;
+      const transitionCheck = PaymentStateMachine.canTransition(currentStatus, nextStatus);
+
+      if (!transitionCheck.allowed && transitionCheck.isOutOfOrder) {
+        console.warn(`[WEBHOOK_MONOTONIC] Out-of-order webhook ignored: ${transitionCheck.reason}`);
+        return NextResponse.json({
+          received: true,
+          provider: provider.code,
+          processed: false,
+          ignored_out_of_order: true,
+          reason: transitionCheck.reason,
+        });
+      }
+    }
+
+    // 6. Invoke Secure Database RPC (Idempotency Guard + Replay Protection)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase.rpc as any)('process_payment_webhook', {
       p_provider: provider.code,
