@@ -58,11 +58,19 @@ export default function ConsumerPremiumPage() {
       return;
     }
 
-    showToast({
-      type: 'info',
-      title: 'Assinaturas em Homologação',
-      message: `O Portal18 Premium (${selectedPeriodSlug}) estará disponível para contratação em breve. No momento, o acesso básico e todos os recursos de contato continuam 100% gratuitos!`,
-    });
+    if (plan.slug === 'free') {
+      showToast({
+        type: 'info',
+        title: 'Plano Gratuito',
+        message: 'Você já possui o plano básico ativo por padrão.',
+      });
+      return;
+    }
+
+    const selectedPeriod = periods.find((p) => p.slug === selectedPeriodSlug) || periods[0];
+    if (selectedPeriod) {
+      router.push(`/checkout?product_type=consumer_subscription&product_id=${plan.id}&period_id=${selectedPeriod.id}`);
+    }
   };
 
   const formatPrice = (cents?: number) => {

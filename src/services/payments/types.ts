@@ -166,6 +166,19 @@ export type NormalizedPaymentStatus =
   | 'chargeback'
   | 'disputed';
 
+export type CanonicalOrderStatus =
+  | 'draft'
+  | 'pending'
+  | 'pending_payment'
+  | 'processing'
+  | 'paid'
+  | 'fulfilled'
+  | 'cancelled'
+  | 'expired'
+  | 'refunded'
+  | 'partially_refunded'
+  | 'disputed';
+
 export type ChargebackStatus =
   | 'received'
   | 'under_review'
@@ -226,6 +239,88 @@ export interface PaymentProviderMetadata {
   health_status: ProviderHealthState;
   last_health_check?: string | null;
   last_sandbox_test?: string | null;
+}
+
+export interface CommercialSnapshot {
+  product_name: string;
+  plan_name: string;
+  billing_period: string;
+  duration_days: number;
+  unit_price_minor: number; // in cents BRL
+  discount_minor: number;
+  total_minor: number;
+  currency: string;
+  pricing_policy_version: string;
+  entitlement_policy_version: string;
+  created_at?: string;
+}
+
+export interface CanonicalOrder {
+  id: string;
+  profile_id: string;
+  advertiser_id?: string | null;
+  consumer_profile_id?: string | null;
+  order_number: string;
+  product_type: 'advertiser_subscription' | 'consumer_subscription' | 'boost' | 'campaign';
+  product_id: string;
+  billing_period_id?: string | null;
+  subtotal: number;
+  discount_amount: number;
+  total_amount: number;
+  subtotal_minor: number;
+  discount_minor: number;
+  total_minor: number;
+  currency: string;
+  status: CanonicalOrderStatus;
+  payment_status: NormalizedPaymentStatus;
+  selected_payment_method: 'pix' | 'credit_card' | 'recurring_card' | 'boost_instant';
+  provider_code?: string | null;
+  provider_payment_reference?: string | null;
+  commercial_snapshot: CommercialSnapshot;
+  expires_at: string;
+  completed_at?: string | null;
+  cancelled_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateOrderParams {
+  profileId: string;
+  productType: 'advertiser_subscription' | 'consumer_subscription' | 'boost' | 'campaign';
+  productId: string;
+  billingPeriodId?: string;
+  couponCode?: string;
+  paymentMethod?: 'pix' | 'credit_card' | 'recurring_card';
+}
+
+export interface InitiatePaymentParams {
+  orderId: string;
+  paymentMethod: 'pix' | 'credit_card' | 'recurring_card';
+  cardToken?: string;
+  installments?: number;
+}
+
+export interface InitiatePaymentResult {
+  success: boolean;
+  orderId: string;
+  paymentMethod: string;
+  providerCode: string;
+  providerPaymentReference: string;
+  status: NormalizedPaymentStatus;
+  pixQrCodeText?: string;
+  pixQrCodeBase64?: string;
+  isTestSimulation: boolean;
+  expiresAt: string;
+  error?: string;
+}
+
+export interface OrderFulfillmentResult {
+  success: boolean;
+  orderId: string;
+  status: string;
+  alreadyFulfilled?: boolean;
+  fulfilledAt?: string;
+  error?: string;
 }
 
 export interface CreateCheckoutParams {

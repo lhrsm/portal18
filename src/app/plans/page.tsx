@@ -51,7 +51,7 @@ export default function PublicPlansPage() {
 
   const handleSelectPlan = async (plan: CatalogPlan) => {
     if (!user) {
-      router.push(`/login?redirect=/advertiser/subscription/plans`);
+      router.push(`/login?redirect=/plans`);
       return;
     }
 
@@ -60,11 +60,10 @@ export default function PublicPlansPage() {
       return;
     }
 
-    showToast({
-      type: 'info',
-      title: 'Planos em Homologação',
-      message: `O plano ${plan.name} (${selectedPeriodSlug}) estará disponível para contratação em breve. Durante este período, o modo gratuito e o trial continuam 100% funcionais!`,
-    });
+    const selectedPeriod = periods.find((p) => p.slug === selectedPeriodSlug) || periods[0];
+    if (selectedPeriod) {
+      router.push(`/checkout?product_type=advertiser_subscription&product_id=${plan.id}&period_id=${selectedPeriod.id}`);
+    }
   };
 
   const formatPrice = (cents?: number) => {
