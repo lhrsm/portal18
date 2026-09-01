@@ -83,11 +83,11 @@ export function ThemeToggle({ variant = 'dropdown' }: ThemeToggleProps) {
         aria-haspopup="true"
         aria-expanded={isOpen}
         style={{
-          background: 'transparent',
-          border: '1px solid var(--border-subtle)',
+          background: 'rgba(255, 255, 255, 0.05)',
+          border: '1px solid var(--brand-border-subtle)',
           borderRadius: 'var(--radius-md)',
           padding: '0.45rem 0.65rem',
-          color: 'var(--text-primary)',
+          color: 'var(--brand-text-primary)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',

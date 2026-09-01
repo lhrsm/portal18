@@ -40,6 +40,20 @@
   --text-muted: #64748b;
   --text-inverse: #0a0c10;
 
+  /* Brand Dark Surface Tokens (Permanent Luxury Dark Frame for Header & Footer) */
+  --brand-surface: #0a0c10;
+  --brand-surface-elevated: #12161f;
+  --brand-surface-glass: rgba(10, 12, 16, 0.92);
+  --brand-text-primary: #f8fafc;
+  --brand-text-secondary: #cbd5e1;
+  --brand-text-muted: #94a3b8;
+  --brand-border: rgba(255, 255, 255, 0.12);
+  --brand-border-subtle: rgba(255, 255, 255, 0.08);
+  --brand-border-medium: rgba(255, 255, 255, 0.18);
+  --brand-link: #e2e8f0;
+  --brand-link-hover: #ffffff;
+  --brand-link-active: #e5b95c;
+
   /* Borders & Shadows */
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-medium: rgba(255, 255, 255, 0.15);
@@ -1395,16 +1409,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* ============================================================================
- * 7. HEADER & NAVIGATION STYLES (Phase 24A)
+ * 7. HEADER & NAVIGATION STYLES (Phase 24A / Refined 27H.1)
  * ============================================================================ */
 .header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(10, 12, 16, 0.92);
+  background: var(--brand-surface-glass);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--brand-border-subtle);
   height: 64px;
   display: flex;
   align-items: center;
@@ -1469,20 +1483,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border-radius: var(--radius-sm);
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--brand-link);
   text-decoration: none;
   transition: all var(--transition-fast);
 }
 
 .nav-link:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--brand-link-hover);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .nav-link.active {
   color: var(--accent-gold);
   font-weight: 600;
-  background: rgba(229, 185, 92, 0.1);
+  background: rgba(229, 185, 92, 0.12);
+}
+
+.nav-link:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
 }
 
 .header-actions {
@@ -1491,14 +1510,57 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   gap: 0.5rem;
 }
 
+.header-btn-ghost {
+  color: var(--brand-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.header-btn-ghost:hover {
+  color: var(--brand-text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.header-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--brand-text-primary);
+  border: 1px solid var(--brand-border-medium);
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.header-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
 .btn-mobile-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-subtle);
+  background: var(--brand-surface-elevated);
+  border: 1px solid var(--brand-border-subtle);
   border-radius: var(--radius-sm);
-  color: var(--text-primary);
+  color: var(--brand-text-primary);
   cursor: pointer;
   width: 44px;
   height: 44px;
@@ -1509,8 +1571,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .btn-mobile-toggle:hover {
-  background: var(--bg-elevated);
-  border-color: var(--border-medium);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--brand-border-medium);
 }
 
 @media (min-width: 900px) {
@@ -1535,7 +1597,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-size: 0.95rem;
   font-weight: 500;
   text-decoration: none;
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .mobile-nav-link:hover {
@@ -1544,14 +1606,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* ============================================================================
- * 8. FOOTER STYLES (Phase 24A — Reconstruction)
+ * 8. FOOTER STYLES (Phase 24A / Refined 27H.1)
  * ============================================================================ */
 .footer {
   background: linear-gradient(180deg, #0d1117 0%, #06080b 100%);
-  border-top: 1px solid var(--border-medium);
+  border-top: 1px solid var(--brand-border-medium);
   padding: 4.5rem 0 0 0;
   margin-top: auto;
-  color: var(--text-secondary);
+  color: var(--brand-text-secondary);
   font-size: 0.9rem;
 }
 
@@ -1576,7 +1638,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 .footer-tagline {
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: var(--brand-text-secondary);
   line-height: 1.6;
   max-width: 280px;
 }
@@ -1587,12 +1649,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   gap: 0.6rem;
   padding: 0.85rem;
   border-radius: var(--radius-md);
-  background: rgba(229, 185, 92, 0.06);
-  border: 1px solid rgba(229, 185, 92, 0.2);
+  background: rgba(229, 185, 92, 0.08);
+  border: 1px solid rgba(229, 185, 92, 0.28);
   font-size: 0.775rem;
-  color: var(--text-secondary);
+  color: var(--brand-text-secondary);
   line-height: 1.4;
   max-width: 320px;
+}
+
+.footer-compliance-badge strong {
+  color: var(--brand-text-primary);
 }
 
 .footer-links-col {
@@ -1608,7 +1674,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-family: var(--font-heading);
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--brand-text-primary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -1620,7 +1686,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .footer-link {
-  color: var(--text-secondary);
+  color: var(--brand-link);
   font-size: 0.85rem;
   text-decoration: none;
   transition: all var(--transition-fast);
@@ -1628,8 +1694,32 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .footer-link:hover {
-  color: var(--accent-gold);
+  color: var(--brand-link-hover);
   transform: translateX(2px);
+}
+
+.footer-link:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-link:hover {
+    transform: none;
+  }
+}
+
+html[data-a11y-motion="reduced"] .footer-link:hover {
+  transform: none !important;
+}
+
+.footer-link-ruby {
+  color: var(--accent-ruby-hover) !important;
+  font-weight: 600;
+}
+
+.footer-link-ruby:hover {
+  color: #ff809b !important;
 }
 
 /* Mobile Accordions */
@@ -1645,7 +1735,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .footer-accordion-item {
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--brand-border-subtle);
 }
 
 .footer-accordion-header {
@@ -1656,7 +1746,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   justify-content: space-between;
   background: none;
   border: none;
-  color: var(--text-primary);
+  color: var(--brand-text-primary);
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 600;
@@ -1671,7 +1761,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 .footer-accordion-chevron {
   transition: transform var(--transition-normal);
-  color: var(--text-muted);
+  color: var(--brand-text-muted);
 }
 
 .footer-accordion-chevron.open {
@@ -1693,7 +1783,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 /* Footer Bottom Bar */
 .footer-bottom {
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--brand-border-subtle);
   padding: 1.75rem 0;
   background: #050608;
 }
@@ -1705,7 +1795,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   align-items: center;
   text-align: center;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--brand-text-muted);
 }
 
 @media (min-width: 768px) {
@@ -1733,7 +1823,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .footer-bottom-links a {
-  color: var(--text-secondary);
+  color: var(--brand-text-secondary);
   transition: color var(--transition-fast);
 }
 
@@ -1742,7 +1832,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .footer-copyright {
-  color: var(--text-muted);
+  color: var(--brand-text-muted);
 }
 
 /* ============================================================================
@@ -2401,6 +2491,16 @@ html[data-a11y-contrast="high"] {
   --bg-primary: #000000 !important;
   --bg-secondary: #0a0c10 !important;
   --bg-tertiary: #121620 !important;
+
+  /* Brand Surface High Contrast */
+  --brand-text-primary: #ffffff !important;
+  --brand-text-secondary: #f8fafc !important;
+  --brand-text-muted: #cbd5e1 !important;
+  --brand-border: #94a3b8 !important;
+  --brand-border-subtle: #64748b !important;
+  --brand-border-medium: #94a3b8 !important;
+  --brand-link: #ffffff !important;
+  --brand-link-hover: #fbbf24 !important;
 }
 
 html[data-theme="light"][data-a11y-contrast="high"] {
@@ -2413,6 +2513,16 @@ html[data-theme="light"][data-a11y-contrast="high"] {
   --bg-primary: #ffffff !important;
   --bg-secondary: #f8fafc !important;
   --bg-tertiary: #e2e8f0 !important;
+
+  /* Brand Surface High Contrast (Keeps dark frame crisp with white text) */
+  --brand-text-primary: #ffffff !important;
+  --brand-text-secondary: #f8fafc !important;
+  --brand-text-muted: #cbd5e1 !important;
+  --brand-border: #94a3b8 !important;
+  --brand-border-subtle: #64748b !important;
+  --brand-border-medium: #94a3b8 !important;
+  --brand-link: #ffffff !important;
+  --brand-link-hover: #fbbf24 !important;
 }
 
 html[data-a11y-contrast="high"] .card,

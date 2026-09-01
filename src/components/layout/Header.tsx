@@ -71,17 +71,13 @@ export function Header() {
           <div className="header-actions">
             {!user ? (
               <>
-                <Link href="/login" className="hide-mobile">
-                  <Button variant="ghost" size="sm">
-                    Entrar
-                  </Button>
+                <Link href="/login" className="hide-mobile header-btn-ghost">
+                  Entrar
                 </Link>
-                <Link href="/register" className="hide-mobile">
-                  <Button variant="secondary" size="sm">
-                    Criar conta
-                  </Button>
+                <Link href="/register" className="hide-mobile header-btn-secondary">
+                  Criar conta
                 </Link>
-                <Link href="/advertiser/start">
+                <Link href="/advertiser/start" style={{ textDecoration: 'none' }}>
                   <Button variant="ruby" size="sm" leftIcon={<Megaphone size={14} />} style={{ fontWeight: 700, minHeight: '36px' }}>
                     Anunciar
                   </Button>
