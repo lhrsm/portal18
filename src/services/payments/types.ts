@@ -382,6 +382,108 @@ export interface ProcessRefundResult {
   error?: string;
 }
 
+export interface PaymentSettlement {
+  id: string;
+  provider_code: string;
+  settlement_reference: string;
+  settlement_date: string;
+  currency: string;
+  gross_minor: number;
+  fees_minor: number;
+  refunds_minor: number;
+  chargebacks_minor: number;
+  adjustments_minor: number;
+  net_minor: number;
+  status: 'expected' | 'pending' | 'received' | 'reconciled' | 'mismatch' | 'requires_review' | 'closed';
+  environment: 'test' | 'sandbox' | 'production';
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaymentSettlementItem {
+  id: string;
+  settlement_id: string;
+  item_type: 'payment' | 'refund' | 'chargeback' | 'provider_fee' | 'adjustment';
+  item_id?: string;
+  amount_minor: number;
+  currency: string;
+  description?: string;
+  created_at: string;
+}
+
+export interface FinancialPeriod {
+  id: string;
+  period_key: string;
+  start_date: string;
+  end_date: string;
+  status: 'open' | 'closing' | 'closed' | 'reopened';
+  closed_at?: string | null;
+  closed_by?: string | null;
+  reopen_reason?: string | null;
+  snapshot: {
+    gross_charges_minor: number;
+    refunds_minor: number;
+    chargebacks_minor: number;
+    provider_fees_minor: number;
+    adjustments_minor: number;
+    net_settlement_minor: number;
+    unresolved_discrepancies_count: number;
+    closed_at?: string;
+    environment: string;
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FiscalDocument {
+  id: string;
+  order_id?: string | null;
+  document_type: 'service_invoice' | 'other';
+  provider_code: string;
+  external_reference?: string | null;
+  status: 'not_required_review' | 'pending' | 'issuing' | 'issued' | 'failed' | 'cancel_requested' | 'cancelled' | 'requires_review';
+  environment: 'test' | 'sandbox' | 'production';
+  review_flags: {
+    accounting_review: string;
+    legal_review: string;
+    fiscal_provider: string;
+    business_tax_classification: string;
+    nfs_e_active: boolean;
+  };
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export type GoNoGoGateName =
+  | 'TECHNICAL'
+  | 'SECURITY'
+  | 'COMMERCIAL'
+  | 'COMPLIANCE'
+  | 'LEGAL'
+  | 'ACCOUNTING'
+  | 'FISCAL'
+  | 'OPERATIONS';
+
+export type GateStatus = 'PASS' | 'FAIL' | 'BLOCKED' | 'PENDING_EXTERNAL_REVIEW' | 'NOT_CONFIGURED';
+
+export interface ProductionGoNoGoGate {
+  gate: GoNoGoGateName;
+  title: string;
+  status: GateStatus;
+  description: string;
+  requirements: string[];
+  blockers: string[];
+}
+
+export interface ProductionReadinessReport {
+  overallStatus: 'BLOCKED' | 'NOT_ELIGIBLE' | 'READY';
+  killSwitchState: 'ACTIVE' | 'DISABLED';
+  evaluatedAt: string;
+  gates: ProductionGoNoGoGate[];
+}
+
 export interface BillingCycle {
   id: string;
   subscription_type: 'advertiser' | 'consumer';
