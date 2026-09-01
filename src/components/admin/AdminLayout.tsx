@@ -58,6 +58,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/risk', label: 'Risco & Antifraude', icon: <Activity size={18} />, allowed: isAdmin },
     { href: '/admin/plans', label: 'Planos & Preços', icon: <Crown size={18} />, allowed: isAdmin },
     { href: '/admin/payments', label: 'Faturamento', icon: <CreditCard size={18} />, allowed: isAdmin },
+    { href: '/admin/payments/providers', label: 'Provedores de Pagamento', icon: <CreditCard size={18} />, allowed: isAdmin },
     { href: '/admin/subscriptions', label: 'Assinaturas', icon: <FileCheck2 size={18} />, allowed: isAdmin },
     { href: '/admin/referrals', label: 'Indicações', icon: <Gift size={18} />, allowed: isAdmin },
     { href: '/admin/support', label: 'Suporte', icon: <LifeBuoy size={18} />, allowed: isModerator },
