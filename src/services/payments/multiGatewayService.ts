@@ -4,7 +4,10 @@ import {
   PaymentProviderMetadata,
   ProviderHomologationStage,
   ProviderHealthCheckResult,
-  SandboxCapabilityTestResult
+  SandboxCapabilityTestResult,
+  CommercialContactStatus,
+  CommercialApprovalStatus,
+  ProductApprovalState
 } from './types';
 
 export const multiGatewayService = {
@@ -69,6 +72,89 @@ export const multiGatewayService = {
       return { success: data?.success ?? true };
     } catch (err: any) {
       return { success: false, error: err.message || 'Erro ao registrar homologação.' };
+    }
+  },
+
+  /**
+   * Updates commercial contact status and evidence reference with audit trail.
+   */
+  async updateCommercialStatus(
+    providerCode: string,
+    contactStatus: CommercialContactStatus,
+    commercialStatus: CommercialApprovalStatus,
+    protocolNumber?: string,
+    notes?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const supabase = createClient();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase.from('payment_providers') as any)
+        .update({
+          contact_status: contactStatus,
+          commercial_status: commercialStatus,
+          approval_evidence: {
+            protocol_number: protocolNumber || null,
+            contact_date: new Date().toISOString(),
+            last_interaction: new Date().toISOString(),
+            reviewer_name: 'Admin Staff',
+            restrictions_notes: notes || null,
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq('code', providerCode);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      await this.recordHomologationStep(
+        providerCode,
+        commercialStatus === 'approved' ? 'PRODUCTION_APPROVED' : 'PRODUCTION_REVIEW',
+        `commercial_status_updated_${contactStatus}`,
+        protocolNumber,
+        notes
+      );
+
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Erro ao atualizar status comercial.' };
+    }
+  },
+
+  /**
+   * Updates product-specific and method-specific approval status.
+   */
+  async updateProductApproval(
+    providerCode: string,
+    productType: 'advertiser_subscription' | 'consumer_subscription' | 'boost',
+    paymentMethod: 'pix' | 'credit_card' | 'recurring_card',
+    status: ProductApprovalState
+  ): Promise<{ success: boolean; error?: string }> {
+    const supabase = createClient();
+    try {
+      const provider = await this.getProviderDetails(providerCode);
+      if (!provider) return { success: false, error: 'Provedor não encontrado.' };
+
+      const currentApprovals = provider.product_approvals || {
+        advertiser_subscription: { pix: 'not_requested', credit_card: 'not_requested', recurring_card: 'not_requested' },
+        consumer_subscription: { pix: 'not_requested', credit_card: 'not_requested', recurring_card: 'not_requested' },
+        boost: { pix: 'not_requested', credit_card: 'not_requested', recurring_card: 'not_requested' },
+      };
+
+      currentApprovals[productType][paymentMethod] = status;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase.from('payment_providers') as any)
+        .update({
+          product_approvals: currentApprovals,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('code', providerCode);
+
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Erro ao atualizar aprovação de produto.' };
     }
   },
 

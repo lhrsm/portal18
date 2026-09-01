@@ -95,7 +95,7 @@ CREATE INDEX IF NOT EXISTS idx_media_res_adv_status ON public.media_upload_reser
 
 -- 7. Storage Buckets Setup (Section 8 & 9)
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES 
+VALUES
     ('advertiser-private-media', 'advertiser-private-media', false, 314572800, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'video/mp4', 'video/webm', 'video/quicktime']),
     ('advertiser-media-public', 'advertiser-media-public', true, 52428800, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'video/mp4', 'video/webm'])
 ON CONFLICT (id) DO UPDATE SET
@@ -156,16 +156,16 @@ BEGIN
     -- Atomic Quota Calculation (Section 74)
     SELECT count(*) INTO v_current_count
     FROM public.advertiser_media
-    WHERE advertiser_id = v_adv_id 
-      AND media_type = p_media_type 
-      AND deleted_at IS NULL 
+    WHERE advertiser_id = v_adv_id
+      AND media_type = p_media_type
+      AND deleted_at IS NULL
       AND moderation_status <> 'blocked';
 
     SELECT count(*) INTO v_reserved_count
     FROM public.media_upload_reservations
-    WHERE advertiser_id = v_adv_id 
-      AND media_type = p_media_type 
-      AND status = 'active' 
+    WHERE advertiser_id = v_adv_id
+      AND media_type = p_media_type
+      AND status = 'active'
       AND expires_at > now();
 
     IF p_media_type = 'image' AND (v_current_count + v_reserved_count) >= v_media_limit THEN

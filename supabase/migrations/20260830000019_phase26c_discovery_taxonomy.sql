@@ -133,7 +133,7 @@ SET search_path = public
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         bs.code AS state_code,
         bs.name AS state_name,
         bs.slug AS state_slug,

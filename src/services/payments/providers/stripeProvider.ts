@@ -58,6 +58,28 @@ export class StripePaymentProvider implements PaymentProvider {
       commercial_status: 'rejected',
       compliance_status: 'rejected',
       adult_business_review_status: 'rejected',
+      contact_status: 'rejected',
+      product_approvals: {
+        advertiser_subscription: { pix: 'rejected', credit_card: 'rejected', recurring_card: 'rejected' },
+        consumer_subscription: { pix: 'rejected', credit_card: 'rejected', recurring_card: 'rejected' },
+        boost: { pix: 'rejected', credit_card: 'rejected', recurring_card: 'rejected' },
+      },
+      mcc_classification: {
+        requested_mcc: '7273',
+        requested_description: 'Classificados e Publicidade Online 18+',
+        assigned_mcc: 'PROHIBITED',
+        assigned_description: 'Restricted Business Policy',
+        notes: 'Incompatibilidade com política de negócios restritos Stripe.',
+      },
+      approval_evidence: {
+        protocol_number: 'POLICY-RESTRICTED-ADULT',
+        contact_date: '2026-09-01T00:00:00Z',
+        last_interaction: '2026-09-01T00:00:00Z',
+        reviewer_name: 'Portal18 Compliance Team',
+        evidence_document_url: 'https://stripe.com/restricted-businesses',
+        restrictions_notes: 'Stripe proíbe explicitamente publicidade, conteúdo e classificados voltados a adultos.',
+      },
+      external_actions: [],
       is_sandbox_configured: false,
       is_production_configured: false,
       is_production_eligible: false, // STRICTLY INELIGIBLE

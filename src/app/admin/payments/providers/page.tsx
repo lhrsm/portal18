@@ -12,8 +12,10 @@ import {
   PaymentProviderMetadata,
   TechnicalHomologationStatus,
   CommercialApprovalStatus,
+  CommercialContactStatus,
   ComplianceApprovalStatus,
   AdultBusinessReviewStatus,
+  ProductApprovalState,
   ProviderHealthCheckResult,
   SandboxCapabilityTestResult
 } from '@/services/payments/types';
@@ -37,7 +39,12 @@ import {
   Layers,
   FlaskConical,
   Play,
-  KeyRound
+  KeyRound,
+  Mail,
+  Send,
+  Check,
+  Copy,
+  Briefcase
 } from 'lucide-react';
 
 export default function AdminPaymentProvidersPage() {
@@ -48,11 +55,12 @@ export default function AdminPaymentProvidersPage() {
 
   // Modal / Detail Drawer state
   const [selectedProvider, setSelectedProvider] = useState<PaymentProviderMetadata | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'capabilities' | 'sandbox' | 'homologation' | 'products' | 'routing' | 'webhooks' | 'health'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'commercial' | 'sandbox' | 'capabilities' | 'homologation' | 'products' | 'routing' | 'webhooks' | 'health'>('overview');
   const [healthChecking, setHealthChecking] = useState(false);
   const [healthResult, setHealthResult] = useState<ProviderHealthCheckResult | null>(null);
   const [sandboxTesting, setSandboxTesting] = useState(false);
   const [sandboxTestResult, setSandboxTestResult] = useState<SandboxCapabilityTestResult | null>(null);
+  const [copiedTemplate, setCopiedTemplate] = useState(false);
 
   const loadProviders = async () => {
     setLoading(true);
@@ -79,6 +87,7 @@ export default function AdminPaymentProvidersPage() {
     setActiveTab('overview');
     setHealthResult(null);
     setSandboxTestResult(null);
+    setCopiedTemplate(false);
   };
 
   const handleRunHealthCheck = async (code: string) => {
@@ -123,6 +132,18 @@ export default function AdminPaymentProvidersPage() {
     }
   };
 
+  const handleCopyOutreachEmail = (providerName: string) => {
+    const text = `Assunto: Solicitação de Análise Comercial, Credenciamento e Homologação de Meios de Pagamento — Portal18 (${providerName})\n\nPrezada Equipe de Novos Negócios e Credenciamento do ${providerName},\n\nO Portal18 (https://portal18.com.br) é uma plataforma brasileira de tecnologia e publicidade digital exclusiva para adultos (18+).\nMonetizamos estritamente através da venda de planos de anúncios, assinaturas e impulsionamentos próprios.\nO Portal18 NÃO intermedia pagamentos entre usuários e NÃO realiza repasses financeiros a terceiros.\n\nSolicitamos a abertura de credenciamento para PIX e Cartão Transparente (MCC 7273) e emissão de credenciais Sandbox.\n\nContato: compliance@portal18.com.br`;
+    navigator.clipboard.writeText(text);
+    setCopiedTemplate(true);
+    showToast({
+      type: 'success',
+      title: 'Template Copiado',
+      message: `Mensagem formal para o ${providerName} copiada para a área de transferência.`,
+    });
+    setTimeout(() => setCopiedTemplate(false), 3000);
+  };
+
   const getTechnicalBadgeVariant = (status: TechnicalHomologationStatus): 'success' | 'gold' | 'info' | 'ruby' | 'neutral' => {
     switch (status) {
       case 'SANDBOX_PASSED':
@@ -137,35 +158,26 @@ export default function AdminPaymentProvidersPage() {
     }
   };
 
-  const getCommercialBadgeVariant = (status: CommercialApprovalStatus): 'success' | 'gold' | 'info' | 'ruby' | 'neutral' => {
+  const getContactBadgeVariant = (status: CommercialContactStatus): 'success' | 'gold' | 'info' | 'ruby' | 'neutral' => {
     switch (status) {
-      case 'approved': return 'success';
-      case 'commercial_review': return 'info';
-      case 'candidate': return 'gold';
+      case 'approved':
+      case 'approved_with_restrictions': return 'success';
+      case 'underwriting':
+      case 'additional_information_requested': return 'info';
+      case 'contacted':
+      case 'awaiting_response': return 'gold';
       case 'rejected':
       case 'suspended': return 'ruby';
       default: return 'neutral';
     }
   };
 
-  const getComplianceBadgeVariant = (status: ComplianceApprovalStatus): 'success' | 'gold' | 'info' | 'ruby' | 'neutral' => {
+  const getProductApprovalBadgeVariant = (status: ProductApprovalState): 'success' | 'gold' | 'info' | 'ruby' | 'neutral' => {
     switch (status) {
       case 'approved': return 'success';
-      case 'compliance_review': return 'info';
-      case 'candidate': return 'gold';
-      case 'rejected':
-      case 'suspended': return 'ruby';
-      default: return 'neutral';
-    }
-  };
-
-  const getAdultReviewBadgeVariant = (status: AdultBusinessReviewStatus): 'success' | 'gold' | 'info' | 'ruby' | 'neutral' => {
-    switch (status) {
-      case 'approved': return 'success';
-      case 'under_review': return 'info';
-      case 'not_reviewed': return 'gold';
-      case 'rejected':
-      case 'restricted': return 'ruby';
+      case 'pending': return 'gold';
+      case 'restricted': return 'info';
+      case 'rejected': return 'ruby';
       default: return 'neutral';
     }
   };
@@ -188,12 +200,12 @@ export default function AdminPaymentProvidersPage() {
               <Lock size={12} /> KILL SWITCH 100% ATIVO
             </Badge>
             <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              Ambiente de Homologação Sandbox • Cobranças Reais Bloqueadas
+              Homologação Comercial & Técnica • Cobranças Reais Bloqueadas
             </span>
           </div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Homologação Sandbox & Multi-Gateway</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '800px', marginTop: '0.25rem' }}>
-            Certificação técnica, validação de credenciais, auditoria tripartite (Técnico, Comercial, Compliance 18+) e resiliência de pagamentos.
+          <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Onboarding & Homologação Comercial PSP</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '850px', marginTop: '0.25rem' }}>
+            Dossiê institucional, templates de abordagem, aprovação granular por produto/método, esteira de underwriting e governança de PSPs.
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -287,14 +299,14 @@ export default function AdminPaymentProvidersPage() {
                   {provider.description}
                 </p>
 
-                {/* Configuration & Tripartite Homologation Gates */}
+                {/* Commercial Contact & Underwriting Stage */}
                 <div style={{ background: 'var(--bg-input)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', border: '1px solid var(--border-subtle)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                      Credenciais Sandbox
+                      Status de Contato
                     </span>
-                    <Badge variant={provider.is_sandbox_configured ? 'success' : 'neutral'} style={{ fontSize: '0.7rem' }}>
-                      <KeyRound size={11} /> {provider.is_sandbox_configured ? 'CONFIGURADAS' : 'NÃO CONFIGURADAS'}
+                    <Badge variant={getContactBadgeVariant(provider.contact_status)} style={{ fontSize: '0.7rem' }}>
+                      <Briefcase size={11} /> {provider.contact_status.replace(/_/g, ' ').toUpperCase()}
                     </Badge>
                   </div>
 
@@ -312,9 +324,9 @@ export default function AdminPaymentProvidersPage() {
                       </strong>
                     </div>
                     <div style={{ padding: '0.35rem', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                      <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.7rem' }}>Modelo 18+</span>
-                      <strong style={{ color: provider.adult_business_review_status === 'approved' ? 'var(--color-success)' : provider.adult_business_review_status === 'rejected' ? 'var(--accent-ruby)' : 'var(--accent-gold)' }}>
-                        {provider.adult_business_review_status.toUpperCase()}
+                      <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.7rem' }}>MCC 7273</span>
+                      <strong style={{ color: provider.mcc_classification?.assigned_mcc ? 'var(--color-success)' : 'var(--text-muted)' }}>
+                        {provider.mcc_classification?.assigned_mcc || 'PENDENTE'}
                       </strong>
                     </div>
                   </div>
@@ -337,11 +349,6 @@ export default function AdminPaymentProvidersPage() {
                       <RotateCcw size={11} /> Recorrência
                     </Badge>
                   )}
-                  {provider.capabilities.refund === 'supported' && (
-                    <Badge variant="neutral" style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem' }}>
-                      Estorno
-                    </Badge>
-                  )}
                 </div>
               </div>
 
@@ -353,7 +360,7 @@ export default function AdminPaymentProvidersPage() {
                   style={{ flex: 1 }}
                   onClick={() => handleOpenDetails(provider)}
                 >
-                  Homologação & Testes
+                  Homologação & Dossiê
                 </Button>
                 <Button
                   variant="ghost"
@@ -376,12 +383,13 @@ export default function AdminPaymentProvidersPage() {
           isOpen={Boolean(selectedProvider)}
           onClose={() => setSelectedProvider(null)}
           title={`Homologação: ${selectedProvider.name}`}
-          maxWidth="720px"
+          maxWidth="760px"
         >
           {/* Tabs Navigation */}
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)', marginBottom: '1.25rem', overflowX: 'auto', gap: '0.25rem', paddingBottom: '0.25rem' }}>
             {[
               { id: 'overview', label: 'Visão Geral', icon: <FileText size={14} /> },
+              { id: 'commercial', label: 'Homologação Comercial', icon: <Briefcase size={14} /> },
               { id: 'sandbox', label: 'Testes Sandbox', icon: <FlaskConical size={14} /> },
               { id: 'capabilities', label: 'Capacidades', icon: <Sliders size={14} /> },
               { id: 'homologation', label: 'Compliance 18+', icon: <ShieldCheck size={14} /> },
@@ -436,6 +444,14 @@ export default function AdminPaymentProvidersPage() {
                   </div>
                 </div>
                 <div style={{ background: 'var(--bg-input)', padding: '0.85rem', borderRadius: 'var(--radius-sm)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Credenciais Sandbox</span>
+                  <div style={{ marginTop: '0.35rem' }}>
+                    <Badge variant={selectedProvider.is_sandbox_configured ? 'success' : 'ruby'}>
+                      {selectedProvider.is_sandbox_configured ? 'CONFIGURADAS' : 'NÃO CONFIGURADAS'}
+                    </Badge>
+                  </div>
+                </div>
+                <div style={{ background: 'var(--bg-input)', padding: '0.85rem', borderRadius: 'var(--radius-sm)' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Prioridade no Resolver</span>
                   <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--accent-gold)', marginTop: '0.2rem' }}>
                     #{selectedProvider.priority}
@@ -460,7 +476,104 @@ export default function AdminPaymentProvidersPage() {
             </div>
           )}
 
-          {/* Tab 2: Live Sandbox Certification Test */}
+          {/* Tab 2: Commercial Homologation (Phase 28C) */}
+          {activeTab === 'commercial' && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Esteira Comercial & Credenciamento</h4>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Acompanhamento de protocolo e matriz de aprovação granular</span>
+                </div>
+                {!selectedProvider.is_internal_driver && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    leftIcon={copiedTemplate ? <Check size={14} /> : <Copy size={14} />}
+                    onClick={() => handleCopyOutreachEmail(selectedProvider.name)}
+                  >
+                    {copiedTemplate ? 'Copiado!' : 'Copiar E-mail Formal'}
+                  </Button>
+                )}
+              </div>
+
+              {/* Protocol & Evidence Box */}
+              <div style={{ background: 'var(--bg-input)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem', border: '1px solid var(--border-subtle)', fontSize: '0.8rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>Status de Contato:</span>
+                    <strong>{selectedProvider.contact_status?.toUpperCase() || 'NOT CONTACTED'}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>Protocolo de Atendimento:</span>
+                    <strong>{selectedProvider.approval_evidence?.protocol_number || 'Pendente de abertura'}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>MCC Solicitado / Atribuído:</span>
+                    <strong>{selectedProvider.mcc_classification?.requested_mcc} / {selectedProvider.mcc_classification?.assigned_mcc || 'Aguardando parecer'}</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Granular Product x Method Matrix */}
+              <h5 style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--accent-gold)' }}>
+                Matriz de Aprovação Granular por Produto & Meio de Pagamento
+              </h5>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                {[
+                  { key: 'advertiser_subscription', label: 'Planos de Anunciantes (Essencial, Destaque, Premium, VIP)' },
+                  { key: 'consumer_subscription', label: 'Assinatura Consumer Premium' },
+                  { key: 'boost', label: 'Impulsionamento Instantâneo (Boosts 24h / 3d / 7d)' },
+                ].map((prod) => {
+                  const approvals = selectedProvider.product_approvals?.[prod.key as keyof typeof selectedProvider.product_approvals] || { pix: 'not_requested', credit_card: 'not_requested', recurring_card: 'not_requested' };
+
+                  return (
+                    <div key={prod.key} style={{ background: 'rgba(255,255,255,0.02)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.8rem', marginBottom: '0.4rem', color: '#fff' }}>
+                        {prod.label}
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <Badge variant={getProductApprovalBadgeVariant(approvals.pix)} style={{ fontSize: '0.7rem' }}>
+                          PIX: {approvals.pix.toUpperCase()}
+                        </Badge>
+                        <Badge variant={getProductApprovalBadgeVariant(approvals.credit_card)} style={{ fontSize: '0.7rem' }}>
+                          Cartão: {approvals.credit_card.toUpperCase()}
+                        </Badge>
+                        <Badge variant={getProductApprovalBadgeVariant(approvals.recurring_card)} style={{ fontSize: '0.7rem' }}>
+                          Recorrência: {approvals.recurring_card.toUpperCase()}
+                        </Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* External Action Items */}
+              <h5 style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+                Ações Operacionais de Onboarding
+              </h5>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                {selectedProvider.external_actions && selectedProvider.external_actions.length > 0 ? (
+                  selectedProvider.external_actions.map((act) => (
+                    <div key={act.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-input)', padding: '0.5rem 0.75rem', borderRadius: '4px', fontSize: '0.8rem' }}>
+                      <div>
+                        <strong>{act.action}</strong>
+                        <span style={{ display: 'block', fontSize: '0.725rem', color: 'var(--text-muted)' }}>Responsável: {act.owner} • {act.notes}</span>
+                      </div>
+                      <Badge variant={act.status === 'completed' ? 'success' : act.status === 'in_progress' ? 'info' : 'neutral'} style={{ fontSize: '0.65rem' }}>
+                        {act.status.toUpperCase()}
+                      </Badge>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', padding: '0.5rem', textAlign: 'center' }}>
+                    Nenhuma ação operacional pendente.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Live Sandbox Certification Test */}
           {activeTab === 'sandbox' && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -519,7 +632,7 @@ export default function AdminPaymentProvidersPage() {
             </div>
           )}
 
-          {/* Tab 3: Capabilities Matrix */}
+          {/* Tab 4: Capabilities Matrix */}
           {activeTab === 'capabilities' && (
             <div>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
@@ -540,7 +653,7 @@ export default function AdminPaymentProvidersPage() {
             </div>
           )}
 
-          {/* Tab 4: Homologation & Business Model Review */}
+          {/* Tab 5: Homologation & Business Model Review */}
           {activeTab === 'homologation' && (
             <div>
               <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem', border: '1px solid var(--border-subtle)' }}>
@@ -590,7 +703,7 @@ export default function AdminPaymentProvidersPage() {
             </div>
           )}
 
-          {/* Tab 5: Supported Products */}
+          {/* Tab 6: Supported Products */}
           {activeTab === 'products' && (
             <div>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
@@ -613,7 +726,7 @@ export default function AdminPaymentProvidersPage() {
             </div>
           )}
 
-          {/* Tab 6: Routing */}
+          {/* Tab 7: Routing */}
           {activeTab === 'routing' && (
             <div>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
@@ -636,7 +749,7 @@ export default function AdminPaymentProvidersPage() {
             </div>
           )}
 
-          {/* Tab 7: Webhooks */}
+          {/* Tab 8: Webhooks */}
           {activeTab === 'webhooks' && (
             <div>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
@@ -652,7 +765,7 @@ export default function AdminPaymentProvidersPage() {
             </div>
           )}
 
-          {/* Tab 8: Health & Telemetry */}
+          {/* Tab 9: Health & Telemetry */}
           {activeTab === 'health' && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>

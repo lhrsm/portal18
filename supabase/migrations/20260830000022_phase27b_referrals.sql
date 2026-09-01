@@ -352,10 +352,10 @@ BEGIN
 
     -- 2. Qualify and Reward referrals where qualification delay (48 hours) has matured
     FOR r IN
-        SELECT 
-            ref.id AS referral_id, 
-            ref.referrer_advertiser_id, 
-            ref.referrer_profile_id, 
+        SELECT
+            ref.id AS referral_id,
+            ref.referrer_advertiser_id,
+            ref.referrer_profile_id,
             ref.referred_advertiser_id,
             ref.policy_version,
             adv.profile_status AS referred_status,

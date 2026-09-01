@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS public.risk_rules (
 
 -- Seed default risk rules
 INSERT INTO public.risk_rules (code, event_type, score_delta, threshold, action, enabled)
-VALUES 
+VALUES
     ('RULE_CREDENTIAL_STUFFING', 'credential_stuffing_suspected', 35, 60, 'challenge', true),
     ('RULE_MULTIPLE_FAILED_LOGINS', 'login_failed', 10, 40, 'rate_limit', true),
     ('RULE_ACCOUNT_TAKEOVER', 'account_takeover_suspected', 45, 70, 'manual_review', true),
@@ -156,7 +156,7 @@ CREATE TABLE IF NOT EXISTS public.platform_kill_switches (
 
 -- Seed default kill switches
 INSERT INTO public.platform_kill_switches (switch_key, enabled, reason)
-VALUES 
+VALUES
     ('disable_signup', false, 'Bloqueio emergencial de novos cadastros'),
     ('disable_login_except_admin', false, 'Bloqueio emergencial de login de usuários'),
     ('disable_uploads', false, 'Bloqueio emergencial de novos uploads de mídia'),
@@ -207,7 +207,7 @@ BEGIN
 
     UPDATE public.user_sessions
     SET revoked_at = now()
-    WHERE profile_id = v_profile_id 
+    WHERE profile_id = v_profile_id
       AND (p_current_session_id IS NULL OR id <> p_current_session_id)
       AND revoked_at IS NULL;
 
@@ -282,18 +282,18 @@ ALTER TABLE public.incidents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.platform_kill_switches ENABLE ROW LEVEL SECURITY;
 
 -- MFA & Recovery (Owner only)
-CREATE POLICY "mfa_owner_all" ON public.user_mfa_factors FOR ALL TO authenticated 
+CREATE POLICY "mfa_owner_all" ON public.user_mfa_factors FOR ALL TO authenticated
     USING (profile_id = public.current_profile_id())
     WITH CHECK (profile_id = public.current_profile_id());
 
-CREATE POLICY "recovery_owner_all" ON public.user_recovery_codes FOR ALL TO authenticated 
+CREATE POLICY "recovery_owner_all" ON public.user_recovery_codes FOR ALL TO authenticated
     USING (profile_id = public.current_profile_id())
     WITH CHECK (profile_id = public.current_profile_id());
 
 -- Sessions & Devices (Owner read/revoke)
 CREATE POLICY "sessions_owner_select" ON public.user_sessions FOR SELECT TO authenticated USING (profile_id = public.current_profile_id());
 CREATE POLICY "sessions_owner_update" ON public.user_sessions FOR UPDATE TO authenticated USING (profile_id = public.current_profile_id());
-CREATE POLICY "devices_owner_all" ON public.trusted_devices FOR ALL TO authenticated 
+CREATE POLICY "devices_owner_all" ON public.trusted_devices FOR ALL TO authenticated
     USING (profile_id = public.current_profile_id())
     WITH CHECK (profile_id = public.current_profile_id());
 

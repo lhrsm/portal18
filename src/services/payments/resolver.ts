@@ -20,7 +20,7 @@ export interface ResolveProviderResult {
 export class PaymentProviderResolver {
   /**
    * Resolves the appropriate PaymentProvider adapter based on strict homologation rules,
-   * capability matrices, and Kill Switch status.
+   * granular product/method approvals, capability matrices, and Kill Switch status.
    *
    * STRICT INVARIANT: NO AUTOMATIC CROSS-PROVIDER RETRIES ON CHARGE TIMEOUTS.
    */
@@ -42,6 +42,15 @@ export class PaymentProviderResolver {
     const allProviders = PaymentProviderRegistry.getAll();
     const env = params.environment || (process.env.NODE_ENV === 'production' ? 'production' : 'sandbox');
 
+    const mappedProduct = params.productType === 'campaign' ? 'boost' : params.productType;
+    const mappedMethod = params.paymentMethod === 'boost_instant'
+      ? 'pix'
+      : params.paymentMethod === 'recurring_card'
+        ? 'recurring_card'
+        : params.paymentMethod === 'pix'
+          ? 'pix'
+          : 'credit_card';
+
     for (const provider of allProviders) {
       if (provider.code === 'stripe') {
         // Stripe is strictly prohibited for adult advertising platform model
@@ -55,7 +64,7 @@ export class PaymentProviderResolver {
 
       const metadata = await provider.getMetadata();
 
-      // In production, require full certification + commercial + compliance + adult-business acceptance
+      // In production, require full certification + commercial + compliance + adult-business acceptance + granular product approval
       if (env === 'production') {
         const isEligible =
           metadata.technical_status === 'PRODUCTION_APPROVED' &&
@@ -65,10 +74,14 @@ export class PaymentProviderResolver {
           metadata.is_production_configured &&
           metadata.health_status === 'healthy';
 
-        const methodKey = params.paymentMethod === 'pix' ? 'pix' : 'credit_card';
+        // Granular Product/Method Gate (Requirement 27)
+        const productApproval = metadata.product_approvals?.[mappedProduct]?.[mappedMethod];
+        const isProductMethodApproved = productApproval === 'approved';
+
+        const methodKey = mappedMethod === 'pix' ? 'pix' : 'credit_card';
         const supportsMethod = metadata.capabilities[methodKey] === 'supported';
 
-        if (isEligible && supportsMethod) {
+        if (isEligible && isProductMethodApproved && supportsMethod) {
           return {
             success: true,
             provider,
@@ -80,7 +93,7 @@ export class PaymentProviderResolver {
           (metadata.technical_status === 'CONFIGURED' || metadata.technical_status === 'SANDBOX_READY' || metadata.technical_status === 'SANDBOX_PASSED') &&
           metadata.is_sandbox_configured;
 
-        const methodKey = params.paymentMethod === 'pix' ? 'pix' : 'credit_card';
+        const methodKey = mappedMethod === 'pix' ? 'pix' : 'credit_card';
         const supportsMethod = metadata.capabilities[methodKey] === 'supported';
 
         if (isSandboxReady && supportsMethod) {

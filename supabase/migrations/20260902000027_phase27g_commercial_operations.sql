@@ -51,7 +51,7 @@ BEGIN
   WHERE moderation_status = 'approved' AND publication_status = 'published';
 
   -- Active trials & trials ending soon (<= 24 hours)
-  SELECT 
+  SELECT
     COUNT(*) FILTER (WHERE status = 'trial' OR (trial_end IS NOT NULL AND trial_end > NOW())),
     COUNT(*) FILTER (WHERE (status = 'trial' OR trial_end > NOW()) AND trial_end <= (NOW() + INTERVAL '24 hours'))
   INTO v_active_trials, v_trials_ending_soon
@@ -79,7 +79,7 @@ BEGIN
   WHERE status = 'active';
 
   -- Referrals pending & under manual review
-  SELECT 
+  SELECT
     COUNT(*) FILTER (WHERE status = 'pending'),
     COUNT(*) FILTER (WHERE risk_status IN ('manual_review', 'blocked') OR status = 'manual_review')
   INTO v_pending_referrals, v_referrals_manual_review
@@ -91,14 +91,14 @@ BEGIN
   WHERE status IN ('active', 'active_test', 'running');
 
   -- Pending reviews & delayed reviews (> 24 hours in queue)
-  SELECT 
+  SELECT
     COUNT(*) FILTER (WHERE status = 'submitted'),
     COUNT(*) FILTER (WHERE status = 'submitted' AND created_at < (NOW() - INTERVAL '24 hours'))
   INTO v_pending_reviews, v_reviews_delayed
   FROM public.advertiser_reviews;
 
   -- Inventory Slots and Utilization
-  SELECT 
+  SELECT
     COALESCE(SUM(total_slots), 0),
     COALESCE(SUM(reserved_slots), 0)
   INTO v_total_slots, v_reserved_slots

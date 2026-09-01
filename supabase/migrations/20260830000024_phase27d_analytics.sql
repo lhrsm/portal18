@@ -19,27 +19,27 @@ DECLARE
     v_prev_start_date date;
     v_prev_end_date date;
     v_now_date date := CURRENT_DATE;
-    
+
     -- Current Period Aggregates
     v_impressions integer := 0;
     v_views integer := 0;
     v_contacts integer := 0;
-    
+
     -- Previous Period Aggregates
     v_prev_impressions integer := 0;
     v_prev_views integer := 0;
     v_prev_contacts integer := 0;
-    
+
     -- Rates
     v_open_rate numeric := 0.0;
     v_contact_rate numeric := 0.0;
     v_overall_rate numeric := 0.0;
-    
+
     -- Trends
     v_impressions_trend numeric := 0.0;
     v_views_trend numeric := 0.0;
     v_contacts_trend numeric := 0.0;
-    
+
     -- Sources Breakdown
     v_organic_impr integer := 0;
     v_organic_views integer := 0;
@@ -50,13 +50,13 @@ DECLARE
     v_direct_impr integer := 0;
     v_direct_views integer := 0;
     v_direct_contacts integer := 0;
-    
+
     -- Channel Breakdown
     v_whatsapp_count integer := 0;
     v_telegram_count integer := 0;
     v_phone_count integer := 0;
     v_website_count integer := 0;
-    
+
     -- Daily Time Series Array
     v_time_series jsonb := '[]'::jsonb;
     v_insights jsonb := '[]'::jsonb;
@@ -85,7 +85,7 @@ BEGIN
     v_prev_start_date := v_prev_end_date - (p_period_days || ' days')::interval;
 
     -- 1. Current Period Totals from Aggregates & Events
-    SELECT 
+    SELECT
         COALESCE(SUM(impressions), 0),
         COALESCE(SUM(profile_views), 0),
         COALESCE(SUM(clicks), 0) + COALESCE(SUM(contact_clicks), 0)
@@ -114,7 +114,7 @@ BEGIN
     END IF;
 
     -- 2. Previous Period Totals for Trends
-    SELECT 
+    SELECT
         COALESCE(SUM(impressions), 0),
         COALESCE(SUM(profile_views), 0),
         COALESCE(SUM(clicks), 0) + COALESCE(SUM(contact_clicks), 0)
@@ -148,7 +148,7 @@ BEGIN
     END IF;
 
     -- 5. Contact Channels Breakdown
-    SELECT 
+    SELECT
         COUNT(*) FILTER (WHERE channel = 'whatsapp'),
         COUNT(*) FILTER (WHERE channel = 'telegram'),
         COUNT(*) FILTER (WHERE channel = 'phone'),
@@ -171,7 +171,7 @@ BEGIN
         SELECT (v_start_date + (i || ' days')::interval)::date AS date
         FROM generate_series(0, p_period_days) i
     ) ds
-    LEFT JOIN public.advertiser_daily_stats ads 
+    LEFT JOIN public.advertiser_daily_stats ads
         ON ads.advertiser_id = p_advertiser_id AND ads.date = ds.date;
 
     -- 7. Deterministic Insights Generation (Minimum Sample Guard)
@@ -274,7 +274,7 @@ BEGIN
     v_start_date := CURRENT_DATE - (p_period_days || ' days')::interval;
 
     -- Platform Totals
-    SELECT 
+    SELECT
         COALESCE(SUM(impressions), 0),
         COALESCE(SUM(profile_views), 0),
         COALESCE(SUM(clicks), 0) + COALESCE(SUM(contact_clicks), 0)

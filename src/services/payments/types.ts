@@ -50,6 +50,17 @@ export type CommercialApprovalStatus =
   | 'suspended'
   | 'NOT_APPLICABLE';
 
+export type CommercialContactStatus =
+  | 'not_contacted'
+  | 'contacted'
+  | 'awaiting_response'
+  | 'additional_information_requested'
+  | 'underwriting'
+  | 'approved'
+  | 'approved_with_restrictions'
+  | 'rejected'
+  | 'suspended';
+
 export type ComplianceApprovalStatus =
   | 'candidate'
   | 'compliance_review'
@@ -58,6 +69,13 @@ export type ComplianceApprovalStatus =
   | 'suspended'
   | 'NOT_APPLICABLE';
 
+export type ComplianceReviewStatus =
+  | 'not_started'
+  | 'pending'
+  | 'approved'
+  | 'approved_with_conditions'
+  | 'rejected';
+
 export type AdultBusinessReviewStatus =
   | 'not_reviewed'
   | 'under_review'
@@ -65,6 +83,63 @@ export type AdultBusinessReviewStatus =
   | 'rejected'
   | 'restricted'
   | 'not_applicable';
+
+export type ProductApprovalState = 'not_requested' | 'pending' | 'approved' | 'restricted' | 'rejected';
+
+export interface ProductMethodApprovalMatrix {
+  advertiser_subscription: {
+    pix: ProductApprovalState;
+    credit_card: ProductApprovalState;
+    recurring_card: ProductApprovalState;
+  };
+  consumer_subscription: {
+    pix: ProductApprovalState;
+    credit_card: ProductApprovalState;
+    recurring_card: ProductApprovalState;
+  };
+  boost: {
+    pix: ProductApprovalState;
+    credit_card: ProductApprovalState;
+    recurring_card: ProductApprovalState;
+  };
+}
+
+export interface MCCClassificationData {
+  requested_mcc: string;
+  requested_description: string;
+  assigned_mcc: string | null;
+  assigned_description: string | null;
+  notes: string | null;
+}
+
+export interface ApprovalEvidenceData {
+  protocol_number: string | null;
+  contact_date: string | null;
+  last_interaction: string | null;
+  reviewer_name: string | null;
+  evidence_document_url: string | null;
+  restrictions_notes: string | null;
+}
+
+export interface HomologationTimelineEvent {
+  id: string;
+  stage: string;
+  title: string;
+  description: string;
+  timestamp: string;
+  actor: string;
+  reference?: string;
+}
+
+export interface ExternalActionItem {
+  id: string;
+  action: string;
+  owner: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'blocked';
+  dueDate?: string;
+  reference?: string;
+  notes?: string;
+}
 
 export type PaymentFailureCategory =
   | 'insufficient_funds'
@@ -134,6 +209,12 @@ export interface PaymentProviderMetadata {
   commercial_status: CommercialApprovalStatus;
   compliance_status: ComplianceApprovalStatus;
   adult_business_review_status: AdultBusinessReviewStatus;
+  contact_status: CommercialContactStatus;
+  product_approvals: ProductMethodApprovalMatrix;
+  mcc_classification: MCCClassificationData;
+  approval_evidence: ApprovalEvidenceData;
+  external_actions: ExternalActionItem[];
+  timeline_events?: HomologationTimelineEvent[];
   is_sandbox_configured: boolean;
   is_production_configured: boolean;
   is_production_eligible: boolean;

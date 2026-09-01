@@ -22,7 +22,7 @@ ALTER TABLE public.subscriptions
 DO $$
 BEGIN
     ALTER TABLE public.advertiser_media DROP CONSTRAINT IF EXISTS advertiser_media_media_type_check;
-    ALTER TABLE public.advertiser_media ADD CONSTRAINT advertiser_media_media_type_check 
+    ALTER TABLE public.advertiser_media ADD CONSTRAINT advertiser_media_media_type_check
         CHECK (media_type IN ('image', 'photo', 'video', 'commercial_video', 'audio', 'profile_audio', 'authenticity_video'));
 EXCEPTION
     WHEN OTHERS THEN null;

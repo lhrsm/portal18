@@ -564,7 +564,7 @@ BEGIN
     SELECT ap_own.city_id INTO v_city_id FROM public.advertiser_profiles ap_own WHERE ap_own.id = p_advertiser_id;
 
     RETURN QUERY
-    SELECT 
+    SELECT
         ap.id AS advertiser_id,
         ap.slug,
         ap.stage_name,
@@ -574,13 +574,13 @@ BEGIN
         ap.headline,
         coalesce(am.thumbnail_path, am.storage_path) AS thumbnail_url,
         ap.verification_status,
-        CASE 
+        CASE
             WHEN ap.last_active_at > (now() - INTERVAL '24 hours') THEN 'Ativo hoje'
             WHEN ap.last_active_at > (now() - INTERVAL '3 days') THEN 'Ativo recentemente'
             ELSE 'Ativo esta semana'
         END AS activity_label,
         EXISTS (
-            SELECT 1 FROM public.advertiser_campaigns ac 
+            SELECT 1 FROM public.advertiser_campaigns ac
             WHERE ac.advertiser_id = ap.id AND ac.status = 'active' AND ac.starts_at <= now() AND ac.ends_at >= now()
         ) AS is_sponsored
     FROM public.advertiser_profiles ap
@@ -588,9 +588,9 @@ BEGIN
     JOIN public.brazil_states s ON ap.state_id = s.id
     LEFT JOIN public.advertiser_ranking_scores rs ON ap.id = rs.advertiser_id
     LEFT JOIN LATERAL (
-        SELECT med.storage_path, med.thumbnail_path 
+        SELECT med.storage_path, med.thumbnail_path
         FROM public.advertiser_media med
-        WHERE med.advertiser_id = ap.id AND med.moderation_status = 'approved' AND med.deleted_at IS NULL 
+        WHERE med.advertiser_id = ap.id AND med.moderation_status = 'approved' AND med.deleted_at IS NULL
         ORDER BY med.position ASC, med.created_at ASC LIMIT 1
     ) am ON true
     WHERE ap.id <> p_advertiser_id
@@ -649,7 +649,7 @@ BEGIN
     END IF;
 
     RETURN QUERY
-    SELECT 
+    SELECT
         ap.id AS advertiser_id,
         ap.slug,
         ap.stage_name,
@@ -660,12 +660,12 @@ BEGIN
         ap.headline,
         coalesce(am.thumbnail_path, am.storage_path) AS thumbnail_url,
         ap.verification_status,
-        CASE 
+        CASE
             WHEN ap.last_active_at > (now() - INTERVAL '24 hours') THEN 'Ativo hoje'
             WHEN ap.last_active_at > (now() - INTERVAL '3 days') THEN 'Ativo recentemente'
             ELSE 'Ativo esta semana'
         END AS activity_label,
-        CASE 
+        CASE
             WHEN v_origin_lat IS NULL OR c.latitude IS NULL THEN 'Região'
             WHEN ap.city_id = p_origin_city_id THEN 'Na sua cidade'
             WHEN public.calculate_distance_km(v_origin_lat, v_origin_lon, c.latitude, c.longitude) <= 25 THEN 'Até 25 km'
@@ -673,7 +673,7 @@ BEGIN
             ELSE 'Região próxima'
         END AS distance_label,
         EXISTS (
-            SELECT 1 FROM public.advertiser_campaigns ac 
+            SELECT 1 FROM public.advertiser_campaigns ac
             WHERE ac.advertiser_id = ap.id AND ac.status = 'active' AND ac.starts_at <= now() AND ac.ends_at >= now()
         ) AS is_sponsored,
         coalesce(rs.organic_score, 50.0) AS organic_score
@@ -682,9 +682,9 @@ BEGIN
     JOIN public.brazil_states s ON ap.state_id = s.id
     LEFT JOIN public.advertiser_ranking_scores rs ON ap.id = rs.advertiser_id
     LEFT JOIN LATERAL (
-        SELECT med.storage_path, med.thumbnail_path 
+        SELECT med.storage_path, med.thumbnail_path
         FROM public.advertiser_media med
-        WHERE med.advertiser_id = ap.id AND med.moderation_status = 'approved' AND med.deleted_at IS NULL 
+        WHERE med.advertiser_id = ap.id AND med.moderation_status = 'approved' AND med.deleted_at IS NULL
         ORDER BY med.position ASC, med.created_at ASC LIMIT 1
     ) am ON true
     WHERE ap.profile_status = 'active'
@@ -704,7 +704,7 @@ BEGIN
       ))
       AND (v_origin_lat IS NULL OR c.latitude IS NULL OR public.calculate_distance_km(v_origin_lat, v_origin_lon, c.latitude, c.longitude) <= p_radius_km)
       AND (p_activity_filter IS NULL OR (
-          CASE 
+          CASE
               WHEN p_activity_filter = 'active_now' THEN ap.last_active_at > (now() - INTERVAL '2 hours')
               WHEN p_activity_filter = 'active_today' THEN ap.last_active_at > (now() - INTERVAL '24 hours')
               WHEN p_activity_filter = 'active_this_week' THEN ap.last_active_at > (now() - INTERVAL '7 days')
@@ -717,7 +717,7 @@ BEGIN
           OR ap.bio ILIKE ('%' || p_query || '%')
           OR c.name ILIKE ('%' || p_query || '%')
       ))
-    ORDER BY 
+    ORDER BY
         is_sponsored DESC,
         coalesce(rs.organic_score, 50.0) DESC,
         ap.last_active_at DESC NULLS LAST

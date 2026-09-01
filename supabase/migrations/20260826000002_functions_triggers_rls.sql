@@ -30,7 +30,7 @@ BEGIN
     END IF;
 
     SELECT EXISTS (
-        SELECT 1 FROM public.user_roles 
+        SELECT 1 FROM public.user_roles
         WHERE profile_id = v_profile_id AND role = role_name
     ) INTO v_has_role;
 
@@ -55,7 +55,7 @@ BEGIN
     END IF;
 
     SELECT EXISTS (
-        SELECT 1 FROM public.user_roles 
+        SELECT 1 FROM public.user_roles
         WHERE profile_id = v_profile_id AND role IN ('admin', 'super_admin')
     ) INTO v_is_adm;
 
@@ -80,7 +80,7 @@ BEGIN
     END IF;
 
     SELECT EXISTS (
-        SELECT 1 FROM public.user_roles 
+        SELECT 1 FROM public.user_roles
         WHERE profile_id = v_profile_id AND role IN ('moderator', 'admin', 'super_admin')
     ) INTO v_is_mod;
 
@@ -340,8 +340,8 @@ CREATE POLICY "advertiser_media_select"
     TO public
     USING (
         (
-            moderation_status = 'approved' 
-            AND visibility = 'public' 
+            moderation_status = 'approved'
+            AND visibility = 'public'
             AND deleted_at IS NULL
             AND EXISTS (
                 SELECT 1 FROM public.advertiser_profiles ap

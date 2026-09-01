@@ -7,8 +7,8 @@ ALTER TABLE public.notifications
     ADD COLUMN IF NOT EXISTS priority text NOT NULL DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high', 'critical')),
     ADD COLUMN IF NOT EXISTS dedupe_key text;
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_notifications_dedupe 
-    ON public.notifications(profile_id, dedupe_key) 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_notifications_dedupe
+    ON public.notifications(profile_id, dedupe_key)
     WHERE dedupe_key IS NOT NULL;
 
 -- 2. Profile Follows Table (Section 10 & 11)
@@ -150,12 +150,12 @@ BEGIN
     END IF;
 
     SELECT EXISTS (
-        SELECT 1 FROM public.favorites 
+        SELECT 1 FROM public.favorites
         WHERE user_profile_id = v_profile_id AND advertiser_id = p_advertiser_id
     ) INTO v_exists;
 
     IF v_exists THEN
-        DELETE FROM public.favorites 
+        DELETE FROM public.favorites
         WHERE user_profile_id = v_profile_id AND advertiser_id = p_advertiser_id;
         RETURN jsonb_build_object('success', true, 'is_favorite', false);
     ELSE
@@ -184,18 +184,18 @@ BEGIN
     END IF;
 
     SELECT EXISTS (
-        SELECT 1 FROM public.profile_follows 
+        SELECT 1 FROM public.profile_follows
         WHERE follower_profile_id = v_profile_id AND advertiser_id = p_advertiser_id
     ) INTO v_exists;
 
     IF v_exists THEN
-        DELETE FROM public.profile_follows 
+        DELETE FROM public.profile_follows
         WHERE follower_profile_id = v_profile_id AND advertiser_id = p_advertiser_id;
         RETURN jsonb_build_object('success', true, 'is_following', false);
     ELSE
         INSERT INTO public.profile_follows (follower_profile_id, advertiser_id, notifications_enabled)
         VALUES (v_profile_id, p_advertiser_id, p_notifications_enabled)
-        ON CONFLICT (follower_profile_id, advertiser_id) 
+        ON CONFLICT (follower_profile_id, advertiser_id)
         DO UPDATE SET notifications_enabled = EXCLUDED.notifications_enabled, updated_at = now();
         RETURN jsonb_build_object('success', true, 'is_following', true);
     END IF;
@@ -258,7 +258,7 @@ BEGIN
     IF v_profile_id IS NULL THEN
         -- Return all false for anonymous users
         RETURN QUERY
-        SELECT 
+        SELECT
             adv_id,
             false AS is_favorite,
             false AS is_following,
@@ -268,7 +268,7 @@ BEGIN
     END IF;
 
     RETURN QUERY
-    SELECT 
+    SELECT
         adv_id,
         EXISTS (SELECT 1 FROM public.favorites f WHERE f.user_profile_id = v_profile_id AND f.advertiser_id = adv_id) AS is_favorite,
         EXISTS (SELECT 1 FROM public.profile_follows pf WHERE pf.follower_profile_id = v_profile_id AND pf.advertiser_id = adv_id) AS is_following,
@@ -294,12 +294,12 @@ BEGIN
     END IF;
 
     SELECT EXISTS (
-        SELECT 1 FROM public.user_blocks 
+        SELECT 1 FROM public.user_blocks
         WHERE blocker_profile_id = v_profile_id AND blocked_advertiser_id = p_advertiser_id
     ) INTO v_is_blocked;
 
     IF v_is_blocked THEN
-        DELETE FROM public.user_blocks 
+        DELETE FROM public.user_blocks
         WHERE blocker_profile_id = v_profile_id AND blocked_advertiser_id = p_advertiser_id;
         RETURN jsonb_build_object('success', true, 'is_blocked', false);
     ELSE
@@ -330,7 +330,7 @@ BEGIN
         RAISE EXCEPTION 'Usuário não autenticado.';
     END IF;
 
-    DELETE FROM public.profile_view_history 
+    DELETE FROM public.profile_view_history
     WHERE viewer_profile_id = v_profile_id;
 
     RETURN true;
@@ -354,8 +354,8 @@ BEGIN
 
     DELETE FROM public.user_hidden_recommendations WHERE profile_id = v_profile_id;
     DELETE FROM public.user_preferred_categories WHERE profile_id = v_profile_id;
-    
-    UPDATE public.user_preferences 
+
+    UPDATE public.user_preferences
     SET preferred_city_id = NULL,
         age_min = 18,
         age_max = 70,
@@ -403,11 +403,11 @@ CREATE POLICY "lists_owner_all" ON public.user_lists
 CREATE POLICY "list_items_owner_all" ON public.user_list_items
     FOR ALL TO authenticated
     USING (EXISTS (
-        SELECT 1 FROM public.user_lists ul 
+        SELECT 1 FROM public.user_lists ul
         WHERE ul.id = list_id AND ul.profile_id = public.current_profile_id()
     ))
     WITH CHECK (EXISTS (
-        SELECT 1 FROM public.user_lists ul 
+        SELECT 1 FROM public.user_lists ul
         WHERE ul.id = list_id AND ul.profile_id = public.current_profile_id()
     ));
 

@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public.consumer_plans (
 -- Seed Canonical Consumer Plans (Free vs Premium)
 INSERT INTO public.consumer_plans (name, slug, description, sort_order, is_active, features)
 VALUES
-    ('Portal18 Free', 'free', 'Acesso básico com navegação por perfis, fotos públicas e contato direto com anunciantes.', 1, true, 
+    ('Portal18 Free', 'free', 'Acesso básico com navegação por perfis, fotos públicas e contato direto com anunciantes.', 1, true,
      '["Acesso a perfis e fotos públicas", "Contato direto via canais oficiais", "Favoritos e histórico básico", "Selo de Autenticidade visível"]'::jsonb),
     ('Portal18 Premium', 'premium', 'Experiência exclusiva para membros com vídeos restritos, avaliações completas e alertas.', 2, true,
      '["Acesso a vídeos exclusivos Premium", "Leitura completa de avaliações moderadas", "Alertas inteligentes de novos perfis", "Coleções e favoritos avançados", "Histórico de navegação estendido"]'::jsonb)
@@ -85,7 +85,7 @@ CREATE INDEX IF NOT EXISTS idx_consumer_subs_user_status ON public.consumer_subs
 -- 4. Extend Advertiser Media with Audience Level
 DO $$ BEGIN
     ALTER TABLE public.advertiser_media
-        ADD COLUMN IF NOT EXISTS audience text NOT NULL DEFAULT 'age_verified' 
+        ADD COLUMN IF NOT EXISTS audience text NOT NULL DEFAULT 'age_verified'
         CHECK (audience IN ('public', 'age_verified', 'consumer_premium', 'private'));
 EXCEPTION
     WHEN duplicate_column THEN null;
@@ -128,8 +128,8 @@ AS $$
 DECLARE
     v_adv_owner_id uuid;
 BEGIN
-    SELECT profile_id INTO v_adv_owner_id 
-    FROM public.advertiser_profiles 
+    SELECT profile_id INTO v_adv_owner_id
+    FROM public.advertiser_profiles
     WHERE id = NEW.advertiser_id;
 
     IF v_adv_owner_id = NEW.user_profile_id THEN
@@ -311,7 +311,7 @@ BEGIN
     v_can_see_full_text := COALESCE((v_entitlements->'entitlements'->>'full_review_access')::boolean, false);
 
     -- 2. Aggregate statistics for approved reviews
-    SELECT 
+    SELECT
         COUNT(*),
         COALESCE(AVG(rating_communication), 0),
         COALESCE(AVG(rating_accuracy), 0),
@@ -330,7 +330,7 @@ BEGIN
             'rating_professionalism', r.rating_professionalism,
             'rating_overall', r.rating_overall,
             -- Truncate comment preview for Free users; Full text for Premium users
-            'comment', CASE 
+            'comment', CASE
                 WHEN v_can_see_full_text THEN r.comment
                 WHEN r.comment IS NOT NULL AND length(r.comment) > 60 THEN substring(r.comment FROM 1 FOR 60) || '...'
                 ELSE r.comment

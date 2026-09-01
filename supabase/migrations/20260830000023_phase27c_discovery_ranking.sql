@@ -22,7 +22,7 @@ CREATE INDEX IF NOT EXISTS idx_inventory_lookup ON public.commercial_inventory_s
 
 -- Seed baseline initial inventory slots
 INSERT INTO public.commercial_inventory_slots (placement, scope_type, scope_id, scope_name, max_slots, max_sponsored_ratio)
-VALUES 
+VALUES
     ('homepage_featured', 'global', 'global', 'Nacional / Home', 6, 0.25),
     ('city_top', 'city', 'city-salvador', 'Salvador - BA', 4, 0.25),
     ('city_top', 'city', 'city-sao-paulo', 'São Paulo - SP', 6, 0.25),
@@ -79,7 +79,7 @@ DECLARE
     v_final_organic numeric;
 BEGIN
     FOR r IN
-        SELECT 
+        SELECT
             ap.id AS adv_id,
             ap.created_at,
             ap.published_at,
@@ -218,7 +218,7 @@ BEGIN
     -- 1. Crawler / Bot Exclusion (Googlebot, Bingbot, OAI, Anthropic, PetalBot, etc.)
     IF p_user_agent IS NOT NULL THEN
         v_lower_ua := lower(p_user_agent);
-        IF v_lower_ua LIKE '%bot%' OR v_lower_ua LIKE '%crawl%' OR v_lower_ua LIKE '%spider%' 
+        IF v_lower_ua LIKE '%bot%' OR v_lower_ua LIKE '%crawl%' OR v_lower_ua LIKE '%spider%'
            OR v_lower_ua LIKE '%slurp%' OR v_lower_ua LIKE '%mediapartners%' OR v_lower_ua LIKE '%bingpreview%' THEN
             RETURN jsonb_build_object('success', true, 'recorded', false, 'reason', 'bot_excluded');
         END IF;
@@ -361,7 +361,7 @@ BEGIN
     RETURN QUERY
     WITH eligible_profiles AS (
         -- 1. STRICT ELIGIBILITY GATE: Filter ineligible profiles upfront
-        SELECT 
+        SELECT
             ap.id AS adv_id,
             ap.slug AS adv_slug,
             ap.stage_name AS adv_stage_name,
@@ -373,12 +373,12 @@ BEGIN
             coalesce(am.thumbnail_path, am.storage_path) AS adv_thumbnail_url,
             ap.verification_status AS adv_verification_status,
             COALESCE(ap.authenticity_verified, false) AS adv_authenticity_verified,
-            CASE 
+            CASE
                 WHEN ap.last_active_at > (now() - INTERVAL '24 hours') THEN 'Ativo hoje'
                 WHEN ap.last_active_at > (now() - INTERVAL '3 days') THEN 'Ativo recentemente'
                 ELSE 'Ativo esta semana'
             END AS adv_activity_label,
-            CASE 
+            CASE
                 WHEN v_origin_lat IS NULL OR c.latitude IS NULL THEN 'Região'
                 WHEN ap.city_id = p_origin_city_id THEN 'Na sua cidade'
                 WHEN public.calculate_distance_km(v_origin_lat, v_origin_lon, c.latitude, c.longitude) <= 25 THEN 'Até 25 km'
@@ -387,10 +387,10 @@ BEGIN
             END AS adv_distance_label,
             -- Active Campaign Check (Must match hard location / category constraints)
             EXISTS (
-                SELECT 1 FROM public.advertiser_campaigns ac 
-                WHERE ac.advertiser_id = ap.id 
-                  AND ac.status = 'active' 
-                  AND ac.starts_at <= now() 
+                SELECT 1 FROM public.advertiser_campaigns ac
+                WHERE ac.advertiser_id = ap.id
+                  AND ac.status = 'active'
+                  AND ac.starts_at <= now()
                   AND ac.ends_at >= now()
             ) AS has_active_campaign,
             COALESCE(rs.organic_score, 50.0) AS adv_organic_score,
@@ -401,9 +401,9 @@ BEGIN
         JOIN public.brazil_states s ON ap.state_id = s.id
         LEFT JOIN public.advertiser_ranking_scores rs ON ap.id = rs.advertiser_id
         LEFT JOIN LATERAL (
-            SELECT med.storage_path, med.thumbnail_path 
+            SELECT med.storage_path, med.thumbnail_path
             FROM public.advertiser_media med
-            WHERE med.advertiser_id = ap.id AND med.moderation_status = 'approved' AND med.deleted_at IS NULL 
+            WHERE med.advertiser_id = ap.id AND med.moderation_status = 'approved' AND med.deleted_at IS NULL
             ORDER BY med.position ASC, med.created_at ASC LIMIT 1
         ) am ON true
         WHERE ap.profile_status = 'active'
@@ -424,7 +424,7 @@ BEGIN
           ))
           AND (v_origin_lat IS NULL OR c.latitude IS NULL OR public.calculate_distance_km(v_origin_lat, v_origin_lon, c.latitude, c.longitude) <= p_radius_km)
           AND (p_activity_filter IS NULL OR (
-              CASE 
+              CASE
                   WHEN p_activity_filter = 'active_now' THEN ap.last_active_at > (now() - INTERVAL '2 hours')
                   WHEN p_activity_filter = 'active_today' THEN ap.last_active_at > (now() - INTERVAL '24 hours')
                   WHEN p_activity_filter = 'active_this_week' THEN ap.last_active_at > (now() - INTERVAL '7 days')
@@ -439,10 +439,10 @@ BEGIN
           ))
     ),
     ranked_organic AS (
-        SELECT 
+        SELECT
             ep.*,
             ROW_NUMBER() OVER (
-                ORDER BY 
+                ORDER BY
                     CASE WHEN p_sort_by = 'recent' THEN ep.adv_created_at END DESC,
                     CASE WHEN p_sort_by = 'active' THEN ep.adv_last_active_at END DESC,
                     ep.adv_organic_score DESC,
@@ -450,7 +450,7 @@ BEGIN
             ) AS organic_rank
         FROM eligible_profiles ep
     )
-    SELECT 
+    SELECT
         ro.adv_id AS advertiser_id,
         ro.adv_slug AS slug,
         ro.adv_stage_name AS stage_name,
@@ -469,7 +469,7 @@ BEGIN
         ro.adv_organic_score AS organic_score,
         ro.organic_rank::integer AS rank_position
     FROM ranked_organic ro
-    ORDER BY 
+    ORDER BY
         -- Stagger sponsored entries at top positions while preserving organic relevancy below
         CASE WHEN ro.has_active_campaign AND ro.organic_rank <= v_max_sponsored_slots THEN 0 ELSE 1 END ASC,
         ro.organic_rank ASC

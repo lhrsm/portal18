@@ -56,7 +56,7 @@ BEGIN
 
     IF v_sp_id IS NOT NULL THEN
         INSERT INTO public.brazil_cities (state_id, ibge_code, name, slug)
-        VALUES 
+        VALUES
             (v_sp_id, '3550308', 'São Paulo', 'sao-paulo'),
             (v_sp_id, '3509502', 'Campinas', 'campinas'),
             (v_sp_id, '3548500', 'Santos', 'santos'),
@@ -67,7 +67,7 @@ BEGIN
 
     IF v_rj_id IS NOT NULL THEN
         INSERT INTO public.brazil_cities (state_id, ibge_code, name, slug)
-        VALUES 
+        VALUES
             (v_rj_id, '3304557', 'Rio de Janeiro', 'rio-de-janeiro'),
             (v_rj_id, '3303302', 'Niterói', 'niteroi')
         ON CONFLICT (ibge_code) DO NOTHING;
@@ -75,35 +75,35 @@ BEGIN
 
     IF v_mg_id IS NOT NULL THEN
         INSERT INTO public.brazil_cities (state_id, ibge_code, name, slug)
-        VALUES 
+        VALUES
             (v_mg_id, '3106200', 'Belo Horizonte', 'belo-horizonte')
         ON CONFLICT (ibge_code) DO NOTHING;
     END IF;
 
     IF v_ba_id IS NOT NULL THEN
         INSERT INTO public.brazil_cities (state_id, ibge_code, name, slug)
-        VALUES 
+        VALUES
             (v_ba_id, '2927408', 'Salvador', 'salvador')
         ON CONFLICT (ibge_code) DO NOTHING;
     END IF;
 
     IF v_pr_id IS NOT NULL THEN
         INSERT INTO public.brazil_cities (state_id, ibge_code, name, slug)
-        VALUES 
+        VALUES
             (v_pr_id, '4106902', 'Curitiba', 'curitiba')
         ON CONFLICT (ibge_code) DO NOTHING;
     END IF;
 
     IF v_rs_id IS NOT NULL THEN
         INSERT INTO public.brazil_cities (state_id, ibge_code, name, slug)
-        VALUES 
+        VALUES
             (v_rs_id, '4314902', 'Porto Alegre', 'porto-alegre')
         ON CONFLICT (ibge_code) DO NOTHING;
     END IF;
 
     IF v_df_id IS NOT NULL THEN
         INSERT INTO public.brazil_cities (state_id, ibge_code, name, slug)
-        VALUES 
+        VALUES
             (v_df_id, '5300108', 'Brasília', 'brasilia')
         ON CONFLICT (ibge_code) DO NOTHING;
     END IF;

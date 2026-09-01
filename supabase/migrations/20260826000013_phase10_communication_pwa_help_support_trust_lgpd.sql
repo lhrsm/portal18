@@ -200,7 +200,7 @@ CREATE TABLE IF NOT EXISTS public.data_retention_policies (
 
 -- Seed default retention policies
 INSERT INTO public.data_retention_policies (policy_key, retention_days, description)
-VALUES 
+VALUES
     ('profile_history_days', 180, 'Histórico de visualização privada de perfis'),
     ('notification_days', 180, 'Histórico de notificações lidas do usuário'),
     ('deleted_media_grace_days', 30, 'Retenção temporária de mídias excluídas'),
@@ -229,7 +229,7 @@ BEGIN
     -- Check if active export already exists (rate limit: 1 active export)
     SELECT id INTO v_existing_id
     FROM public.data_export_requests
-    WHERE profile_id = v_profile_id 
+    WHERE profile_id = v_profile_id
       AND status IN ('requested', 'processing', 'ready')
       AND (expires_at IS NULL OR expires_at > now())
     LIMIT 1;
@@ -266,7 +266,7 @@ BEGIN
 
     -- Check if entity has legal hold
     SELECT EXISTS (
-        SELECT 1 FROM public.legal_holds 
+        SELECT 1 FROM public.legal_holds
         WHERE (entity_type = 'profile' AND entity_id = v_profile_id)
            OR (entity_type = 'advertiser' AND entity_id IN (SELECT id FROM public.advertiser_profiles WHERE profile_id = v_profile_id))
     ) INTO v_has_hold;
@@ -337,7 +337,7 @@ CREATE POLICY "comm_templates_select" ON public.communication_templates FOR SELE
 CREATE POLICY "comm_templates_admin" ON public.communication_templates FOR ALL TO authenticated USING (public.is_admin());
 
 -- push_subscriptions (Owner full access)
-CREATE POLICY "push_owner_all" ON public.push_subscriptions FOR ALL TO authenticated 
+CREATE POLICY "push_owner_all" ON public.push_subscriptions FOR ALL TO authenticated
     USING (profile_id = public.current_profile_id())
     WITH CHECK (profile_id = public.current_profile_id());
 
@@ -352,9 +352,9 @@ CREATE POLICY "tickets_owner_select" ON public.support_tickets FOR SELECT TO aut
 CREATE POLICY "tickets_owner_insert" ON public.support_tickets FOR INSERT TO authenticated WITH CHECK (profile_id = public.current_profile_id());
 CREATE POLICY "tickets_staff_all" ON public.support_tickets FOR ALL TO authenticated USING (public.is_staff());
 
-CREATE POLICY "messages_ticket_select" ON public.support_ticket_messages FOR SELECT TO authenticated 
+CREATE POLICY "messages_ticket_select" ON public.support_ticket_messages FOR SELECT TO authenticated
     USING (EXISTS (SELECT 1 FROM public.support_tickets st WHERE st.id = ticket_id AND (st.profile_id = public.current_profile_id() OR public.is_staff())));
-CREATE POLICY "messages_ticket_insert" ON public.support_ticket_messages FOR INSERT TO authenticated 
+CREATE POLICY "messages_ticket_insert" ON public.support_ticket_messages FOR INSERT TO authenticated
     WITH CHECK (EXISTS (SELECT 1 FROM public.support_tickets st WHERE st.id = ticket_id AND (st.profile_id = public.current_profile_id() OR public.is_staff())));
 
 -- data_export_requests (Owner read/insert)

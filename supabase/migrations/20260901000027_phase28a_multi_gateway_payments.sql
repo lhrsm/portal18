@@ -640,7 +640,7 @@ BEGIN
 
     -- Update provider status if appropriate
     UPDATE public.payment_providers
-    SET 
+    SET
         overall_status = p_stage,
         updated_at = now()
     WHERE id = v_prov_id;

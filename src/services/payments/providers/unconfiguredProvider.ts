@@ -57,6 +57,28 @@ export class UnconfiguredPaymentProvider implements PaymentProvider {
       commercial_status: 'NOT_APPLICABLE',
       compliance_status: 'NOT_APPLICABLE',
       adult_business_review_status: 'not_applicable',
+      contact_status: 'approved',
+      product_approvals: {
+        advertiser_subscription: { pix: 'approved', credit_card: 'approved', recurring_card: 'approved' },
+        consumer_subscription: { pix: 'approved', credit_card: 'approved', recurring_card: 'approved' },
+        boost: { pix: 'approved', credit_card: 'approved', recurring_card: 'approved' },
+      },
+      mcc_classification: {
+        requested_mcc: 'N/A',
+        requested_description: 'Mock Local Driver',
+        assigned_mcc: '0000',
+        assigned_description: 'Test Engine',
+        notes: 'Driver de teste interno.',
+      },
+      approval_evidence: {
+        protocol_number: 'INTERNAL-DRIVER',
+        contact_date: '2026-09-01T00:00:00Z',
+        last_interaction: '2026-09-01T00:00:00Z',
+        reviewer_name: 'Architecture Team',
+        evidence_document_url: null,
+        restrictions_notes: 'Exclusivo para ambiente de testes e simulação controlada.',
+      },
+      external_actions: [],
       is_sandbox_configured: true,
       is_production_configured: false,
       is_production_eligible: false, // NEVER ELIGIBLE FOR PRODUCTION

@@ -110,10 +110,10 @@ BEGIN
 
     v_dlat := radians(p_lat2 - p_lat1);
     v_dlon := radians(p_lon2 - p_lon1);
-    
+
     v_a := sin(v_dlat / 2)^2 + cos(radians(p_lat1)) * cos(radians(p_lat2)) * sin(v_dlon / 2)^2;
     v_c := 2 * atan2(sqrt(v_a), sqrt(1 - v_a));
-    
+
     RETURN round(v_r * v_c, 1);
 END;
 $$;
@@ -150,7 +150,7 @@ BEGIN
         v_weights.trust_weight := 0.10;
     END IF;
 
-    FOR v_adv IN 
+    FOR v_adv IN
         SELECT ap.id, ap.profile_status, ap.visibility, ap.verification_status, ap.last_active_at, ap.created_at, ap.headline, ap.bio
         FROM public.advertiser_profiles ap
         WHERE (p_advertiser_id IS NULL OR ap.id = p_advertiser_id)
@@ -285,13 +285,13 @@ BEGIN
     END IF;
 
     RETURN QUERY
-    SELECT 
+    SELECT
         c.id AS city_id,
         c.name AS city_name,
         c.slug AS city_slug,
         s.code AS state_code,
         public.calculate_distance_km(v_origin_lat, v_origin_lon, c.latitude, c.longitude) AS distance_km,
-        CASE 
+        CASE
             WHEN c.id = p_city_id THEN 'Na sua cidade'
             WHEN public.calculate_distance_km(v_origin_lat, v_origin_lon, c.latitude, c.longitude) <= 25 THEN 'Até 25 km'
             ELSE 'Região próxima'
@@ -300,7 +300,7 @@ BEGIN
     FROM public.brazil_cities c
     JOIN public.brazil_states s ON c.state_id = s.id
     LEFT JOIN public.advertiser_profiles ap ON ap.city_id = c.id AND ap.profile_status = 'active' AND ap.visibility = 'public' AND ap.deleted_at IS NULL
-    WHERE c.latitude IS NOT NULL 
+    WHERE c.latitude IS NOT NULL
       AND c.longitude IS NOT NULL
       AND public.calculate_distance_km(v_origin_lat, v_origin_lon, c.latitude, c.longitude) <= p_radius_km
     GROUP BY c.id, c.name, c.slug, s.code, c.latitude, c.longitude
@@ -337,7 +337,7 @@ BEGIN
     SELECT city_id INTO v_city_id FROM public.advertiser_profiles WHERE id = p_advertiser_id;
 
     RETURN QUERY
-    SELECT 
+    SELECT
         ap.id AS advertiser_id,
         ap.slug,
         ap.stage_name,
@@ -347,13 +347,13 @@ BEGIN
         ap.headline,
         coalesce(am.thumbnail_path, am.storage_path) AS thumbnail_url,
         ap.verification_status::text,
-        CASE 
+        CASE
             WHEN ap.last_active_at > (now() - INTERVAL '24 hours') THEN 'Ativo hoje'
             WHEN ap.last_active_at > (now() - INTERVAL '3 days') THEN 'Ativo recentemente'
             ELSE 'Ativo esta semana'
         END AS activity_label,
         EXISTS (
-            SELECT 1 FROM public.advertiser_campaigns ac 
+            SELECT 1 FROM public.advertiser_campaigns ac
             WHERE ac.advertiser_id = ap.id AND ac.status = 'active' AND ac.starts_at <= now() AND ac.ends_at >= now()
         ) AS is_sponsored
     FROM public.advertiser_profiles ap
@@ -361,9 +361,9 @@ BEGIN
     JOIN public.brazil_states s ON ap.state_id = s.id
     LEFT JOIN public.advertiser_ranking_scores rs ON ap.id = rs.advertiser_id
     LEFT JOIN LATERAL (
-        SELECT storage_path, thumbnail_path 
-        FROM public.advertiser_media 
-        WHERE advertiser_id = ap.id AND moderation_status = 'approved' AND deleted_at IS NULL 
+        SELECT storage_path, thumbnail_path
+        FROM public.advertiser_media
+        WHERE advertiser_id = ap.id AND moderation_status = 'approved' AND deleted_at IS NULL
         ORDER BY is_primary DESC, position ASC LIMIT 1
     ) am ON true
     WHERE ap.id <> p_advertiser_id -- Requirement 50: strictly exclude own profile
@@ -422,7 +422,7 @@ BEGIN
     END IF;
 
     RETURN QUERY
-    SELECT 
+    SELECT
         ap.id AS advertiser_id,
         ap.slug,
         ap.stage_name,
@@ -433,12 +433,12 @@ BEGIN
         ap.headline,
         coalesce(am.thumbnail_path, am.storage_path) AS thumbnail_url,
         ap.verification_status::text,
-        CASE 
+        CASE
             WHEN ap.last_active_at > (now() - INTERVAL '24 hours') THEN 'Ativo hoje'
             WHEN ap.last_active_at > (now() - INTERVAL '3 days') THEN 'Ativo recentemente'
             ELSE 'Ativo esta semana'
         END AS activity_label,
-        CASE 
+        CASE
             WHEN v_origin_lat IS NULL OR c.latitude IS NULL THEN 'Região'
             WHEN ap.city_id = p_origin_city_id THEN 'Na sua cidade'
             WHEN public.calculate_distance_km(v_origin_lat, v_origin_lon, c.latitude, c.longitude) <= 25 THEN 'Até 25 km'
@@ -446,7 +446,7 @@ BEGIN
             ELSE 'Região próxima'
         END AS distance_label,
         EXISTS (
-            SELECT 1 FROM public.advertiser_campaigns ac 
+            SELECT 1 FROM public.advertiser_campaigns ac
             WHERE ac.advertiser_id = ap.id AND ac.status = 'active' AND ac.starts_at <= now() AND ac.ends_at >= now()
         ) AS is_sponsored,
         coalesce(rs.organic_score, 50.0) AS organic_score
@@ -455,9 +455,9 @@ BEGIN
     JOIN public.brazil_states s ON ap.state_id = s.id
     LEFT JOIN public.advertiser_ranking_scores rs ON ap.id = rs.advertiser_id
     LEFT JOIN LATERAL (
-        SELECT storage_path, thumbnail_path 
-        FROM public.advertiser_media 
-        WHERE advertiser_id = ap.id AND moderation_status = 'approved' AND deleted_at IS NULL 
+        SELECT storage_path, thumbnail_path
+        FROM public.advertiser_media
+        WHERE advertiser_id = ap.id AND moderation_status = 'approved' AND deleted_at IS NULL
         ORDER BY is_primary DESC, position ASC LIMIT 1
     ) am ON true
     WHERE ap.profile_status = 'active'
@@ -488,7 +488,7 @@ BEGIN
           OR unaccent(coalesce(ap.headline, '')) ILIKE '%' || unaccent(trim(p_query)) || '%'
           OR unaccent(c.name) ILIKE '%' || unaccent(trim(p_query)) || '%'
       ))
-    ORDER BY 
+    ORDER BY
         is_sponsored DESC,
         organic_score DESC,
         ap.created_at DESC

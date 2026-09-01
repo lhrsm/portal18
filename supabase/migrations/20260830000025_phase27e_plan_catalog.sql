@@ -206,7 +206,7 @@ BEGIN
     v_entitlements := public.get_advertiser_entitlements(p_advertiser_id);
 
     -- 2. Count Usage Assets
-    SELECT 
+    SELECT
         COUNT(*) FILTER (WHERE media_type <> 'video'),
         COUNT(*) FILTER (WHERE media_type = 'video')
     INTO v_photo_count, v_video_count

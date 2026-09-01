@@ -6,7 +6,7 @@
 DO $$
 BEGIN
     ALTER TABLE public.authenticity_challenges DROP CONSTRAINT IF EXISTS authenticity_challenges_status_check;
-    ALTER TABLE public.authenticity_challenges ADD CONSTRAINT authenticity_challenges_status_check 
+    ALTER TABLE public.authenticity_challenges ADD CONSTRAINT authenticity_challenges_status_check
         CHECK (status IN ('issued', 'submitted', 'expired', 'verified', 'rejected', 'superseded', 'revoked'));
 EXCEPTION
     WHEN OTHERS THEN null;

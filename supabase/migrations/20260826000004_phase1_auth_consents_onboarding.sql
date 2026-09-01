@@ -75,7 +75,7 @@ BEGIN
     -- Lowercase and remove accents / invalid chars
     v_clean_slug := lower(regexp_replace(p_base_name, '[^a-zA-Z0-9]+', '-', 'g'));
     v_clean_slug := trim(both '-' from v_clean_slug);
-    
+
     IF v_clean_slug IS NULL OR length(v_clean_slug) < 2 THEN
         v_clean_slug := 'anunciante-' || substr(gen_random_uuid()::text, 1, 8);
     END IF;
@@ -178,13 +178,13 @@ BEGIN
     WHERE id = v_profile_id AND account_type = 'user';
 
     -- Retrieve current advertiser_terms document ID if exists
-    SELECT id INTO v_doc_id FROM public.legal_documents 
-    WHERE document_type = 'advertiser_terms' AND active = true 
+    SELECT id INTO v_doc_id FROM public.legal_documents
+    WHERE document_type = 'advertiser_terms' AND active = true
     ORDER BY published_at DESC LIMIT 1;
 
     -- Record consents
     INSERT INTO public.consent_records (profile_id, consent_type, document_id, granted, source)
-    VALUES 
+    VALUES
         (v_profile_id, 'advertiser_terms', v_doc_id, true, 'become_advertiser_flow'),
         (v_profile_id, 'age_declaration', NULL, true, 'become_advertiser_flow');
 
