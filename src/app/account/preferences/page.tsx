@@ -174,6 +174,19 @@ export default function PreferencesPage() {
         </Button>
       </div>
 
+      {/* Privacy Notice Banner */}
+      <Card variant="glass" padding="md" style={{ marginBottom: '1.5rem', background: 'rgba(229, 185, 92, 0.04)', border: '1px solid rgba(229, 185, 92, 0.2)' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+          <ShieldCheck size={20} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '0.2rem' }}>
+              Privacidade Absoluta & Preferências Voluntárias
+            </strong>
+            Suas preferências são estritamente privadas e utilizadas apenas para organizar sua experiência no Portal18. O sistema nunca infere orientação sexual, identidade pessoal ou constrói perfis de rastreamento para venda ou publicidade de terceiros.
+          </div>
+        </div>
+      </Card>
+
       <form onSubmit={handleSave}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
           {/* Card 1: Cidade Preferida */}

@@ -13,20 +13,46 @@ export const searchService = {
     const offset = (page - 1) * limit;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.rpc as any)('search_profiles_discovery_v2', {
+    let { data, error } = await (supabase.rpc as any)('search_profiles_discovery_v3', {
       p_query: filters.query || null,
       p_state_code: filters.stateCode || null,
       p_city_slug: filters.citySlug || null,
       p_origin_city_id: filters.originCityId || null,
       p_radius_km: filters.radiusKm || 50,
       p_category_slug: filters.categorySlug || null,
+      p_gender: filters.gender || filters.identity || null,
+      p_target_audience: filters.targetAudience || null,
+      p_service_modality: filters.serviceModality || null,
       p_verified_only: Boolean(filters.verifiedOnly),
       p_with_video: Boolean(filters.withVideo),
       p_activity_filter: filters.activityFilter || null,
       p_sort_by: filters.sortBy || 'relevance',
-      p_limit: limit + 1, // Fetch +1 to check for hasMore without full count query
+      p_limit: limit + 1,
       p_offset: offset,
     });
+
+    if (error || !data || data.length === 0) {
+      // Fallback to v2 RPC
+      const v2Res = await (supabase.rpc as any)('search_profiles_discovery_v2', {
+        p_query: filters.query || null,
+        p_state_code: filters.stateCode || null,
+        p_city_slug: filters.citySlug || null,
+        p_origin_city_id: filters.originCityId || null,
+        p_radius_km: filters.radiusKm || 50,
+        p_category_slug: filters.categorySlug || null,
+        p_verified_only: Boolean(filters.verifiedOnly),
+        p_with_video: Boolean(filters.withVideo),
+        p_activity_filter: filters.activityFilter || null,
+        p_sort_by: filters.sortBy || 'relevance',
+        p_limit: limit + 1,
+        p_offset: offset,
+      });
+
+      if (!v2Res.error && v2Res.data && v2Res.data.length > 0) {
+        data = v2Res.data;
+        error = null;
+      }
+    }
 
     if (error || !data || data.length === 0) {
       // Seamless fallback to public profiles

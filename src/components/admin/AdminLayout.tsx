@@ -34,7 +34,8 @@ import {
   Layers,
   RotateCcw,
   Bell,
-  Award
+  Award,
+  Search
 } from 'lucide-react';
 
 export interface AdminLayoutProps {
@@ -63,6 +64,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/risk', label: 'Risco & Antifraude', icon: <Activity size={18} />, allowed: isAdmin },
     { href: '/admin/trust-safety', label: 'Trust & Safety Operations', icon: <ShieldAlert size={18} />, allowed: isModerator },
     { href: '/admin/reputation', label: 'Reputação & Qualidade', icon: <Award size={18} />, allowed: isAdmin },
+    { href: '/admin/search', label: 'Operações de Busca & Sinônimos', icon: <Search size={18} />, allowed: isAdmin },
     { href: '/admin/plans', label: 'Planos & Preços', icon: <Crown size={18} />, allowed: isAdmin },
     { href: '/admin/payments', label: 'Faturamento', icon: <CreditCard size={18} />, allowed: isAdmin },
     { href: '/admin/finance', label: 'Gestão Financeira & Fechamento', icon: <Scale size={18} />, allowed: isAdmin },
