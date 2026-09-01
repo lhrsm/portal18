@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
-import { ConsumerCatalog, ConsumerEntitlements } from '@/types/app.types';
+import { ConsumerCatalog, ConsumerEntitlements, ConsumerSubscription } from '@/types/app.types';
 
 export const consumerSubscriptionService = {
   /**
@@ -53,6 +53,30 @@ export const consumerSubscriptionService = {
       return data as ConsumerEntitlements;
     } catch {
       return defaultEntitlements;
+    }
+  },
+
+  /**
+   * Fetches the current subscription and entitlements for a consumer account.
+   */
+  async getSubscriptionDetails(userId: string): Promise<{ subscription: ConsumerSubscription | null; entitlements: ConsumerEntitlements }> {
+    const supabase = createClient();
+    const entitlements = await this.getConsumerEntitlements(userId);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.from('consumer_subscriptions') as any)
+        .select('*')
+        .eq('user_profile_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error || !data) {
+        return { subscription: null, entitlements };
+      }
+      return { subscription: data as ConsumerSubscription, entitlements };
+    } catch {
+      return { subscription: null, entitlements };
     }
   },
 };

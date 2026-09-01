@@ -188,6 +188,17 @@ export type ChargebackStatus =
   | 'lost'
   | 'closed';
 
+export type BillingCycleStatus =
+  | 'scheduled'
+  | 'due'
+  | 'processing'
+  | 'paid'
+  | 'failed'
+  | 'grace_period'
+  | 'expired'
+  | 'cancelled'
+  | 'requires_reconciliation';
+
 export type ProviderHealthState = 'unknown' | 'healthy' | 'degraded' | 'unavailable';
 
 export interface BusinessModelReviewData {
@@ -282,6 +293,65 @@ export interface CanonicalOrder {
   cancelled_at?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface BillingCycle {
+  id: string;
+  subscription_type: 'advertiser' | 'consumer';
+  subscription_id: string;
+  advertiser_id?: string | null;
+  user_profile_id?: string | null;
+  cycle_number: number;
+  period_start: string;
+  period_end: string;
+  amount_minor: number;
+  currency: string;
+  pricing_snapshot: {
+    plan_name: string;
+    billing_period: string;
+    duration_days: number;
+    unit_price_minor: number;
+    discount_minor: number;
+    total_minor: number;
+  };
+  status: BillingCycleStatus;
+  payment_due_at: string;
+  grace_ends_at?: string | null;
+  paid_at?: string | null;
+  failed_at?: string | null;
+  failure_category?: PaymentFailureCategory | null;
+  failure_message?: string | null;
+  retry_count: number;
+  next_retry_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BillingRecoveryEvent {
+  id: string;
+  billing_cycle_id?: string;
+  subscription_id: string;
+  subscription_type: string;
+  profile_id?: string;
+  event_type: string;
+  failure_category?: string;
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
+export interface RetryPolicyConfig {
+  maxRetries: number;
+  retryDelaysHours: number[];
+  graceDurationDays: number;
+  eligibleFailureCategories: PaymentFailureCategory[];
+}
+
+export interface ManualRetryResult {
+  success: boolean;
+  cycleId: string;
+  status: BillingCycleStatus;
+  paymentAttemptReference?: string;
+  error?: string;
 }
 
 export interface CreateOrderParams {
