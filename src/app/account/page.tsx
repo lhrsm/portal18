@@ -27,32 +27,43 @@ import {
   ArrowRight,
   Sparkles,
   CheckCircle2,
-  Clock
+  Clock,
+  Crown
 } from 'lucide-react';
+import { consumerSubscriptionService } from '@/services/consumerSubscriptionService';
+import { ConsumerEntitlements } from '@/types/app.types';
 
 export default function AccountPage() {
   const { user, profile, roles, isLoading, isAdvertiser } = useAuth();
   const [advertiser, setAdvertiser] = useState<AdvertiserProfile | null>(null);
   const [completeness, setCompleteness] = useState<CompletenessResult | null>(null);
+  const [consumerEntitlements, setConsumerEntitlements] = useState<ConsumerEntitlements | null>(null);
 
   useEffect(() => {
-    async function loadAdvertiserStatus() {
-      if (profile && isAdvertiser) {
-        const adv = await advertisersService.getOwnAdvertiserProfile(profile.id);
-        if (adv) {
-          setAdvertiser(adv);
-          const [media, contacts, catIds] = await Promise.all([
-            mediaService.getAdvertiserMedia(adv.id),
-            contactsService.getContactsByAdvertiser(adv.id),
-            advertisersService.getAdvertiserCategoryIds(adv.id),
-          ]);
-          const comp = completenessService.calculateProfileCompleteness(adv, media, contacts, catIds.length);
-          setCompleteness(comp);
+    async function loadData() {
+      if (profile) {
+        const [entitlements] = await Promise.all([
+          consumerSubscriptionService.getConsumerEntitlements(profile.id),
+        ]);
+        setConsumerEntitlements(entitlements);
+
+        if (isAdvertiser) {
+          const adv = await advertisersService.getOwnAdvertiserProfile(profile.id);
+          if (adv) {
+            setAdvertiser(adv);
+            const [media, contacts, catIds] = await Promise.all([
+              mediaService.getAdvertiserMedia(adv.id),
+              contactsService.getContactsByAdvertiser(adv.id),
+              advertisersService.getAdvertiserCategoryIds(adv.id),
+            ]);
+            const comp = completenessService.calculateProfileCompleteness(adv, media, contacts, catIds.length);
+            setCompleteness(comp);
+          }
         }
       }
     }
     if (!isLoading) {
-      loadAdvertiserStatus();
+      loadData();
     }
   }, [profile, isAdvertiser, isLoading]);
 
@@ -99,6 +110,42 @@ export default function AccountPage() {
           </Link>
         )}
       </div>
+
+      {/* PORTAL18 PREMIUM MEMBERSHIP BANNER */}
+      <Card
+        variant="glass"
+        padding="md"
+        style={{
+          border: consumerEntitlements?.is_premium ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)',
+          background: consumerEntitlements?.is_premium ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(0, 0, 0, 0.4) 100%)' : 'var(--bg-secondary)',
+          marginBottom: '2rem',
+        }}
+      >
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1.25rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+              <Crown size={18} color="var(--accent-gold)" />
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--accent-gold)' }}>
+                {consumerEntitlements?.is_premium ? 'Membro Portal18 Premium Ativo' : 'Portal18 Premium (Membro)'}
+              </h3>
+              <Badge variant={consumerEntitlements?.is_premium ? 'gold' : 'neutral'}>
+                {consumerEntitlements?.is_premium ? 'Assinante' : 'Plano Gratuito'}
+              </Badge>
+            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0 }}>
+              {consumerEntitlements?.is_premium
+                ? 'Você tem acesso liberado a vídeos exclusivos, leitura de avaliações completas e alertas inteligentes.'
+                : 'Acesse vídeos exclusivos de anunciantes, leia avaliações completas moderadas e receba alertas.'}
+            </p>
+          </div>
+
+          <Link href="/premium">
+            <Button variant={consumerEntitlements?.is_premium ? 'outline' : 'primary'} size="sm" rightIcon={<ArrowRight size={14} />}>
+              {consumerEntitlements?.is_premium ? 'Gerenciar Benefícios' : 'Conhecer Portal18 Premium'}
+            </Button>
+          </Link>
+        </div>
+      </Card>
 
       {/* ADVERTISER ONBOARDING RESUME BANNER (If advertiser with draft or incomplete profile) */}
       {isAdvertiser && advertiser && (advertiser.profile_status === 'draft' || !advertiser.onboarding_completed) && (

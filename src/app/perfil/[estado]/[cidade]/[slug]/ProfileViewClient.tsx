@@ -20,6 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AdvertiserCard } from '@/components/public/AdvertiserCard';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/hooks/useToast';
 import { 
@@ -34,11 +35,19 @@ import {
   Sparkles, 
   ChevronRight,
   Maximize2,
-  CheckCircle2
+  CheckCircle2,
+  Star,
+  Video,
+  Crown,
+  Lock,
+  MessageSquare
 } from 'lucide-react';
 import { AgeGateModal } from '@/components/ageVerification/AgeGateModal';
 import { ageVerificationService } from '@/services/ageVerification/ageVerificationService';
 import { ProfileAudioPlayer } from '@/components/public/ProfileAudioPlayer';
+import { consumerSubscriptionService } from '@/services/consumerSubscriptionService';
+import { reviewService } from '@/services/reviewService';
+import { ProfileReviewsResponse, ConsumerEntitlements } from '@/types/app.types';
 
 // Dynamic imports for heavy non-critical modals
 const GalleryLightbox = dynamic(
@@ -147,6 +156,18 @@ export function ProfileViewClient({
   const [isLoading, setIsLoading] = useState(!initialAdv);
   const [isAgeVerified, setIsAgeVerified] = useState(true);
 
+  // Phase 27F: Consumer Entitlements & Reviews State
+  const [consumerEntitlements, setConsumerEntitlements] = useState<ConsumerEntitlements | null>(null);
+  const [reviewsData, setReviewsData] = useState<ProfileReviewsResponse | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    ratingComm: 5,
+    ratingAcc: 5,
+    ratingProf: 5,
+    comment: '',
+    isSubmitting: false,
+  });
+
   useEffect(() => {
     setIsAgeVerified(ageVerificationService.isAgeVerified());
   }, []);
@@ -169,13 +190,18 @@ export function ProfileViewClient({
         setAdvertiser(adv);
         setIsLoading(false);
 
-        // Fetch media and contacts using server-authoritative resolver
-        const [approvedMedia, advContacts] = await Promise.all([
+        // Fetch media, contacts, reviews, and viewer entitlements in parallel
+        const [approvedMedia, advContacts, revData, entitlements] = await Promise.all([
           mediaService.getApprovedPublicMedia(adv.advertiser_id),
           contactsService.getPublicContacts(adv.advertiser_id),
+          reviewService.getProfileReviews(adv.advertiser_id, user?.id),
+          consumerSubscriptionService.getConsumerEntitlements(user?.id),
         ]);
 
         if (!isMounted) return;
+
+        setReviewsData(revData);
+        setConsumerEntitlements(entitlements);
 
         if (approvedMedia && approvedMedia.length > 0) {
           setMediaList(approvedMedia);
@@ -343,6 +369,51 @@ export function ProfileViewClient({
     } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href);
       showToast({ type: 'success', title: 'Link Copiado', message: 'Link do perfil copiado para a área de transferência!' });
+    }
+  };
+
+  const handleOpenReviewModal = () => {
+    if (!user) {
+      showToast({ type: 'info', title: 'Autenticação Necessária', message: 'Faça login para enviar uma avaliação.' });
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+    if (advertiser && user && profile && profile.id === advertiser.profile_id) {
+      showToast({ type: 'warning', title: 'Ação não permitida', message: 'Não é permitido avaliar seu próprio perfil de anunciante.' });
+      return;
+    }
+    setIsReviewModalOpen(true);
+  };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!advertiser) return;
+
+    setReviewForm((prev) => ({ ...prev, isSubmitting: true }));
+    const res = await reviewService.submitReview({
+      advertiser_id: advertiser.advertiser_id,
+      rating_communication: reviewForm.ratingComm,
+      rating_accuracy: reviewForm.ratingAcc,
+      rating_professionalism: reviewForm.ratingProf,
+      comment: reviewForm.comment.trim() || undefined,
+    });
+
+    setReviewForm((prev) => ({ ...prev, isSubmitting: false }));
+
+    if (res.success) {
+      showToast({
+        type: 'success',
+        title: 'Avaliação Enviada',
+        message: res.message || 'Sua avaliação foi enviada e será publicada após moderação.',
+      });
+      setIsReviewModalOpen(false);
+      setReviewForm({ ratingComm: 5, ratingAcc: 5, ratingProf: 5, comment: '', isSubmitting: false });
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Erro ao Enviar',
+        message: res.error || 'Não foi possível enviar a avaliação.',
+      });
     }
   };
 
@@ -774,7 +845,279 @@ export function ProfileViewClient({
         </div>
       </div>
 
-      {/* 3. SIMILAR PROFILES IN SAME REGION */}
+      {/* 2. COMMERCIAL & EXCLUSIVE VIDEOS SECTION */}
+      {mediaList.some((m) => m.media_type === 'video') && (
+        <section style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '2.5rem', marginBottom: '2.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+            <Video size={22} color="var(--accent-gold)" />
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0 }}>Vídeos de Apresentação</h2>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+            {mediaList.filter((m) => m.media_type === 'video').map((vid) => {
+              const isPremiumLocked = (vid as any).audience === 'consumer_premium' && !consumerEntitlements?.entitlements?.can_watch_premium_videos;
+
+              if (isPremiumLocked) {
+                return (
+                  <Card key={vid.id} variant="glass" padding="md" style={{ border: '1px solid var(--accent-gold)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div style={{ position: 'relative', height: '180px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                      {vid.thumbnail_path ? (
+                        <Image src={vid.thumbnail_path} alt="Vídeo Exclusivo" fill style={{ objectFit: 'cover', filter: 'blur(8px) brightness(0.6)' }} />
+                      ) : null}
+                      <div style={{ position: 'absolute', textAlign: 'center', padding: '1rem' }}>
+                        <Lock size={32} color="var(--accent-gold)" style={{ margin: '0 auto 0.5rem auto' }} />
+                        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', display: 'block' }}>Vídeo Exclusivo Premium</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Disponível para assinantes Portal18 Premium</span>
+                      </div>
+                    </div>
+                    <Link href="/premium">
+                      <Button variant="primary" size="sm" fullWidth leftIcon={<Crown size={14} />}>
+                        Conhecer Portal18 Premium
+                      </Button>
+                    </Link>
+                  </Card>
+                );
+              }
+
+              return (
+                <Card key={vid.id} variant="glass" padding="md">
+                  <video
+                    src={vid.storage_path}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    style={{ width: '100%', height: '220px', borderRadius: 'var(--radius-sm)', objectFit: 'cover', backgroundColor: '#000' }}
+                  />
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Vídeo verificado e moderado
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* 3. STRUCTURED & MODERATED REVIEWS SECTION */}
+      <section style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '2.5rem', marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Star size={22} color="var(--accent-gold)" fill="var(--accent-gold)" />
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0 }}>
+                Avaliações da Comunidade
+                {reviewsData?.summary.total_reviews ? ` (${reviewsData.summary.total_reviews})` : ''}
+              </h2>
+            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.2rem 0 0 0' }}>
+              Avaliações reais submetidas por usuários autenticados e moderadas pela equipe
+            </p>
+          </div>
+
+          <Button variant="outline" size="sm" onClick={handleOpenReviewModal} leftIcon={<MessageSquare size={14} />}>
+            Avaliar Perfil
+          </Button>
+        </div>
+
+        {/* Rating Summary Card */}
+        {reviewsData && reviewsData.summary.total_reviews > 0 && (
+          <Card variant="glass" padding="lg" style={{ marginBottom: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'center' }}>
+              <div style={{ textAlign: 'center', borderRight: '1px solid var(--border-subtle)' }}>
+                <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--accent-gold)' }}>
+                  {reviewsData.summary.avg_overall}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  Média Geral ({reviewsData.summary.total_reviews} avaliações)
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Comunicação:</span>
+                  <strong>{reviewsData.summary.avg_communication} / 5.0</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Precisão da Descrição:</span>
+                  <strong>{reviewsData.summary.avg_accuracy} / 5.0</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Profissionalismo:</span>
+                  <strong>{reviewsData.summary.avg_professionalism} / 5.0</strong>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Reviews List */}
+        {reviewsData && reviewsData.reviews.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {reviewsData.reviews.map((rev) => (
+              <Card key={rev.id} variant="glass" padding="md">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Badge variant="neutral">{rev.reviewer_label}</Badge>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      {new Date(rev.created_at).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--accent-gold)', fontWeight: 700, fontSize: '0.9rem' }}>
+                    <Star size={14} fill="var(--accent-gold)" />
+                    {rev.rating_overall}
+                  </div>
+                </div>
+
+                {rev.comment && (
+                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0.5rem 0' }}>
+                    &ldquo;{rev.comment}&rdquo;
+                  </p>
+                )}
+
+                {rev.is_truncated && (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <Link href="/premium" style={{ fontSize: '0.775rem', color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 600 }}>
+                      Assine o Portal18 Premium para ler o relato completo →
+                    </Link>
+                  </div>
+                )}
+
+                {rev.advertiser_response && (
+                  <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--accent-gold)' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: '0.25rem' }}>
+                      Resposta do Anunciante:
+                    </span>
+                    <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', margin: 0 }}>
+                      {rev.advertiser_response}
+                    </p>
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '2rem 1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: 0 }}>
+              Este anúncio ainda não possui avaliações moderadas. Seja o primeiro a avaliar!
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* Review Submission Modal */}
+      {isReviewModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="review-modal-title"
+          style={{ position: 'fixed', inset: 0, zIndex: 100, backgroundColor: 'rgba(0, 0, 0, 0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+        >
+          <Card variant="glass" padding="lg" style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 id="review-modal-title" style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>
+                Avaliar {advertiser.stage_name}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsReviewModalOpen(false)}
+                aria-label="Fechar formulário de avaliação"
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.25rem', cursor: 'pointer', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleReviewSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* Dimensional Rating 1: Comunicação */}
+              <div>
+                <label htmlFor="rating-comm" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                  Comunicação & Atendimento (1 a 5 estrelas):
+                </label>
+                <select
+                  id="rating-comm"
+                  aria-label="Nota de Comunicação de 1 a 5"
+                  value={reviewForm.ratingComm}
+                  onChange={(e) => setReviewForm({ ...reviewForm, ratingComm: Number(e.target.value) })}
+                  style={{ width: '100%', minHeight: '44px', padding: '0.5rem', background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)' }}
+                >
+                  <option value={5}>5 estrelas — Excelente</option>
+                  <option value={4}>4 estrelas — Muito Bom</option>
+                  <option value={3}>3 estrelas — Regular</option>
+                  <option value={2}>2 estrelas — Ruim</option>
+                  <option value={1}>1 estrela — Péssimo</option>
+                </select>
+              </div>
+
+              {/* Dimensional Rating 2: Precisão */}
+              <div>
+                <label htmlFor="rating-acc" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                  Precisão da Descrição & Fotos (1 a 5 estrelas):
+                </label>
+                <select
+                  id="rating-acc"
+                  aria-label="Nota de Precisão de 1 a 5"
+                  value={reviewForm.ratingAcc}
+                  onChange={(e) => setReviewForm({ ...reviewForm, ratingAcc: Number(e.target.value) })}
+                  style={{ width: '100%', minHeight: '44px', padding: '0.5rem', background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)' }}
+                >
+                  <option value={5}>5 estrelas — 100% Fiel ao Anúncio</option>
+                  <option value={4}>4 estrelas — Muito Parecido</option>
+                  <option value={3}>3 estrelas — Razoável</option>
+                  <option value={2}>2 estrelas — Pouco Fiel</option>
+                  <option value={1}>1 estrela — Totalmente Diferente</option>
+                </select>
+              </div>
+
+              {/* Dimensional Rating 3: Profissionalismo */}
+              <div>
+                <label htmlFor="rating-prof" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                  Pontualidade & Profissionalismo (1 a 5 estrelas):
+                </label>
+                <select
+                  id="rating-prof"
+                  aria-label="Nota de Profissionalismo de 1 a 5"
+                  value={reviewForm.ratingProf}
+                  onChange={(e) => setReviewForm({ ...reviewForm, ratingProf: Number(e.target.value) })}
+                  style={{ width: '100%', minHeight: '44px', padding: '0.5rem', background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)' }}
+                >
+                  <option value={5}>5 estrelas — Altamente Profissional</option>
+                  <option value={4}>4 estrelas — Bom</option>
+                  <option value={3}>3 estrelas — Regular</option>
+                  <option value={2}>2 estrelas — Deixou a desejar</option>
+                  <option value={1}>1 estrela — Desrespeitoso</option>
+                </select>
+              </div>
+
+              {/* Comment text area */}
+              <div>
+                <label htmlFor="review-comment" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                  Comentário Opcional (Máx. 1000 caracteres):
+                </label>
+                <textarea
+                  id="review-comment"
+                  rows={4}
+                  maxLength={1000}
+                  placeholder="Compartilhe detalhes sobre sua experiência respeitando as diretrizes da comunidade..."
+                  value={reviewForm.comment}
+                  onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                  style={{ width: '100%', padding: '0.75rem', background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <Button type="button" variant="ghost" onClick={() => setIsReviewModalOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" variant="primary" disabled={reviewForm.isSubmitting}>
+                  {reviewForm.isSubmitting ? 'Enviando...' : 'Enviar Avaliação'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {/* 4. SIMILAR PROFILES IN SAME REGION */}
       {similarProfiles.length > 0 && (
         <section style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '2.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.25rem' }}>

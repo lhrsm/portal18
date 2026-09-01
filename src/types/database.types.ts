@@ -328,6 +328,7 @@ export type Database = {
       advertiser_media: {
         Row: {
           advertiser_id: string
+          audience: string | null
           card_path: string | null
           content_hash: string | null
           created_at: string

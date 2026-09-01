@@ -139,10 +139,31 @@ export default function AdvertiserGalleryPage() {
 
   const handleSetMainPhoto = async (mediaId: string) => {
     if (!advertiser) return;
-    const res = await mediaService.setMainPhoto(advertiser.id, mediaId);
+    const reordered = [mediaId, ...mediaList.filter((m) => m.id !== mediaId).map((m) => m.id)];
+    const res = await mediaService.reorderMedia(advertiser.id, reordered);
     if (res.success) {
-      showToast({ type: 'success', title: 'Capa Atualizada', message: 'A imagem foi definida como capa principal do anúncio.' });
-      await loadData();
+      showToast({ type: 'success', title: 'Foto de Capa Atualizada', message: 'A foto principal foi alterada.' });
+      loadData();
+    }
+  };
+
+  const handleToggleVideoAudience = async (mediaId: string, currentAudience?: string | null) => {
+    const nextAudience = currentAudience === 'consumer_premium' ? 'age_verified' : 'consumer_premium';
+    // Update audience directly via supabase client
+    const { createClient } = await import('@/lib/supabase/client');
+    const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from('advertiser_media') as any)
+      .update({ audience: nextAudience })
+      .eq('id', mediaId);
+
+    if (!error) {
+      showToast({
+        type: 'info',
+        title: 'Audiência Atualizada',
+        message: nextAudience === 'consumer_premium' ? 'Vídeo agora é Exclusivo para assinantes Portal18 Premium.' : 'Vídeo agora é visível para todos os visitantes 18+ verificados.',
+      });
+      loadData();
     }
   };
 
@@ -504,7 +525,7 @@ export default function AdvertiserGalleryPage() {
                       </Button>
                     </div>
 
-                    {/* Main / Delete Buttons */}
+                    {/* Main / Audience / Delete Buttons */}
                     <div style={{ display: 'flex', gap: '0.35rem' }}>
                       {!isMainPhoto && media.media_type === 'image' && (
                         <Button
@@ -514,6 +535,17 @@ export default function AdvertiserGalleryPage() {
                           style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}
                         >
                           Capa
+                        </Button>
+                      )}
+                      {media.media_type === 'video' && (
+                        <Button
+                          variant={media.audience === 'consumer_premium' ? 'primary' : 'outline'}
+                          size="sm"
+                          onClick={() => handleToggleVideoAudience(media.id, media.audience)}
+                          style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}
+                          title="Alterar audiência do vídeo"
+                        >
+                          {media.audience === 'consumer_premium' ? '★ Premium' : '18+ Público'}
                         </Button>
                       )}
                       <Button

@@ -961,3 +961,93 @@ export interface AdvertiserCommercialSummary {
   } | null;
   error?: string;
 }
+
+// ============================================================================
+// Phase 27F Models — Consumer Premium, Exclusive Media & Reviews Foundation
+// ============================================================================
+
+export interface ConsumerPlan {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  sort_order: number;
+  features: string[];
+  pricing: Record<string, PlanPeriodPricing>;
+}
+
+export interface ConsumerSubscription {
+  id: string;
+  user_profile_id: string;
+  plan_id: string;
+  status: 'inactive' | 'active' | 'grace_period' | 'cancelled' | 'expired' | 'suspended' | string;
+  current_period_start?: string | null;
+  current_period_end?: string | null;
+  cancel_at_period_end: boolean;
+  cancelled_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConsumerCatalog {
+  success: boolean;
+  plans: ConsumerPlan[];
+  periods: BillingPeriod[];
+  policy_version: string;
+}
+
+export interface ConsumerEntitlements {
+  is_authenticated: boolean;
+  is_premium: boolean;
+  lifecycle_state: 'anonymous' | 'free' | 'active' | 'grace_period' | 'cancelled' | 'expired' | 'suspended' | string;
+  plan_name: string;
+  current_period_end?: string | null;
+  cancel_at_period_end?: boolean;
+  entitlements: {
+    can_watch_premium_videos: boolean;
+    full_review_access: boolean;
+    advanced_favorites: boolean;
+    advanced_lists: boolean;
+    extended_history: boolean;
+    new_profile_alerts: boolean;
+  };
+}
+
+export interface AdvertiserReview {
+  id: string;
+  advertiser_id: string;
+  rating_communication: number;
+  rating_accuracy: number;
+  rating_professionalism: number;
+  rating_overall: number;
+  comment?: string | null;
+  is_truncated?: boolean;
+  reviewer_label: string;
+  advertiser_response?: string | null;
+  advertiser_response_at?: string | null;
+  created_at: string;
+}
+
+export interface ReviewSummary {
+  total_reviews: number;
+  avg_communication: number;
+  avg_accuracy: number;
+  avg_professionalism: number;
+  avg_overall: number;
+}
+
+export interface ProfileReviewsResponse {
+  success: boolean;
+  advertiser_id: string;
+  viewer_can_see_full_text: boolean;
+  summary: ReviewSummary;
+  reviews: AdvertiserReview[];
+}
+
+export interface ReviewInput {
+  advertiser_id: string;
+  rating_communication: number;
+  rating_accuracy: number;
+  rating_professionalism: number;
+  comment?: string;
+}
