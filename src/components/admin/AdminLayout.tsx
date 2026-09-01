@@ -64,6 +64,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/payments/providers', label: 'Provedores de Pagamento', icon: <CreditCard size={18} />, allowed: isAdmin },
     { href: '/admin/payments/reconciliation', label: 'Conciliação', icon: <Scale size={18} />, allowed: isAdmin },
     { href: '/admin/payments/recovery', label: 'Recuperação & Dunning', icon: <RotateCcw size={18} />, allowed: isAdmin },
+    { href: '/admin/payments/disputes', label: 'Disputas & Estornos', icon: <RotateCcw size={18} />, allowed: isAdmin },
     { href: '/admin/subscriptions', label: 'Assinaturas', icon: <FileCheck2 size={18} />, allowed: isAdmin },
     { href: '/admin/referrals', label: 'Indicações', icon: <Gift size={18} />, allowed: isAdmin },
     { href: '/admin/support', label: 'Suporte', icon: <LifeBuoy size={18} />, allowed: isModerator },

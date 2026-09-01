@@ -188,6 +188,34 @@ export type ChargebackStatus =
   | 'lost'
   | 'closed';
 
+export type DisputeLifecycleStatus =
+  | 'opened'
+  | 'under_review'
+  | 'evidence_required'
+  | 'evidence_prepared'
+  | 'submitted'
+  | 'provider_review'
+  | 'won'
+  | 'lost'
+  | 'closed';
+
+export type DisputeReasonCategory =
+  | 'fraud'
+  | 'not_recognized'
+  | 'duplicate'
+  | 'service_not_received'
+  | 'cancelled_subscription'
+  | 'processing_error'
+  | 'other';
+
+export type RefundPolicy =
+  | 'NO_ENTITLEMENT_CHANGE'
+  | 'END_AT_PERIOD'
+  | 'REVOKE_REMAINING_PERIOD'
+  | 'MANUAL_REVIEW';
+
+export type ReconciliationSeverity = 'critical' | 'high' | 'normal' | 'low';
+
 export type BillingCycleStatus =
   | 'scheduled'
   | 'due'
@@ -293,6 +321,65 @@ export interface CanonicalOrder {
   cancelled_at?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface PaymentRefund {
+  id: string;
+  payment_id: string;
+  order_id?: string | null;
+  provider_code: string;
+  provider_refund_id?: string | null;
+  refund_type: 'full' | 'partial';
+  amount_cents: number;
+  currency: string;
+  reason?: string | null;
+  status: 'requested' | 'processing' | 'completed' | 'failed';
+  requested_by?: string | null;
+  entitlement_policy: RefundPolicy;
+  idempotency_key?: string | null;
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaymentDispute {
+  id: string;
+  payment_id: string;
+  order_id?: string | null;
+  provider_code: string;
+  provider_dispute_id: string;
+  amount_cents: number;
+  currency: string;
+  reason_category: DisputeReasonCategory;
+  dispute_status: DisputeLifecycleStatus;
+  financial_hold: boolean;
+  evidence_due_date?: string | null;
+  evidence_submitted_at?: string | null;
+  resolved_at?: string | null;
+  evidence_pack: Record<string, any>;
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProcessRefundParams {
+  orderId: string;
+  amountCents: number;
+  reason: string;
+  entitlementPolicy: RefundPolicy;
+  requestedBy?: string;
+  idempotencyKey?: string;
+}
+
+export interface ProcessRefundResult {
+  success: boolean;
+  refundId?: string;
+  refundType?: 'full' | 'partial';
+  amountCents?: number;
+  remainingRefundableCents?: number;
+  orderStatus?: string;
+  alreadyProcessed?: boolean;
+  error?: string;
 }
 
 export interface BillingCycle {

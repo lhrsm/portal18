@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { CanonicalOrder } from '@/services/payments/types';
-import { Printer, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Printer, CheckCircle2, RotateCcw, ShieldCheck } from 'lucide-react';
 
 interface ReceiptModalProps {
   isOpen: boolean;
@@ -20,6 +20,9 @@ export function ReceiptModal({ isOpen, onClose, order }: ReceiptModalProps) {
   const total = (order.total_minor || order.total_amount || 0) / 100;
   const subtotal = (order.subtotal_minor || order.subtotal || 0) / 100;
   const discount = (order.discount_minor || order.discount_amount || 0) / 100;
+
+  const isRefunded = order.status === 'refunded' || order.payment_status === 'refunded';
+  const isPartiallyRefunded = order.status === 'partially_refunded' || order.payment_status === 'partially_refunded';
 
   const formatBRL = (val: number) => {
     return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -43,9 +46,19 @@ export function ReceiptModal({ isOpen, onClose, order }: ReceiptModalProps) {
             </span>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <Badge variant="success" style={{ marginBottom: '0.25rem' }}>
-              <CheckCircle2 size={12} /> PAGAMENTO CONFIRMADO
-            </Badge>
+            {isRefunded ? (
+              <Badge variant="ruby" style={{ marginBottom: '0.25rem' }}>
+                <RotateCcw size={12} /> REEMBOLSADO
+              </Badge>
+            ) : isPartiallyRefunded ? (
+              <Badge variant="gold" style={{ marginBottom: '0.25rem' }}>
+                <RotateCcw size={12} /> PARCIALMENTE REEMBOLSADO
+              </Badge>
+            ) : (
+              <Badge variant="success" style={{ marginBottom: '0.25rem' }}>
+                <CheckCircle2 size={12} /> PAGAMENTO CONFIRMADO
+              </Badge>
+            )}
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
               {order.order_number}
             </div>
@@ -76,10 +89,10 @@ export function ReceiptModal({ isOpen, onClose, order }: ReceiptModalProps) {
         <div style={{ background: 'var(--bg-input)', borderRadius: 'var(--radius-sm)', padding: '0.85rem', marginBottom: '1.25rem', fontSize: '0.85rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontWeight: 700 }}>
             <span>Descrição do Item</span>
-            <span>Valor</span>
+            <span>Valor Original</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
-            <span>{snapshot.product_name || 'Assinatura Portal18'} ({snapshot.billing_period || `${snapshot.duration_days} dias`})</span>
+            <span>{snapshot?.product_name || 'Assinatura Portal18'} ({snapshot?.billing_period || `${snapshot?.duration_days || 30} dias`})</span>
             <span>{formatBRL(subtotal)}</span>
           </div>
           {discount > 0 && (
@@ -89,9 +102,18 @@ export function ReceiptModal({ isOpen, onClose, order }: ReceiptModalProps) {
             </div>
           )}
           <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem', marginTop: '0.5rem', fontWeight: 800, fontSize: '1rem' }}>
-            <span>Total Pago</span>
+            <span>Valor Total</span>
             <span style={{ color: 'var(--accent-gold)' }}>{formatBRL(total)}</span>
           </div>
+
+          {(isRefunded || isPartiallyRefunded) && (
+            <div style={{ marginTop: '0.75rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border-subtle)', fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--accent-ruby)', fontWeight: 600 }}>
+                <span>Status da Transação</span>
+                <span>{isRefunded ? 'Estorno Total Processado' : 'Estorno Parcial Processado'}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Receipt Legal Disclaimer */}
