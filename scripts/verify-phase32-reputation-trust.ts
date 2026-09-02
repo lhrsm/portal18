@@ -181,7 +181,7 @@ async function runVerification() {
   );
 
   console.log('\n----------------------------------------------------------------');
-  console.log(`TOTAL TESTS: 11 | PASSED: ${passCount} | FAILED: ${failCount}`);
+  console.log(`TOTAL TESTS: ${passCount + failCount} | PASSED: ${passCount} | FAILED: ${failCount}`);
   console.log('----------------------------------------------------------------\n');
 
   if (failCount === 0) {

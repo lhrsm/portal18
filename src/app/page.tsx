@@ -724,7 +724,7 @@ export default function HomePage() {
               </ul>
               <div style={{ marginTop: '0.85rem' }}>
                 <Link href="/trust">
-                  <Button variant="outline" size="sm" fullWidth style={{ minHeight: '38px', fontSize: '0.8rem' }}>
+                  <Button variant="outline" size="sm" fullWidth style={{ minHeight: '44px', fontSize: '0.85rem' }}>
                     Ver Trust Center 18+
                   </Button>
                 </Link>
@@ -752,7 +752,7 @@ export default function HomePage() {
               </ul>
               <div style={{ marginTop: '0.85rem' }}>
                 <Link href="/help">
-                  <Button variant="outline" size="sm" fullWidth style={{ minHeight: '38px', fontSize: '0.8rem' }}>
+                  <Button variant="outline" size="sm" fullWidth style={{ minHeight: '44px', fontSize: '0.85rem' }}>
                     Central de Ajuda
                   </Button>
                 </Link>

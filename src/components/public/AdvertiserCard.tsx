@@ -285,18 +285,18 @@ export function AdvertiserCard({
               )}
             </div>
 
-            {/* Favorite Floating Button (Touch target >= 40px) */}
+            {/* Favorite Floating Button (Touch target >= 44px) */}
             <button
               type="button"
               className={`advertiser-card-fav-btn ${isFavorite ? 'active' : ''}`}
               onClick={handleFavoriteClick}
               aria-label={isFavorite ? `Remover ${advertiser.stage_name} dos favoritos` : `Salvar ${advertiser.stage_name} nos favoritos`}
-              style={{ width: '38px', height: '38px', padding: '6px' }}
+              style={{ minWidth: '44px', minHeight: '44px', width: '44px', height: '44px', padding: '8px' }}
             >
-              <Heart size={18} fill={isFavorite ? 'var(--accent-ruby)' : 'none'} color={isFavorite ? 'var(--accent-ruby)' : '#fff'} />
+              <Heart size={20} fill={isFavorite ? 'var(--accent-ruby)' : 'none'} color={isFavorite ? 'var(--accent-ruby)' : '#fff'} />
             </button>
 
-            {/* Context Menu Button (Touch target >= 40px) */}
+            {/* Context Menu Button (Touch target >= 44px) */}
             <button
               type="button"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }}
@@ -308,8 +308,10 @@ export function AdvertiserCard({
                 backdropFilter: 'blur(4px)',
                 border: 'none',
                 borderRadius: '50%',
-                width: '36px',
-                height: '36px',
+                minWidth: '44px',
+                minHeight: '44px',
+                width: '44px',
+                height: '44px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -320,7 +322,7 @@ export function AdvertiserCard({
               aria-label={`Mais opções para ${advertiser.stage_name}`}
               aria-expanded={isMenuOpen}
             >
-              <MoreVertical size={16} />
+              <MoreVertical size={18} />
             </button>
 
             {/* Context Dropdown Menu */}
@@ -329,7 +331,7 @@ export function AdvertiserCard({
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 style={{
                   position: 'absolute',
-                  top: '2.5rem',
+                  top: '2.8rem',
                   left: '0.45rem',
                   background: 'var(--bg-secondary)',
                   border: '1px solid var(--border-subtle)',
@@ -340,13 +342,13 @@ export function AdvertiserCard({
                   gap: '0.2rem',
                   zIndex: 20,
                   boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-                  minWidth: '170px',
+                  minWidth: '180px',
                 }}
               >
                 <button
                   type="button"
                   onClick={handleFollowClick}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '40px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '44px' }}
                 >
                   <Users size={14} color="var(--accent-gold)" />
                   <span>{isFollowing ? 'Deixar de seguir' : 'Seguir anunciante'}</span>
@@ -355,7 +357,7 @@ export function AdvertiserCard({
                 <button
                   type="button"
                   onClick={handleOpenListModal}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '40px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '44px' }}
                 >
                   <ListPlus size={14} color="var(--accent-gold)" />
                   <span>Salvar em lista...</span>
@@ -364,7 +366,7 @@ export function AdvertiserCard({
                 <button
                   type="button"
                   onClick={handleNotInterestedClick}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '40px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '44px' }}
                 >
                   <EyeOff size={14} />
                   <span>Não tenho interesse</span>
@@ -373,7 +375,7 @@ export function AdvertiserCard({
                 <button
                   type="button"
                   onClick={handleBlockClick}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '40px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '44px' }}
                 >
                   <UserX size={14} color="var(--accent-ruby)" />
                   <span>Bloquear perfil</span>
@@ -382,7 +384,7 @@ export function AdvertiserCard({
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMenuOpen(false); setIsReportModalOpen(true); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--accent-ruby)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '40px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'none', border: 'none', color: 'var(--accent-ruby)', fontSize: '0.825rem', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', minHeight: '44px' }}
                 >
                   <ShieldAlert size={14} />
                   <span>Denunciar</span>

@@ -124,7 +124,7 @@ export default async function StateDirectoryPage({ params }: StatePageProps) {
                   fontSize: '0.825rem',
                   color: 'var(--text-primary)',
                   textDecoration: 'none',
-                  minHeight: '38px',
+                  minHeight: '44px',
                 }}
               >
                 {city.name}

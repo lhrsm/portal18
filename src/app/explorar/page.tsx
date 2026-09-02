@@ -279,7 +279,7 @@ function ExploreContent() {
             onClick={handleRequestNearMe}
             isLoading={isLocating}
             leftIcon={<Navigation size={14} color="var(--accent-gold)" />}
-            style={{ minHeight: '38px' }}
+            style={{ minHeight: '44px' }}
           >
             Perto de mim
           </Button>
@@ -290,7 +290,7 @@ function ExploreContent() {
               size="sm"
               onClick={() => setSaveSearchModalOpen(true)}
               leftIcon={<Bookmark size={14} />}
-              style={{ minHeight: '38px' }}
+              style={{ minHeight: '44px' }}
             >
               Salvar Busca
             </Button>
@@ -302,7 +302,7 @@ function ExploreContent() {
             className="mobile-filter-btn"
             onClick={() => setMobileFiltersOpen(true)}
             leftIcon={<SlidersHorizontal size={14} />}
-            style={{ minHeight: '38px' }}
+            style={{ minHeight: '44px' }}
           >
             Filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Button>
