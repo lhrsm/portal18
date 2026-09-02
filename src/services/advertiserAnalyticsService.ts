@@ -47,4 +47,34 @@ export const advertiserAnalyticsService = {
       return null;
     }
   },
+
+  async getAdminCommercialIntelligence(
+    periodDays: 7 | 30 | 90 = 7
+  ): Promise<AdminPlatformAnalytics | null> {
+    const supabase = createClient();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.rpc as any)('get_admin_commercial_intelligence_v1', {
+        p_period_days: periodDays,
+      });
+
+      if (!error && data) {
+        return data as AdminPlatformAnalytics;
+      }
+
+      // Fallback to legacy RPC
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const legacyRes = await (supabase.rpc as any)('get_admin_platform_analytics', {
+        p_period_days: periodDays,
+      });
+
+      if (!legacyRes.error && legacyRes.data) {
+        return legacyRes.data as AdminPlatformAnalytics;
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  },
 };
