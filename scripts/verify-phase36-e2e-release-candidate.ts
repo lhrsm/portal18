@@ -36,13 +36,13 @@ async function runVerification() {
 
   console.log('--- 1. DATABASE PARITY & SCHEMA MIGRATION INTEGRITY ---');
 
-  // 1.1 All 38+ migrations present
+  // 1.1 All migrations present
   const migrationsDir = path.join(rootDir, 'supabase', 'migrations');
   const migrationFiles = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql'));
 
   assert(
     migrationFiles.length >= 38,
-    `1.1 [Migration Parity] All migrations present in repository (${migrationFiles.length}/38 migrations)`,
+    `1.1 [Migration Parity] All migrations present in repository (${migrationFiles.length} migrations validated)`,
     'Incomplete migration set detected'
   );
 
