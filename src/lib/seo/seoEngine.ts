@@ -29,8 +29,8 @@ export function getCanonicalBaseUrl(): string {
     return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
   }
 
-  // 3. Fallback standard production domain
-  return 'https://portal18.com.br';
+  // 3. Dynamic site URL or local development fallback
+  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 }
 
 export const SEO_CONFIG: SeoConfig = {
