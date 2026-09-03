@@ -91,6 +91,25 @@ export type EmailProviderCode =
   | 'postmark'
   | 'smtp';
 
+export type EmailDispatchResultStatus =
+  | 'accepted'
+  | 'rejected'
+  | 'temporary_failure'
+  | 'permanent_failure'
+  | 'suppressed'
+  | 'disabled_by_policy';
+
+export interface EmailDispatchResult {
+  success: boolean;
+  status: EmailDispatchResultStatus;
+  provider: EmailProviderCode;
+  provider_reference?: string;
+  providerReference?: string;
+  is_simulated: boolean;
+  isSimulated?: boolean;
+  error?: string;
+}
+
 export interface EmailProviderMetadata {
   code: EmailProviderCode;
   name: string;
