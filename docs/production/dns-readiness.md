@@ -1,7 +1,7 @@
 # Portal18 — DNS Readiness & Zone Record Specifications
 
 > [!IMPORTANT]
-> **RECORD SPECIFICATIONS | ZERO FABRICATED VALUES | LOW INITIAL TTL**
+> **RECORD SPECIFICATIONS | ZERO FABRICATED VALUES | PROVIDER DEPENDENT**
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Record Type | Hostname / Name | Target / Purpose | TTL (Initial) | Status |
 |---|---|---|---|---|
-| **A / ALIAS** | `@` (Apex) | Hosting Provider Edge Anycast IP | 300s (5 min) | **DOMAIN_PENDING** |
-| **CNAME** | `www` | Canonical Apex / CNAME Target | 300s (5 min) | **DOMAIN_PENDING** |
-| **CNAME** | `_domainconnect` | Automated DNS Delegation | 3600s | **OPTIONAL** |
-| **TXT** | `@` | SPF Email Authorization (`v=spf1 ...`) | 300s | **SENDER_DOMAIN_PENDING** |
-| **CNAME** | `*._domainkey.notify` | 3x DKIM Public Key Selectors | 300s | **PROVIDER_PENDING** |
-| **TXT** | `_dmarc` | DMARC Policy (`v=DMARC1; p=none; ...`) | 300s | **DOMAIN_PENDING** |
-| **CAA** | `@` | TLS Certificate Authority Authorization | 3600s | **OPTIONAL** |
+| **A / AAAA** | `@` (Apex) | Routing target provided by hosting platform | **PROVIDER_DEPENDENT** | **DNS_PROVIDER_PENDING** |
+| **CNAME** | `www` | Canonical Apex / CNAME Target | **PROVIDER_DEPENDENT** | **DNS_PROVIDER_PENDING** |
+| **TXT** | `@` | SPF Email Authorization (`v=spf1 ...`) | **PROVIDER_DEPENDENT** | **SENDER_DOMAIN_PENDING** |
+| **CNAME / TXT** | `*._domainkey.notify` | DKIM Public Key Selectors | **PROVIDER_DEPENDENT** | **PROVIDER_DEPENDENT** |
+| **TXT** | `_dmarc` | DMARC Policy (`v=DMARC1; p=none; ...`) | **PROVIDER_DEPENDENT** | **DOMAIN_PENDING** |
+| **CAA** | `@` | TLS Certificate Authority Authorization | **OPTIONAL** | **REVIEW_AFTER_TLS_PROVIDER_SELECTION** |
+| **DNSSEC** | `@` | Domain Name System Security Extensions | **OPTIONAL** | **PROVIDER_CAPABILITY_PENDING** |
