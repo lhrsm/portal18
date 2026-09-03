@@ -27,8 +27,8 @@ export class PaymentProviderResolver {
   public static async resolve(params: ResolveProviderParams): Promise<ResolveProviderResult> {
     const isKillSwitchActive = process.env.PORTAL18_PAYMENT_KILL_SWITCH !== 'false';
 
-    // 1. If Kill Switch is active, always return safe Internal Test Driver (mock)
-    if (isKillSwitchActive) {
+    // 1. If Kill Switch is active and mock driver is allowed (default in test/dev)
+    if (isKillSwitchActive && params.allowMockDriver !== false) {
       const mockDriver = PaymentProviderRegistry.get('unconfigured');
       if (mockDriver) {
         return {
