@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ShieldCheck, AlertCircle, ChevronDown, Lock, ShieldAlert, Sparkles, Heart, FileText, HelpCircle, User, Compass, Smartphone } from 'lucide-react';
 import { usePWAInstall } from '@/components/pwa/PWAInstallProvider';
 
@@ -44,7 +45,14 @@ function MobileFooterAccordion({ title, icon, children, id }: FooterSectionProps
 }
 
 export function Footer() {
+  const pathname = usePathname();
   const { isInstallable, isStandalone, promptToInstall } = usePWAInstall();
+
+  // Do not render public footer within administrative workspace
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
 
   return (
     <footer className="footer">

@@ -41,6 +41,11 @@ export function Header() {
     setMobileMenuOpen(false);
   };
 
+  // Do not render public header within administrative workspace
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <>
       <header className="header">

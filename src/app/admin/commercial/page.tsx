@@ -134,188 +134,295 @@ export default function AdminCommercialOperationsPage() {
 
   return (
     <AdminLayout>
-      {/* Header Bar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem' }}>
+      {/* Page Header Bar */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '0.75rem' }}>
         <div>
-          <div style={{ display: 'inline-flex', gap: '0.4rem', marginBottom: '0.35rem' }}>
-            <Badge variant="gold">OPERATIONS & GOVERNANCE</Badge>
-            <Badge variant="neutral">Phase 27G</Badge>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
+            <Badge variant="gold">Operations & Governance</Badge>
           </div>
-          <h1 style={{ fontSize: '1.85rem', fontWeight: 800, margin: 0 }}>Centro de Operações Comerciais</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0.25rem 0 0 0' }}>
-            Governança integrada de anunciantes, clientes Consumer Premium, planos, inventário e pagamentos
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0 }}>Centro de Operações Comerciais</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.15rem 0 0 0' }}>
+            Governança integrada de anunciantes, clientes Premium, planos, inventário e pagamentos.
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Button variant="ghost" size="sm" onClick={loadData} leftIcon={<RefreshCw size={14} />}>
+          <Button variant="outline" size="sm" onClick={loadData} leftIcon={<RefreshCw size={14} />}>
             Atualizar
           </Button>
-          <Badge variant="neutral">Policy v1</Badge>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '0.35rem', overflowX: 'auto', paddingBottom: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
-        {[
-          { id: 'overview', label: 'Visão Geral & Alertas', icon: <Layers size={15} /> },
-          { id: 'advertisers', label: 'Anunciantes & Planos', icon: <Crown size={15} /> },
-          { id: 'consumers', label: 'Consumer Premium', icon: <Users size={15} /> },
-          { id: 'pricing', label: 'Matriz de Preços', icon: <CreditCard size={15} /> },
-          { id: 'inventory', label: 'Inventário & Campanhas', icon: <Megaphone size={15} /> },
-          { id: 'referrals', label: 'Indicações & Antifraude', icon: <Gift size={15} /> },
-          { id: 'readiness', label: 'Payment Readiness', icon: <ShieldCheck size={15} /> },
-          { id: 'exports', label: 'Auditoria & Exportações', icon: <FileSpreadsheet size={15} /> },
-        ].map((tab) => (
+      {/* Payment Gateway Homologation Status Banner */}
+      {overview?.payment_readiness?.kill_switch_active && (
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.75rem',
+            padding: '0.65rem 1rem',
+            borderRadius: 'var(--radius-md)',
+            background: 'rgba(59, 130, 246, 0.08)',
+            border: '1px solid rgba(59, 130, 246, 0.25)',
+            marginBottom: '1.25rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6', display: 'inline-block' }} />
+            <strong style={{ fontSize: '0.85rem', color: '#60a5fa' }}>Pagamentos em homologação</strong>
+            <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
+              — Kill switch ativo. Nenhuma cobrança real está sendo processada.
+            </span>
+          </div>
+
           <Button
-            key={tab.id}
-            variant={activeTab === tab.id ? 'primary' : 'ghost'}
+            variant="ghost"
             size="sm"
-            onClick={() => setActiveTab(tab.id)}
-            leftIcon={tab.icon}
-            style={{ whiteSpace: 'nowrap', fontSize: '0.825rem' }}
+            onClick={() => setActiveTab('readiness')}
+            style={{ fontSize: '0.775rem', height: '28px', color: '#93c5fd' }}
           >
-            {tab.label}
+            Ver checklist →
           </Button>
-        ))}
+        </div>
+      )}
+
+      {/* Navigation Tabs - Responsive Segmented Pills (No horizontal scrollbar) */}
+      <div
+        role="tablist"
+        aria-label="Seções do Centro Comercial"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '0.35rem',
+          padding: '0.3rem',
+          background: 'rgba(255, 255, 255, 0.03)',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border-subtle)',
+          marginBottom: '1.25rem',
+        }}
+      >
+        {[
+          { id: 'overview', label: 'Visão Geral', icon: <Layers size={14} /> },
+          { id: 'advertisers', label: 'Anunciantes', icon: <Crown size={14} /> },
+          { id: 'consumers', label: 'Premium', icon: <Users size={14} /> },
+          { id: 'pricing', label: 'Preços', icon: <CreditCard size={14} /> },
+          { id: 'inventory', label: 'Inventário', icon: <Megaphone size={14} /> },
+          { id: 'referrals', label: 'Indicações', icon: <Gift size={14} /> },
+          { id: 'readiness', label: 'Pagamentos', icon: <ShieldCheck size={14} /> },
+          { id: 'exports', label: 'Exportações', icon: <FileSpreadsheet size={14} /> },
+        ].map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.45rem 0.75rem',
+                borderRadius: 'var(--radius-sm)',
+                border: 'none',
+                background: isActive ? 'var(--accent-gold)' : 'transparent',
+                color: isActive ? '#000000' : 'var(--text-secondary)',
+                fontWeight: isActive ? 700 : 500,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                transition: 'all var(--transition-fast)',
+              }}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* 1. OVERVIEW & OPERATIONAL ALERTS TAB */}
       {activeTab === 'overview' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Operational Alerts Bar */}
-          {alerts.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {alerts.map((alt) => (
-                <Card
-                  key={alt.id}
-                  variant="glass"
-                  padding="md"
-                  style={{
-                    borderLeft: `4px solid ${alt.severity === 'critical' ? 'var(--accent-ruby)' : alt.severity === 'warning' ? 'var(--accent-gold)' : 'var(--color-info)'}`,
-                    backgroundColor: 'rgba(255, 255, 255, 0.02)'
-                  }}
-                >
-                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      {alt.severity === 'critical' ? (
-                        <AlertTriangle size={20} color="var(--accent-ruby)" />
-                      ) : alt.severity === 'warning' ? (
-                        <Clock size={20} color="var(--accent-gold)" />
-                      ) : (
-                        <AlertCircle size={20} color="var(--color-info)" />
-                      )}
-                      <div>
-                        <strong style={{ fontSize: '0.925rem', color: 'var(--text-primary)' }}>{alt.title}</strong>
-                        <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', margin: 0 }}>{alt.description}</p>
+        <div aria-label="Visão Geral & Alertas" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* Operational Alerts Bar (Excluding payment kill switch which is hoisted above) */}
+          {alerts.filter((a) => a.id !== 'alert-pay-disabled').length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {alerts
+                .filter((a) => a.id !== 'alert-pay-disabled')
+                .map((alt) => (
+                  <Card
+                    key={alt.id}
+                    variant="glass"
+                    padding="sm"
+                    style={{
+                      borderLeft: `4px solid ${alt.severity === 'critical' ? 'var(--accent-ruby)' : alt.severity === 'warning' ? 'var(--accent-gold)' : 'var(--color-info)'}`,
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        {alt.severity === 'critical' ? (
+                          <AlertTriangle size={18} color="var(--accent-ruby)" />
+                        ) : alt.severity === 'warning' ? (
+                          <Clock size={18} color="var(--accent-gold)" />
+                        ) : (
+                          <AlertCircle size={18} color="var(--color-info)" />
+                        )}
+                        <div>
+                          <strong style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>{alt.title}</strong>
+                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>{alt.description}</p>
+                        </div>
                       </div>
-                    </div>
 
-                    {alt.action_href && (
-                      <Link href={alt.action_href}>
-                        <Button variant="secondary" size="sm">
-                          {alt.action_label || 'Detalhes'}
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                </Card>
-              ))}
+                      {alt.action_href && (
+                        <Link href={alt.action_href}>
+                          <Button variant="secondary" size="sm" style={{ fontSize: '0.75rem', height: '28px' }}>
+                            {alt.action_label || 'Detalhes'}
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                  </Card>
+                ))}
             </div>
           )}
 
-          {/* Master Real KPI Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-            <Card variant="glass" padding="md">
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Anunciantes Ativos</span>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0.25rem 0' }}>
-                {loading ? <Skeleton width="60px" height="28px" /> : metrics.total_advertisers}
+          {/* Executive Real KPI Grid (Dense, 6 cards visible above the fold) */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+              gap: '0.75rem',
+            }}
+          >
+            <Card variant="glass" padding="sm" style={{ border: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+                <span style={{ fontSize: '0.725rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Anunciantes Ativos
+                </span>
+                <Users size={14} color="var(--text-muted)" />
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Perfis publicados no discovery</span>
+              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0.15rem 0' }}>
+                {loading ? <Skeleton width="50px" height="24px" /> : metrics.total_advertisers}
+              </div>
+              <span style={{ fontSize: '0.725rem', color: 'var(--text-secondary)' }}>Perfis publicados</span>
             </Card>
 
-            <Card variant="glass" padding="md" style={{ border: metrics.active_trials > 0 ? '1px solid var(--accent-gold)' : undefined }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Trials Premium Ativos</span>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-gold)', margin: '0.25rem 0' }}>
-                {loading ? <Skeleton width="60px" height="28px" /> : metrics.active_trials}
+            <Card variant="glass" padding="sm" style={{ border: metrics.active_trials > 0 ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+                <span style={{ fontSize: '0.725rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Trials Ativos
+                </span>
+                <Clock size={14} color="var(--accent-gold)" />
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{metrics.trials_ending_soon} terminam em 24h</span>
+              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--accent-gold)', margin: '0.15rem 0' }}>
+                {loading ? <Skeleton width="50px" height="24px" /> : metrics.active_trials}
+              </div>
+              <span style={{ fontSize: '0.725rem', color: 'var(--text-secondary)' }}>
+                {metrics.trials_ending_soon > 0 ? `${metrics.trials_ending_soon} terminam em 24h` : 'Período gratuito'}
+              </span>
             </Card>
 
-            <Card variant="glass" padding="md">
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Limited Mode (Sem Plano)</span>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0.25rem 0' }}>
-                {loading ? <Skeleton width="60px" height="28px" /> : metrics.limited_mode_advertisers}
+            <Card variant="glass" padding="sm" style={{ border: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+                <span style={{ fontSize: '0.725rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Limited Mode
+                </span>
+                <Layers size={14} color="var(--text-muted)" />
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Contatos abertos, sem boosts</span>
+              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0.15rem 0' }}>
+                {loading ? <Skeleton width="50px" height="24px" /> : metrics.limited_mode_advertisers}
+              </div>
+              <span style={{ fontSize: '0.725rem', color: 'var(--text-secondary)' }}>Sem plano contratado</span>
             </Card>
 
-            <Card variant="glass" padding="md">
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Consumer Premium</span>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--color-success)', margin: '0.25rem 0' }}>
-                {loading ? <Skeleton width="60px" height="28px" /> : metrics.active_consumer_subs}
+            <Card variant="glass" padding="sm" style={{ border: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+                <span style={{ fontSize: '0.725rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Consumer Premium
+                </span>
+                <Crown size={14} color="var(--color-success)" />
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Clientes com vídeo/reviews</span>
+              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--color-success)', margin: '0.15rem 0' }}>
+                {loading ? <Skeleton width="50px" height="24px" /> : metrics.active_consumer_subs}
+              </div>
+              <span style={{ fontSize: '0.725rem', color: 'var(--text-secondary)' }}>Clientes com vídeo</span>
             </Card>
 
-            <Card variant="glass" padding="md">
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ocupação do Inventário</span>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0.25rem 0' }}>
-                {loading ? <Skeleton width="60px" height="28px" /> : `${metrics.inventory_utilization_percent}%`}
+            <Card variant="glass" padding="sm" style={{ border: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+                <span style={{ fontSize: '0.725rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Ocupação Inventário
+                </span>
+                <Megaphone size={14} color="var(--text-muted)" />
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{metrics.inventory_slots_reserved} de {metrics.inventory_slots_total} slots</span>
+              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0.15rem 0' }}>
+                {loading ? <Skeleton width="50px" height="24px" /> : `${metrics.inventory_utilization_percent}%`}
+              </div>
+              <span style={{ fontSize: '0.725rem', color: 'var(--text-secondary)' }}>
+                {metrics.inventory_slots_reserved} de {metrics.inventory_slots_total} slots
+              </span>
             </Card>
 
-            <Card variant="glass" padding="md">
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Avaliações Pendentes</span>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: metrics.pending_reviews > 0 ? 'var(--accent-gold)' : 'var(--text-primary)', margin: '0.25rem 0' }}>
-                {loading ? <Skeleton width="60px" height="28px" /> : metrics.pending_reviews}
+            <Card variant="glass" padding="sm" style={{ border: metrics.pending_reviews > 0 ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+                <span style={{ fontSize: '0.725rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Avaliações Pendentes
+                </span>
+                <Star size={14} color={metrics.pending_reviews > 0 ? 'var(--accent-gold)' : 'var(--text-muted)'} />
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{metrics.reviews_delayed} com mais de 24h</span>
+              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: metrics.pending_reviews > 0 ? 'var(--accent-gold)' : 'var(--text-primary)', margin: '0.15rem 0' }}>
+                {loading ? <Skeleton width="50px" height="24px" /> : metrics.pending_reviews}
+              </div>
+              <span style={{ fontSize: '0.725rem', color: 'var(--text-secondary)' }}>
+                {metrics.reviews_delayed > 0 ? `${metrics.reviews_delayed} com mais de 24h` : 'Fila em dia'}
+              </span>
             </Card>
           </div>
 
           {/* Quick Operations Links */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
-            <Card variant="glass" padding="md">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <strong style={{ fontSize: '0.95rem' }}>Gestão de Planos & Períodos</strong>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.75rem' }}>
+            <Card variant="glass" padding="md" style={{ border: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <strong style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Gestão de Planos</strong>
                 <Crown size={18} color="var(--accent-gold)" />
               </div>
-              <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                Configuração de pacotes Essencial, Destaque, Premium e VIP por ciclos de 7, 30 e 90 dias.
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.85rem', lineHeight: 1.45 }}>
+                Configure pacotes, períodos e regras comerciais de anunciantes.
               </p>
-              <Link href="/admin/plans">
+              <Link href="/admin/plans" style={{ textDecoration: 'none' }}>
                 <Button variant="outline" size="sm" fullWidth>
-                  Ver Catálogo de Planos →
+                  Gerenciar planos →
                 </Button>
               </Link>
             </Card>
 
-            <Card variant="glass" padding="md">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <strong style={{ fontSize: '0.95rem' }}>Moderação de Avaliações</strong>
+            <Card variant="glass" padding="md" style={{ border: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <strong style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Moderação de Avaliações</strong>
                 <Star size={18} color="var(--accent-gold)" />
               </div>
-              <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.85rem', lineHeight: 1.45 }}>
                 Fila de aprovação de avaliações estruturadas da comunidade de clientes.
               </p>
-              <Link href="/admin/moderation/reviews">
+              <Link href="/admin/moderation/reviews" style={{ textDecoration: 'none' }}>
                 <Button variant="outline" size="sm" fullWidth>
                   Fila de Avaliações ({metrics.pending_reviews}) →
                 </Button>
               </Link>
             </Card>
 
-            <Card variant="glass" padding="md">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <strong style={{ fontSize: '0.95rem' }}>Discovery & Inventário</strong>
+            <Card variant="glass" padding="md" style={{ border: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <strong style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Discovery & Inventário</strong>
                 <Compass size={18} color="var(--accent-gold)" />
               </div>
-              <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                Controle de slots patrocinados, suavização Bayesiana e ranking de descoberta.
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.85rem', lineHeight: 1.45 }}>
+                Controle de slots patrocinados, suavização Bayesiana e ranking.
               </p>
-              <Link href="/admin/discovery">
+              <Link href="/admin/discovery" style={{ textDecoration: 'none' }}>
                 <Button variant="outline" size="sm" fullWidth>
                   Painel de Ranking →
                 </Button>
@@ -330,7 +437,7 @@ export default function AdminCommercialOperationsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0 }}>Planos Comerciais de Anunciantes</h2>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0 }}>Anunciantes & Planos</h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.2rem 0 0 0' }}>
                 Pacotes comerciais ativos, limites de mídia e períodos homologados
               </p>

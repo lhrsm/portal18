@@ -2584,9 +2584,65 @@ html[data-a11y-spacing="large"] .form-label {
   letter-spacing: 0.025em !important;
 }
 
+/* ============================================================================
+ * SUPER ADMIN MODERN SHELL & CONSOLE STYLES
+ * ============================================================================ */
 
+:root {
+  --admin-sidebar-bg: #090c12;
+  --admin-sidebar-border: rgba(255, 255, 255, 0.08);
+  --admin-topbar-bg: rgba(10, 12, 16, 0.88);
+  --admin-content-bg: #06080c;
+  --admin-card-bg: #10141d;
+  --admin-card-border: rgba(255, 255, 255, 0.07);
+  --admin-hover-bg: rgba(255, 255, 255, 0.05);
+}
 
+html[data-theme="light"] {
+  --admin-sidebar-bg: #ffffff;
+  --admin-sidebar-border: #e2e8f0;
+  --admin-topbar-bg: rgba(255, 255, 255, 0.92);
+  --admin-content-bg: #f8fafc;
+  --admin-card-bg: #ffffff;
+  --admin-card-border: #e2e8f0;
+  --admin-hover-bg: #f1f5f9;
+}
 
+.admin-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
 
+html[data-theme="light"] .admin-sidebar-scroll {
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
 
+.admin-sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
 
+.admin-sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+html[data-theme="light"] .admin-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.admin-nav-item-active {
+  background: rgba(229, 185, 92, 0.12) !important;
+  color: var(--accent-gold) !important;
+  border-left: 3px solid var(--accent-gold) !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .admin-nav-item-active {
+  background: rgba(180, 130, 20, 0.1) !important;
+  color: #925805 !important;
+  border-left: 3px solid #925805 !important;
+}
