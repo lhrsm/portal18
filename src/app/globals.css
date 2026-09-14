@@ -2646,3 +2646,104 @@ html[data-theme="light"] .admin-nav-item-active {
   color: #925805 !important;
   border-left: 3px solid #925805 !important;
 }
+
+/* ==========================================================================
+   REGISTER SEGMENTED CONTROL (ACCOUNT TYPE SELECTOR)
+   ========================================================================== */
+.register-segmented-control {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.25rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  box-sizing: border-box;
+}
+
+html[data-theme="light"] .register-segmented-control {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+.register-segment-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.5rem;
+  height: 44px;
+  min-height: 44px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: clamp(0.775rem, 2.8vw, 0.875rem);
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+  outline: none;
+  user-select: none;
+}
+
+.register-segment-btn:focus-visible {
+  outline: none;
+}
+
+/* Inactive Hover */
+.register-segment-btn:not([aria-selected="true"]):hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .register-segment-btn:not([aria-selected="true"]):hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #0f172a;
+}
+
+/* Inactive State */
+.register-segment-btn:not([aria-selected="true"]) {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+
+/* Visitor Active State */
+.register-segment-btn-user[aria-selected="true"] {
+  background: rgba(255, 45, 85, 0.05);
+  border: 1px solid rgba(255, 45, 85, 0.30);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.register-segment-btn-user:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 45, 85, 0.30);
+}
+
+html[data-theme="light"] .register-segment-btn-user[aria-selected="true"] {
+  background: rgba(255, 45, 85, 0.05);
+  border-color: rgba(255, 45, 85, 0.30);
+  color: var(--text-primary);
+}
+
+/* Advertiser Active State */
+.register-segment-btn-advertiser[aria-selected="true"] {
+  background: rgba(229, 185, 92, 0.07);
+  border: 1px solid rgba(229, 185, 92, 0.35);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.register-segment-btn-advertiser:focus-visible {
+  box-shadow: 0 0 0 2px rgba(229, 185, 92, 0.35);
+}
+
+html[data-theme="light"] .register-segment-btn-advertiser[aria-selected="true"] {
+  background: rgba(229, 185, 92, 0.07);
+  border-color: rgba(229, 185, 92, 0.35);
+  color: var(--text-primary);
+}

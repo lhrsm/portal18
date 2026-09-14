@@ -1,5 +1,5 @@
 // Portal Nacional PWA Service Worker (Phase 10 / Hardened RC)
-const CACHE_NAME = 'portal-shell-RC-20260827-054500-HARDENED';
+const CACHE_NAME = 'portal-shell-RC-20260914-122500-HOTFIX';
 const STATIC_ASSETS = [
   '/',
   '/offline',
@@ -12,6 +12,7 @@ const PRIVATE_ROUTES = [
   '/advertiser',
   '/api',
   '/auth',
+  '/register',
 ];
 
 self.addEventListener('install', (event) => {

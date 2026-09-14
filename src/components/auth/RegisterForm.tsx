@@ -283,16 +283,8 @@ export function RegisterForm() {
       <div
         role="tablist"
         aria-label="Tipo de conta para cadastro"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          gap: '0.5rem',
-          padding: '0.35rem',
-          background: 'rgba(255, 255, 255, 0.03)',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border-subtle)',
-          marginBottom: '0.75rem',
-        }}
+        className="register-segmented-control"
+        style={{ marginBottom: '0.75rem' }}
       >
         <button
           type="button"
@@ -301,22 +293,13 @@ export function RegisterForm() {
           aria-selected={accountType === 'user'}
           aria-controls="register-track-description"
           onClick={() => setAccountType('user')}
+          className="register-segment-btn register-segment-btn-user"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            padding: '0.7rem 0.5rem',
-            borderRadius: 'var(--radius-sm)',
-            border: accountType === 'user' ? '1px solid var(--accent-ruby)' : '1px solid transparent',
-            fontSize: '0.875rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            background: accountType === 'user' ? 'rgba(224, 30, 90, 0.14)' : 'transparent',
-            color: accountType === 'user' ? '#ffffff' : 'var(--text-secondary)',
-            boxShadow: accountType === 'user' ? '0 2px 10px rgba(224, 30, 90, 0.25)' : 'none',
-            transition: 'all var(--transition-fast)',
-            minHeight: '44px',
+            background: accountType === 'user' ? 'rgba(255, 45, 85, 0.05)' : 'transparent',
+            border: accountType === 'user' ? '1px solid rgba(255, 45, 85, 0.30)' : '1px solid transparent',
+            color: accountType === 'user' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            fontWeight: accountType === 'user' ? 600 : 500,
+            boxShadow: 'none',
           }}
         >
           <Heart
@@ -334,22 +317,13 @@ export function RegisterForm() {
           aria-selected={accountType === 'advertiser'}
           aria-controls="register-track-description"
           onClick={() => setAccountType('advertiser')}
+          className="register-segment-btn register-segment-btn-advertiser"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            padding: '0.7rem 0.5rem',
-            borderRadius: 'var(--radius-sm)',
-            border: accountType === 'advertiser' ? '1px solid var(--accent-gold)' : '1px solid transparent',
-            fontSize: '0.875rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            background: accountType === 'advertiser' ? 'rgba(212, 175, 55, 0.14)' : 'transparent',
-            color: accountType === 'advertiser' ? '#ffffff' : 'var(--text-secondary)',
-            boxShadow: accountType === 'advertiser' ? '0 2px 10px rgba(212, 175, 55, 0.25)' : 'none',
-            transition: 'all var(--transition-fast)',
-            minHeight: '44px',
+            background: accountType === 'advertiser' ? 'rgba(229, 185, 92, 0.07)' : 'transparent',
+            border: accountType === 'advertiser' ? '1px solid rgba(229, 185, 92, 0.35)' : '1px solid transparent',
+            color: accountType === 'advertiser' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            fontWeight: accountType === 'advertiser' ? 600 : 500,
+            boxShadow: 'none',
           }}
         >
           <Megaphone
