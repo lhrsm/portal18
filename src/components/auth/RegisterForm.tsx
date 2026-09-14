@@ -372,11 +372,11 @@ export function RegisterForm() {
       </div>
 
       {/* 2. GOOGLE OAUTH ACTION */}
-      <div style={{ marginBottom: '1rem' }}>
+      <div style={{ marginBottom: '1.125rem' }}>
         <GoogleButton
           intent={accountType}
           nextRoute={accountType === 'advertiser' ? '/advertiser/onboarding' : '/account'}
-          label={accountType === 'advertiser' ? 'Continuar com Google (Profissional)' : 'Continuar com Google'}
+          label="Continuar com Google"
           disabled={isLoading}
         />
       </div>
@@ -387,7 +387,7 @@ export function RegisterForm() {
           display: 'flex',
           alignItems: 'center',
           gap: '0.85rem',
-          margin: '1rem 0',
+          margin: '1.125rem 0',
           color: 'var(--text-muted)',
           fontSize: '0.775rem',
           textTransform: 'uppercase',

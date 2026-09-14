@@ -76,54 +76,28 @@ export function GoogleButton({
   return (
     <button
       type="button"
+      id="google-signin-btn"
       onClick={handleGoogleSignIn}
       disabled={isLoading || disabled}
       aria-label={label}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '0.75rem',
-        width: '100%',
-        height: '46px',
-        padding: '0 1rem',
-        borderRadius: 'var(--radius-md)',
-        background: 'rgba(255, 255, 255, 0.05)',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
-        color: '#fff',
-        fontSize: '0.95rem',
-        fontWeight: 600,
-        cursor: isLoading || disabled ? 'not-allowed' : 'pointer',
-        opacity: isLoading || disabled ? 0.7 : 1,
-        transition: 'all var(--transition-fast)',
-        outline: 'none',
-      }}
-      onMouseEnter={(e) => {
-        if (!isLoading && !disabled) {
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isLoading && !disabled) {
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-        }
-      }}
+      className="google-auth-btn"
     >
       {isLoading ? (
         <span
-          style={{
-            width: '18px',
-            height: '18px',
-            border: '2px solid rgba(255, 255, 255, 0.3)',
-            borderTopColor: '#fff',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite',
-          }}
+          className="google-auth-spinner"
+          aria-hidden="true"
         />
       ) : (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          focusable="false"
+          style={{ flexShrink: 0 }}
+        >
           <path
             d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
             fill="#4285F4"
