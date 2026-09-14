@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/useToast';
+import { translateAuthError, logAuthEvent } from '@/lib/auth/authErrors';
 
 export interface GoogleButtonProps {
   intent?: 'user' | 'advertiser';
@@ -22,7 +23,19 @@ export function GoogleButton({
 
   const handleGoogleSignIn = async () => {
     if (isLoading || disabled) return;
+
+    if (!isSupabaseConfigured()) {
+      logAuthEvent('[GOOGLE_AUTH_ERROR]', { stage: 'INIT', errorType: 'ENV_UNCONFIGURED' }, true);
+      showToast({
+        type: 'error',
+        title: 'Serviço Indisponível',
+        message: 'Não foi possível conectar ao serviço de autenticação. Verifique sua conexão e tente novamente.',
+      });
+      return;
+    }
+
     setIsLoading(true);
+    logAuthEvent('[GOOGLE_AUTH_START]', { intent, nextRoute });
 
     try {
       const supabase = createClient();
@@ -42,20 +55,21 @@ export function GoogleButton({
 
       if (error) {
         setIsLoading(false);
+        logAuthEvent('[GOOGLE_AUTH_ERROR]', { stage: 'SIGN_IN_OAUTH', errorType: error.name, status: error.status }, true);
         showToast({
           type: 'error',
           title: 'Erro no Google Sign-In',
-          message: error.message || 'Não foi possível iniciar a autenticação com o Google.',
+          message: translateAuthError(error),
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsLoading(false);
+      logAuthEvent('[GOOGLE_AUTH_ERROR]', { stage: 'CATCH', errorType: String(err) }, true);
       showToast({
         type: 'error',
-        title: 'Erro inesperado',
-        message: 'Falha ao conectar com o serviço de autenticação do Google.',
+        title: 'Erro no Google Sign-In',
+        message: translateAuthError(err),
       });
-      console.error('Google OAuth error:', err);
     }
   };
 

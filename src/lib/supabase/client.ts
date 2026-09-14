@@ -6,6 +6,25 @@ import { Database } from '@/types/database.types';
  * Exclusively uses NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.
  * NEVER leaks service_role or admin secrets.
  */
+export function isSupabaseConfigured(): boolean {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return false;
+  }
+
+  // Reject dummy placeholders
+  if (
+    supabaseUrl.includes('placeholder-project.supabase.co') ||
+    supabaseAnonKey === 'placeholder-anon-key'
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 export function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
