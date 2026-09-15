@@ -19,15 +19,23 @@ export async function POST(req: NextRequest) {
       isReturningVisitor: Boolean(body.isReturningVisitor),
     });
 
+    if (process.env.NODE_ENV !== 'test') {
+      const category = response.diagnosticCategory || 'SUCCESS';
+      console.log(
+        `[AGE_ASSURANCE_START_DIAGNOSTIC] correlationId=${response.state} provider=${response.provider} category=${category}`
+      );
+    }
+
     return NextResponse.json(response);
   } catch (err: any) {
     console.error('Error starting age verification session:', err);
     return NextResponse.json(
       {
-        redirectUrl: '/age-verification?status=unavailable',
+        redirectUrl: '/age-verification?status=unavailable&reason=AGE_PROVIDER_EXCEPTION',
         sessionId: `err-${Date.now()}`,
         state: 'error',
         provider: 'unconfigured',
+        diagnosticCategory: 'AGE_PROVIDER_EXCEPTION',
         error: 'Falha ao iniciar verificação com o provedor.',
       },
       { status: 500 }

@@ -57,8 +57,8 @@ function AgeVerificationContent() {
 
   return (
     <>
-      {/* 1. Verified State */}
-      {(isVerified || statusParam === 'verified') ? (
+      {/* 1. Verified State (Cryptographic Session Required - Query String Never Trusted) */}
+      {isVerified ? (
         <Card variant="premium" padding="lg" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
           <CheckCircle2 size={48} color="var(--color-success)" style={{ margin: '0 auto 1rem auto' }} />
           <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem' }}>

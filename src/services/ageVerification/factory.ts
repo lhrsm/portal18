@@ -13,7 +13,7 @@ export class AgeVerificationFactory {
       return this.instance;
     }
 
-    const configuredProvider = (process.env.AGE_VERIFICATION_PROVIDER || '').toLowerCase().trim();
+    const configuredProvider = (process.env.AGE_VERIFICATION_PROVIDER || '').toLowerCase().replace(/['"]/g, '').trim();
 
     switch (configuredProvider) {
       case 'didit_age':

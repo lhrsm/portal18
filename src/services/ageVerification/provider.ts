@@ -12,6 +12,7 @@ export interface InitiateVerificationResponse {
   sessionId: string;
   state: string;
   provider: string;
+  diagnosticCategory?: string;
 }
 
 export interface ValidateCallbackParams {

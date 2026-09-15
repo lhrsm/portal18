@@ -72,6 +72,10 @@
   --shadow-glow-gold: 0 0 16px rgba(229, 185, 92, 0.15);
   --shadow-glow-ruby: 0 0 16px rgba(255, 45, 85, 0.18);
 
+  /* Button Surface Tokens */
+  --btn-surface: var(--bg-elevated);
+  --btn-surface-hover: #2d3748;
+
   /* Transitions */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -131,6 +135,10 @@ html[data-theme="light"] {
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
   --shadow-glow-gold: 0 0 16px rgba(179, 134, 27, 0.15);
   --shadow-glow-ruby: 0 0 16px rgba(230, 30, 67, 0.15);
+
+  /* Button Surface Tokens */
+  --btn-surface: #ffffff;
+  --btn-surface-hover: #f1f5f9;
 }
 
 html[data-theme="dark"] {
@@ -184,6 +192,10 @@ html[data-theme="dark"] {
     --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
     --shadow-glow-gold: 0 0 16px rgba(179, 134, 27, 0.15);
     --shadow-glow-ruby: 0 0 16px rgba(230, 30, 67, 0.15);
+
+    /* Button Surface Tokens */
+    --btn-surface: #ffffff;
+    --btn-surface-hover: #f1f5f9;
   }
 }
 
@@ -330,8 +342,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   user-select: none;
 }
 
+.btn:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none !important;
 }
@@ -339,11 +356,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-gold) 0%, #c99332 100%);
   color: #0b0d13;
+  font-weight: 700;
   box-shadow: 0 4px 14px var(--accent-gold-glow);
 }
 
 .btn-primary:hover:not(:disabled) {
   background: linear-gradient(135deg, var(--accent-gold-hover) 0%, #dca240 100%);
+  color: #0b0d13;
   box-shadow: var(--shadow-glow-gold);
   transform: translateY(-1px);
 }
@@ -351,36 +370,46 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .btn-ruby {
   background: linear-gradient(135deg, var(--accent-ruby) 0%, #d81b43 100%);
   color: #ffffff;
+  font-weight: 700;
   box-shadow: 0 4px 14px var(--accent-ruby-glow);
+}
+
+.btn-ruby:focus-visible {
+  outline: 2px solid var(--accent-ruby);
+  outline-offset: 2px;
 }
 
 .btn-ruby:hover:not(:disabled) {
   background: linear-gradient(135deg, var(--accent-ruby-hover) 0%, #ee254f 100%);
+  color: #ffffff;
   box-shadow: var(--shadow-glow-ruby);
   transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background: var(--bg-elevated);
+  background: var(--btn-surface);
   color: var(--text-primary);
-  border-color: var(--border-subtle);
+  border: 1px solid var(--border-medium);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #2b3345;
-  border-color: var(--border-medium);
+  background: var(--btn-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border-accent);
+  transform: translateY(-1px);
 }
 
 .btn-outline {
   background: transparent;
   color: var(--text-primary);
-  border-color: var(--border-medium);
+  border: 1px solid var(--border-medium);
 }
 
 .btn-outline:hover:not(:disabled) {
-  border-color: var(--accent-gold);
-  color: var(--accent-gold);
-  background: rgba(229, 185, 92, 0.05);
+  background: var(--btn-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border-accent);
+  transform: translateY(-1px);
 }
 
 .btn-ghost {
