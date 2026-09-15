@@ -3,6 +3,7 @@ import { UnconfiguredAgeVerificationProvider } from './providers/unconfiguredPro
 import { MockSandboxAgeVerificationProvider } from './providers/mockSandboxProvider';
 import { VerificaIdAgeVerificationProvider } from './providers/verificaIdProvider';
 import { SumsubAgeVerificationProvider } from './providers/sumsubAgeProvider';
+import { DiditAgeVerificationProvider } from './providers/diditAgeProvider';
 
 export class AgeVerificationFactory {
   private static instance: AgeVerificationProvider | null = null;
@@ -15,6 +16,10 @@ export class AgeVerificationFactory {
     const configuredProvider = (process.env.AGE_VERIFICATION_PROVIDER || '').toLowerCase().trim();
 
     switch (configuredProvider) {
+      case 'didit_age':
+      case 'didit':
+        this.instance = new DiditAgeVerificationProvider();
+        break;
       case 'mock_sandbox':
       case 'sandbox':
         this.instance = new MockSandboxAgeVerificationProvider();

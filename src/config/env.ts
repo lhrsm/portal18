@@ -36,6 +36,11 @@ export const serverEnvSchema = publicEnvSchema.extend({
   SMTP_PORT: z.string().optional(),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
+  AGE_VERIFICATION_PROVIDER: z.string().default('mock_sandbox'),
+  DIDIT_API_KEY: z.string().optional(),
+  DIDIT_WEBHOOK_SECRET: z.string().optional(),
+  DIDIT_AGE_WORKFLOW_ID: z.string().optional(),
+  DIDIT_API_URL: z.string().url().default('https://verification.didit.me'),
 });
 
 export type PublicEnv = z.infer<typeof publicEnvSchema>;

@@ -19,6 +19,8 @@ export interface ValidateCallbackParams {
   state?: string;
   token?: string;
   signature?: string;
+  sessionId?: string;
+  vendorData?: string;
 }
 
 export interface AgeVerificationProvider {

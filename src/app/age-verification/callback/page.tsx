@@ -9,10 +9,14 @@ import { RefreshCw } from 'lucide-react';
 function CallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [statusMsg, setStatusMsg] = useState('Validando sinal de maioridade...');
+  const [statusMsg, setStatusMsg] = useState('Validando sinal de maioridade com o servidor...');
 
   useEffect(() => {
+    let isCancelled = false;
+
     async function process() {
+      // Extract session identifiers without trusting any status parameter from query string
+      const sessionId = searchParams.get('session_id') || searchParams.get('sessionId') || undefined;
       const code = searchParams.get('code') || undefined;
       const state = searchParams.get('state') || undefined;
       const token = searchParams.get('token') || undefined;
@@ -20,11 +24,14 @@ function CallbackContent() {
 
       try {
         const { result, redirectUrl } = await ageVerificationService.processCallback({
+          sessionId,
           code,
           state,
           token,
           returnUrl,
         });
+
+        if (isCancelled) return;
 
         if (result.verified && result.ageBand === '18_plus') {
           setStatusMsg('Maioridade 18+ confirmada com sucesso! Redirecionando...');
@@ -32,15 +39,21 @@ function CallbackContent() {
             router.replace(redirectUrl);
           }, 600);
         } else {
+          setStatusMsg('Verificação não aprovada. Redirecionando...');
           router.replace(redirectUrl);
         }
       } catch (err) {
-        console.error(err);
+        if (isCancelled) return;
+        console.error('Error processing age verification callback:', err);
         router.replace(`/age-verification?status=failed&returnUrl=${encodeURIComponent(returnUrl)}`);
       }
     }
 
     process();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [searchParams, router]);
 
   return (

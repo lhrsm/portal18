@@ -80,6 +80,7 @@ export interface ProfileViewClientProps {
   slug: string;
   isPausedOwnerPreview?: boolean;
   isAdminPreview?: boolean;
+  initialAgeVerified?: boolean;
 }
 
 export function ProfileViewClient({
@@ -89,6 +90,7 @@ export function ProfileViewClient({
   slug,
   isPausedOwnerPreview = false,
   isAdminPreview = false,
+  initialAgeVerified,
 }: ProfileViewClientProps) {
   const router = useRouter();
   const { user, profile } = useAuth();
@@ -165,7 +167,7 @@ export function ProfileViewClient({
   const [isFollowing, setIsFollowing] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(!initialAdv);
-  const [isAgeVerified, setIsAgeVerified] = useState(true);
+  const [isAgeVerified, setIsAgeVerified] = useState(initialAgeVerified ?? false);
 
   // Phase 27F & 32: Consumer Entitlements, Trust & Reviews State
   const [consumerEntitlements, setConsumerEntitlements] = useState<ConsumerEntitlements | null>(null);
@@ -210,8 +212,19 @@ export function ProfileViewClient({
   }, [reviewsData?.reviews]);
 
   useEffect(() => {
-    setIsAgeVerified(ageVerificationService.isAgeVerified());
-  }, []);
+    if (initialAgeVerified !== undefined) {
+      setIsAgeVerified(initialAgeVerified);
+      return;
+    }
+    const clientCookieValid = ageVerificationService.isAgeVerified();
+    if (clientCookieValid) {
+      setIsAgeVerified(true);
+    } else {
+      ageVerificationService.checkServerVerification().then(({ verified }) => {
+        setIsAgeVerified(verified);
+      });
+    }
+  }, [initialAgeVerified]);
 
   // 1. Critical Profile Loader (Fast Path)
   useEffect(() => {

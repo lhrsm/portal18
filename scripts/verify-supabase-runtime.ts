@@ -170,9 +170,9 @@ export async function runSupabaseRuntimeValidation(): Promise<RuntimeCheckResult
       returnUrl: 'http://localhost:3000',
       cancelUrl: 'http://localhost:3000',
     });
-    if (!checkoutRes.success) {
+    if (!checkoutRes || !checkoutRes.checkoutUrl) {
       paymentBlocked = true;
-      paymentMessage = checkoutRes.error || 'PAYMENTS_DISABLED';
+      paymentMessage = (checkoutRes as any)?.error || 'PAYMENTS_DISABLED';
     }
   } catch (err: any) {
     paymentBlocked = true;

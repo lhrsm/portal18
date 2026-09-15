@@ -7,8 +7,10 @@ import { createClient as createServerSupabase } from '@/lib/supabase/server';
 import { PublicAdvertiser } from '@/types/app.types';
 import {
   getCanonicalBaseUrl,
-  generateBreadcrumbSchema
+  generateBreadcrumbSchema,
 } from '@/lib/seo/seoEngine';
+import { cookies } from 'next/headers';
+import { ageSessionService } from '@/services/ageVerification/ageSessionService';
 
 // Age Assurance Gate: ProfileViewClient strictly mounts AgeGateModal and validates isAgeVerified
 
@@ -191,6 +193,12 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
     { name: adv.stage_name, url: `/perfil/${adv.state_slug || stateSlug}/${adv.city_slug || citySlug}/${adv.slug}` },
   ]);
 
+  // Server-side Age Assurance check (HttpOnly cookie validation)
+  const cookieStore = await cookies();
+  const rawAgeSession = cookieStore.get(ageSessionService.cookieName)?.value;
+  const ageSession = ageSessionService.parseSession(rawAgeSession);
+  const isServerAgeVerified = ageSessionService.isSessionValid(ageSession);
+
   return (
     <>
       <script
@@ -204,6 +212,7 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
         slug={slug}
         isPausedOwnerPreview={isPausedOwnerPreview}
         isAdminPreview={isAdminPreview}
+        initialAgeVerified={isServerAgeVerified}
       />
     </>
   );

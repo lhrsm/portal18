@@ -5,11 +5,18 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { ShieldAlert, ShieldCheck } from 'lucide-react';
 
+/**
+ * CONSULTATIVE ADVISORY GATE ONLY (Phase 1 legacy consent)
+ * WARNING: This modal only records a consultative client-side acknowledgment ('adult_content_confirmed').
+ * It has ZERO authority to unlock 18+ protected media or contacts.
+ * All sensitive media, contacts and Safe Mode gating strictly require cryptographic Age Assurance
+ * verified via portal18_age_session cookie.
+ */
 export function AgeGateModal() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Check age acknowledgment local confirmation
+    // Consultative consent banner check only — never grants cryptographic 18+ access
     const confirmed = localStorage.getItem('adult_content_confirmed');
     if (!confirmed) {
       setIsOpen(true);

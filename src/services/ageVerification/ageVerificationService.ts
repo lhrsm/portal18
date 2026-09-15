@@ -22,14 +22,38 @@ export const ageVerificationService = {
   },
 
   /**
+   * Asynchronously checks verification status against the secure server-side endpoint.
+   */
+  async checkServerVerification(): Promise<{ verified: boolean; ageBand: string }> {
+    if (typeof window === 'undefined') {
+      return { verified: false, ageBand: 'unknown' };
+    }
+
+    try {
+      const res = await fetch('/api/age-verification/status', {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) return { verified: false, ageBand: 'unknown' };
+      const data = await res.json();
+      return {
+        verified: Boolean(data.verified),
+        ageBand: data.ageBand || 'unknown',
+      };
+    } catch {
+      return { verified: false, ageBand: 'unknown' };
+    }
+  },
+
+  /**
    * Sanitizes return URLs to protect against Open Redirect vulnerabilities.
    */
   sanitizeReturnUrl(url?: string | null): string {
     if (!url) return '/';
     const trimmed = url.trim();
 
-    // Only allow relative internal paths
-    if (trimmed.startsWith('/') && !trimmed.startsWith('//') && !trimmed.startsWith('/\\')) {
+    // Only allow relative internal paths starting with a single '/'
+    if (trimmed.startsWith('/') && !trimmed.startsWith('//') && !trimmed.startsWith('/\\') && !trimmed.includes(':')) {
       return trimmed;
     }
 
@@ -38,23 +62,42 @@ export const ageVerificationService = {
 
   /**
    * Initiates age verification flow with provider.
+   * If running in the browser, requests session creation through the secure server-side API.
    */
   async startVerification(options: { returnUrl?: string; isReturningVisitor?: boolean } = {}) {
     const safeReturnUrl = this.sanitizeReturnUrl(options.returnUrl);
-    const provider = AgeVerificationFactory.getProvider();
 
-    const response = await provider.initiateVerification({
+    if (typeof window !== 'undefined') {
+      const res = await fetch('/api/age-verification/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          returnUrl: safeReturnUrl,
+          isReturningVisitor: Boolean(options.isReturningVisitor),
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Falha ao iniciar verificação de idade no servidor.');
+      }
+
+      return await res.json();
+    }
+
+    // Server-side fallback for scripts / tests
+    const provider = AgeVerificationFactory.getProvider();
+    return await provider.initiateVerification({
       returnUrl: safeReturnUrl,
       isReturningVisitor: options.isReturningVisitor,
     });
-
-    return response;
   },
 
   /**
    * Processes provider callback after verification attempt.
+   * If running in browser, delegates validation to the secure server endpoint to ensure fail-closed enforcement.
    */
   async processCallback(params: {
+    sessionId?: string;
     code?: string;
     state?: string;
     token?: string;
@@ -64,12 +107,72 @@ export const ageVerificationService = {
     result: AgeVerificationResult;
     redirectUrl: string;
   }> {
-    const provider = AgeVerificationFactory.getProvider();
-    const result = await provider.validateCallback(params);
     const safeReturnUrl = this.sanitizeReturnUrl(params.returnUrl);
 
+    if (typeof window !== 'undefined') {
+      try {
+        const res = await fetch('/api/age-verification/verify-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: params.sessionId,
+            code: params.code,
+            token: params.token,
+            state: params.state,
+            returnUrl: safeReturnUrl,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.verified && data.ageBand === '18_plus') {
+          return {
+            result: {
+              verified: true,
+              ageBand: '18_plus',
+              provider: 'didit_age',
+              providerSubjectHash: 'verified',
+              assuranceLevel: 'high',
+              verifiedAt: new Date().toISOString(),
+              credentialReference: data.credentialReference,
+            },
+            redirectUrl: data.redirectUrl || safeReturnUrl,
+          };
+        }
+
+        return {
+          result: {
+            verified: false,
+            ageBand: data.ageBand || 'unknown',
+            provider: 'didit_age',
+            providerSubjectHash: 'unverified',
+            assuranceLevel: 'low',
+            verifiedAt: new Date().toISOString(),
+            error: data.error || 'Verificação rejeitada pelo servidor.',
+          },
+          redirectUrl: data.redirectUrl || `/age-verification?status=failed&returnUrl=${encodeURIComponent(safeReturnUrl)}`,
+        };
+      } catch (err: any) {
+        return {
+          result: {
+            verified: false,
+            ageBand: 'unknown',
+            provider: 'didit_age',
+            providerSubjectHash: 'network_error',
+            assuranceLevel: 'low',
+            verifiedAt: new Date().toISOString(),
+            error: err.message,
+          },
+          redirectUrl: `/age-verification?status=failed&returnUrl=${encodeURIComponent(safeReturnUrl)}`,
+        };
+      }
+    }
+
+    // Direct server/test execution
+    const provider = AgeVerificationFactory.getProvider();
+    const result = await provider.validateCallback(params);
+
     if (result.verified && result.ageBand === '18_plus') {
-      // Create and set signed session cookie
       const { serialized } = ageSessionService.createSignedSession(result);
 
       if (typeof document !== 'undefined') {
@@ -77,7 +180,6 @@ export const ageVerificationService = {
         document.cookie = `${ageSessionService.cookieName}=${serialized}; path=/; max-age=${maxAge}; SameSite=Lax; Secure`;
       }
 
-      // Record to database if user is authenticated (without PII)
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
@@ -112,6 +214,10 @@ export const ageVerificationService = {
    * Clears age verification on current device ("Esquecer minha verificação neste dispositivo").
    */
   clearDeviceVerification(): void {
+    if (typeof window !== 'undefined') {
+      fetch('/api/age-verification/clear', { method: 'POST' }).catch(() => {});
+    }
+
     if (typeof document !== 'undefined') {
       document.cookie = `${ageSessionService.cookieName}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure`;
     }
