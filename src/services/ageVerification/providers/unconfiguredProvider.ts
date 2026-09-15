@@ -7,10 +7,11 @@ export class UnconfiguredAgeVerificationProvider implements AgeVerificationProvi
 
   async initiateVerification(options: InitiateVerificationOptions): Promise<InitiateVerificationResponse> {
     return {
-      redirectUrl: `/age-verification?status=unavailable&returnUrl=${encodeURIComponent(options.returnUrl)}`,
+      redirectUrl: `/age-verification?status=unavailable&reason=AGE_PROVIDER_NOT_CONFIGURED&returnUrl=${encodeURIComponent(options.returnUrl)}`,
       sessionId: `unconf-${Date.now()}`,
       state: options.state || 'unconfigured',
       provider: this.name,
+      diagnosticCategory: 'AGE_PROVIDER_NOT_CONFIGURED',
     };
   }
 

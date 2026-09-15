@@ -36,7 +36,7 @@ export const serverEnvSchema = publicEnvSchema.extend({
   SMTP_PORT: z.string().optional(),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
-  AGE_VERIFICATION_PROVIDER: z.string().default('mock_sandbox'),
+  AGE_VERIFICATION_PROVIDER: z.string().default('unconfigured'),
   DIDIT_API_KEY: z.string().optional(),
   DIDIT_WEBHOOK_SECRET: z.string().optional(),
   DIDIT_AGE_WORKFLOW_ID: z.string().optional(),
@@ -57,6 +57,57 @@ export function validateEnvironment(): { valid: boolean; errors: string[] } {
   }
   return { valid: true, errors: [] };
 }
+
+/**
+ * Safely parsed server-side environment object.
+ * Validates and exposes runtime environment variables for server execution.
+ */
+export function getServerEnv(): ServerEnv {
+  const result = serverEnvSchema.safeParse(process.env);
+  if (result.success) {
+    return result.data;
+  }
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-project.supabase.co',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key',
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    NODE_ENV: (process.env.NODE_ENV as any) || 'development',
+    KYC_PROVIDER: process.env.KYC_PROVIDER || 'sumsub',
+    KYC_ENVIRONMENT: (process.env.KYC_ENVIRONMENT as any) || 'sandbox',
+    SUMSUB_LEVEL_NAME: process.env.SUMSUB_LEVEL_NAME || 'id-and-liveness',
+    SUMSUB_BASE_URL: process.env.SUMSUB_BASE_URL || 'https://api.sumsub.com',
+    PAYMENT_PROVIDER: process.env.PAYMENT_PROVIDER || 'unconfigured',
+    EMAIL_PROVIDER: process.env.EMAIL_PROVIDER || 'unconfigured',
+    AGE_VERIFICATION_PROVIDER: process.env.AGE_VERIFICATION_PROVIDER || 'unconfigured',
+    DIDIT_API_URL: process.env.DIDIT_API_URL || 'https://verification.didit.me',
+    DIDIT_API_KEY: process.env.DIDIT_API_KEY,
+    DIDIT_AGE_WORKFLOW_ID: process.env.DIDIT_AGE_WORKFLOW_ID,
+    DIDIT_WEBHOOK_SECRET: process.env.DIDIT_WEBHOOK_SECRET,
+  };
+}
+
+/**
+ * Validated server environment proxy exposing serverEnv.AGE_VERIFICATION_PROVIDER and other keys.
+ */
+export const serverEnv: ServerEnv = new Proxy({} as ServerEnv, {
+  get(_target, prop: string) {
+    const envObj = getServerEnv();
+    return (envObj as any)[prop];
+  },
+  has(_target, prop: string) {
+    return prop in serverEnvSchema.shape || prop in getServerEnv();
+  },
+  ownKeys() {
+    return Object.keys(serverEnvSchema.shape);
+  },
+  getOwnPropertyDescriptor(_target, prop: string) {
+    return {
+      enumerable: true,
+      configurable: true,
+      value: (getServerEnv() as any)[prop],
+    };
+  },
+});
 
 export const env = {
   get siteUrl(): string {
@@ -85,5 +136,14 @@ export const env = {
   },
   get emailProviderName(): string {
     return process.env.EMAIL_PROVIDER || 'unconfigured';
+  },
+  get ageVerificationProvider(): string {
+    const raw = process.env.AGE_VERIFICATION_PROVIDER || serverEnv.AGE_VERIFICATION_PROVIDER;
+    if (!raw) return 'unconfigured';
+    return raw.replace(/['"]/g, '').trim().toLowerCase() || 'unconfigured';
+  },
+  get isAgeVerificationConfigured(): boolean {
+    const provider = this.ageVerificationProvider;
+    return !!provider && provider !== 'unconfigured';
   },
 };

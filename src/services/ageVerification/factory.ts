@@ -5,6 +5,8 @@ import { VerificaIdAgeVerificationProvider } from './providers/verificaIdProvide
 import { SumsubAgeVerificationProvider } from './providers/sumsubAgeProvider';
 import { DiditAgeVerificationProvider } from './providers/diditAgeProvider';
 
+import { serverEnv } from '@/config/env';
+
 export class AgeVerificationFactory {
   private static instance: AgeVerificationProvider | null = null;
 
@@ -13,7 +15,8 @@ export class AgeVerificationFactory {
       return this.instance;
     }
 
-    const configuredProvider = (process.env.AGE_VERIFICATION_PROVIDER || '').toLowerCase().replace(/['"]/g, '').trim();
+    const raw = (process.env.AGE_VERIFICATION_PROVIDER || serverEnv.AGE_VERIFICATION_PROVIDER || '');
+    const configuredProvider = raw.replace(/['"]/g, '').trim().toLowerCase();
 
     switch (configuredProvider) {
       case 'didit_age':
@@ -22,7 +25,12 @@ export class AgeVerificationFactory {
         break;
       case 'mock_sandbox':
       case 'sandbox':
-        this.instance = new MockSandboxAgeVerificationProvider();
+        if (process.env.NODE_ENV === 'production') {
+          // Strict fail-closed: never activate mock provider in production
+          this.instance = new UnconfiguredAgeVerificationProvider();
+        } else {
+          this.instance = new MockSandboxAgeVerificationProvider();
+        }
         break;
       case 'verifica_id':
       case 'verificaid':
@@ -32,6 +40,7 @@ export class AgeVerificationFactory {
       case 'sumsub':
         this.instance = new SumsubAgeVerificationProvider();
         break;
+      case 'unconfigured':
       default:
         this.instance = new UnconfiguredAgeVerificationProvider();
         break;

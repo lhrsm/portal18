@@ -20,7 +20,13 @@ export async function POST(req: NextRequest) {
     });
 
     if (process.env.NODE_ENV !== 'test') {
-      const category = response.diagnosticCategory || 'SUCCESS';
+      const isUnconfigured = provider.name === 'unconfigured' || response.provider === 'unconfigured';
+      const category = isUnconfigured
+        ? (response.diagnosticCategory && response.diagnosticCategory !== 'SUCCESS'
+            ? response.diagnosticCategory
+            : 'AGE_PROVIDER_NOT_CONFIGURED')
+        : (response.diagnosticCategory || 'SUCCESS');
+
       console.log(
         `[AGE_ASSURANCE_START_DIAGNOSTIC] correlationId=${response.state} provider=${response.provider} category=${category}`
       );
