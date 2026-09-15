@@ -26,7 +26,8 @@ import {
   UserMinus,
   Filter,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  PauseCircle
 } from 'lucide-react';
 
 export default function AdminProfilesQueuePage() {
@@ -35,7 +36,7 @@ export default function AdminProfilesQueuePage() {
   const [totalCount, setTotalCount] = useState(0);
   const [states, setStates] = useState<BrazilState[]>([]);
   const [selectedState, setSelectedState] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'assigned_to_me' | 'unassigned' | 'kyc_review' | 'critical'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'assigned_to_me' | 'unassigned' | 'kyc_review' | 'critical' | 'paused'>('all');
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'oldest' | 'newest'>('oldest');
   const [loading, setLoading] = useState(true);
@@ -207,6 +208,14 @@ export default function AdminProfilesQueuePage() {
             >
               Com KYC Pendente
             </Button>
+            <Button
+              type="button"
+              variant={filterType === 'paused' ? 'primary' : 'ghost'}
+              size="sm"
+              onClick={() => setFilterType('paused')}
+            >
+              Pausados pela Anunciante
+            </Button>
           </div>
         </form>
       </Card>
@@ -284,6 +293,11 @@ export default function AdminProfilesQueuePage() {
                     {adv.has_critical_report && (
                       <Badge variant="ruby">
                         <AlertTriangle size={10} /> Denúncia Crítica Aberta
+                      </Badge>
+                    )}
+                    {adv.paused_at && (
+                      <Badge variant="gold">
+                        <PauseCircle size={10} /> Pausado pela Anunciante
                       </Badge>
                     )}
                   </div>

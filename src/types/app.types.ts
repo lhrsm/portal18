@@ -289,12 +289,22 @@ export interface AdminDashboardMetrics {
   criticalReports: number;
   pendingVerifications: number;
   suspendedProfiles: number;
+  pausedProfiles?: number;
   // Billing Metrics
   totalRevenueCents?: number;
   activeSubscriptions?: number;
   mrrCents?: number;
   totalPayments?: number;
   totalRefunds?: number;
+}
+
+export interface ReactivationEligibilityResult {
+  eligible: boolean;
+  blockers: string[];
+  is_paused?: boolean;
+  profile_status?: string;
+  verification_status?: string;
+  approved_media_count?: number;
 }
 
 export type VerificationType = 'identity_and_age' | 'age_only' | 'identity_only';

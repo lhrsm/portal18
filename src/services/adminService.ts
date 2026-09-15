@@ -49,16 +49,18 @@ export const adminService = {
       criticalReportsCount,
       verificationsCount,
       suspendedCount,
+      pausedCount,
     ] = await Promise.all([
       supabase.from('profiles').select('id', { count: 'exact', head: true }),
       supabase.from('advertiser_profiles').select('id', { count: 'exact', head: true }),
-      supabase.from('advertiser_profiles').select('id', { count: 'exact', head: true }).eq('profile_status', 'active'),
+      supabase.from('advertiser_profiles').select('id', { count: 'exact', head: true }).eq('profile_status', 'active').is('paused_at', null),
       supabase.from('advertiser_profiles').select('id', { count: 'exact', head: true }).eq('profile_status', 'pending_review'),
       supabase.from('advertiser_media').select('id', { count: 'exact', head: true }).eq('moderation_status', 'pending').is('deleted_at', null),
       supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open'),
       supabase.from('reports').select('id', { count: 'exact', head: true }).eq('severity', 'critical').eq('status', 'open'),
       supabase.from('verification_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       supabase.from('advertiser_profiles').select('id', { count: 'exact', head: true }).eq('profile_status', 'suspended'),
+      supabase.from('advertiser_profiles').select('id', { count: 'exact', head: true }).not('paused_at', 'is', null).is('deleted_at', null),
     ]);
 
     return {
@@ -71,6 +73,7 @@ export const adminService = {
       criticalReports: criticalReportsCount.count || 0,
       pendingVerifications: verificationsCount.count || 0,
       suspendedProfiles: suspendedCount.count || 0,
+      pausedProfiles: pausedCount.count || 0,
     };
   },
 
@@ -78,7 +81,7 @@ export const adminService = {
   async getPendingProfilesQueue(filters: {
     search?: string;
     stateId?: string;
-    filterType?: 'all' | 'assigned_to_me' | 'unassigned' | 'kyc_review' | 'critical';
+    filterType?: 'all' | 'assigned_to_me' | 'unassigned' | 'kyc_review' | 'critical' | 'paused';
     sort?: 'oldest' | 'newest' | 'priority';
     limit?: number;
     page?: number
@@ -99,8 +102,13 @@ export const adminService = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query: any = supabase
       .from('advertiser_profiles')
-      .select('*, brazil_states(name, code), brazil_cities(name, slug), profiles:profiles!profile_id(display_name, username), assigned_profile:profiles!assigned_to(display_name, username)', { count: 'exact' })
-      .eq('profile_status', 'pending_review');
+      .select('*, brazil_states(name, code), brazil_cities(name, slug), profiles:profiles!profile_id(display_name, username), assigned_profile:profiles!assigned_to(display_name, username)', { count: 'exact' });
+
+    if (filters.filterType === 'paused') {
+      query = query.not('paused_at', 'is', null).is('deleted_at', null);
+    } else {
+      query = query.eq('profile_status', 'pending_review');
+    }
 
     if (filters.search) {
       query = query.or(`stage_name.ilike.%${filters.search.trim()}%,slug.ilike.%${filters.search.trim()}%`);

@@ -24,7 +24,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Server,
-  Key
+  Key,
+  PauseCircle
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
@@ -116,6 +117,18 @@ export default function AdminDashboardPage() {
             {loading ? <Skeleton width="60px" height="32px" /> : metrics?.activeProfiles}
           </div>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Publicados no portal</span>
+        </Card>
+
+        {/* Paused Profiles (Requirement 12) */}
+        <Card variant="glass" padding="md" style={{ border: metrics && (metrics.pausedProfiles || 0) > 0 ? '1px solid rgba(212, 175, 55, 0.4)' : undefined }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Pausados (Anunciantes)</span>
+            <PauseCircle size={18} color="var(--accent-gold)" />
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
+            {loading ? <Skeleton width="60px" height="32px" /> : (metrics?.pausedProfiles || 0)}
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Pausa voluntária (preservados)</span>
         </Card>
       </div>
 

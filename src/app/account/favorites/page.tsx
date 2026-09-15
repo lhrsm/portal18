@@ -18,7 +18,8 @@ import {
   ShieldCheck,
   CheckSquare,
   Square,
-  AlertCircle
+  AlertCircle,
+  PauseCircle
 } from 'lucide-react';
 
 interface FavoriteCardItem {
@@ -34,6 +35,8 @@ interface FavoriteCardItem {
   profile_status: string;
   primary_photo_url: string | null;
   favorited_at: string;
+  paused_at?: string | null;
+  visibility?: string | null;
 }
 
 export default function FavoritesPage() {
@@ -178,7 +181,8 @@ export default function FavoritesPage() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
           {favorites.map((adv) => {
-            const isAvailable = adv.profile_status === 'active';
+            const isPaused = Boolean(adv.paused_at) || adv.visibility === 'hidden';
+            const isAvailable = adv.profile_status === 'active' && !isPaused;
             const isSelected = selectedIds.includes(adv.advertiser_id);
 
             return (
@@ -247,11 +251,31 @@ export default function FavoritesPage() {
                     <span>{adv.city_name}, {adv.state_code}</span>
                   </div>
 
-                  {/* Unavailable Profile Warning (Section 6) */}
+                  {/* Unavailable Profile Warning (Section 6 & 11) */}
                   {!isAvailable ? (
-                    <div style={{ padding: '0.6rem', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <AlertCircle size={14} color="var(--color-warning)" />
-                      <span>Este perfil não está disponível no momento.</span>
+                    <div style={{
+                      padding: '0.6rem',
+                      borderRadius: '4px',
+                      background: isPaused ? 'rgba(212, 175, 55, 0.08)' : 'rgba(255,255,255,0.05)',
+                      color: isPaused ? 'var(--accent-gold)' : 'var(--text-muted)',
+                      fontSize: '0.8rem',
+                      marginBottom: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      border: isPaused ? '1px solid rgba(212, 175, 55, 0.2)' : undefined,
+                    }}>
+                      {isPaused ? (
+                        <>
+                          <PauseCircle size={14} color="var(--accent-gold)" />
+                          <span>Perfil temporariamente pausado pela anunciante.</span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle size={14} color="var(--color-warning)" />
+                          <span>Este perfil não está disponível no momento.</span>
+                        </>
+                      )}
                     </div>
                   ) : adv.headline ? (
                     <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>

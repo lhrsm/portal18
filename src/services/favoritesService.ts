@@ -8,7 +8,7 @@ export const favoritesService = {
     const supabase = createClient();
     const { data, error } = await supabase
       .from('favorites')
-      .select('advertiser_id, created_at, advertiser_profiles(id, slug, stage_name, headline, birth_date, city_id, state_id, profile_status, verification_status, brazil_cities(name, slug), brazil_states(code, name, slug), advertiser_media(storage_path, thumbnail_path))')
+      .select('advertiser_id, created_at, advertiser_profiles(id, slug, stage_name, headline, birth_date, city_id, state_id, profile_status, verification_status, paused_at, visibility, brazil_cities(name, slug), brazil_states(code, name, slug), advertiser_media(storage_path, thumbnail_path))')
       .eq('user_profile_id', profileId)
       .order('created_at', { ascending: false });
 
@@ -33,6 +33,8 @@ export const favoritesService = {
         state_slug: adv.brazil_states?.slug || '',
         verification_status: adv.verification_status,
         profile_status: adv.profile_status,
+        paused_at: adv.paused_at,
+        visibility: adv.visibility,
         primary_photo_url: media?.thumbnail_path || media?.storage_path || null,
         favorited_at: item.created_at,
       };

@@ -158,7 +158,7 @@ export async function runSupabaseRuntimeValidation(): Promise<RuntimeCheckResult
   const prevEnv = envMap['NODE_ENV'];
   try {
     envMap['NODE_ENV'] = 'production';
-    await paymentProvider.createCheckout({
+    const checkoutRes = await paymentProvider.createCheckout({
       orderId: 'test-order',
       orderNumber: 'ORD-TEST',
       advertiserId: 'test-adv',
@@ -170,6 +170,10 @@ export async function runSupabaseRuntimeValidation(): Promise<RuntimeCheckResult
       returnUrl: 'http://localhost:3000',
       cancelUrl: 'http://localhost:3000',
     });
+    if (!checkoutRes.success) {
+      paymentBlocked = true;
+      paymentMessage = checkoutRes.error || 'PAYMENTS_DISABLED';
+    }
   } catch (err: any) {
     paymentBlocked = true;
     paymentMessage = err.message || 'PAYMENTS_DISABLED';

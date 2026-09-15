@@ -117,6 +117,7 @@ export default function AdvertiserDashboardPage() {
         city={city}
         publicUrl={publicUrl}
         completenessScore={healthScore.score}
+        onStatusChange={() => loadDashboard(selectedPeriod)}
       />
 
       {/* 2. COMMERCIAL LIFECYCLE & TRIAL STATUS BANNER */}

@@ -1,79 +1,49 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { advertisersService } from '@/services/advertisersService';
-import { AdvertiserProfile, Visibility } from '@/types/app.types';
+import { AdvertiserProfile } from '@/types/app.types';
 import { AdvertiserLayout } from '@/components/advertiser/AdvertiserLayout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { useToast } from '@/hooks/useToast';
+import { ListingPauseResumeModal } from '@/components/advertiser/ListingPauseResumeModal';
 import {
-  Settings,
   Eye,
-  EyeOff,
   PauseCircle,
-  ShieldCheck,
-  Check,
+  PlayCircle,
+  CheckCircle2,
   Shield,
   Key,
   Bell,
-  User,
-  ArrowRight
+  ArrowRight,
+  Info
 } from 'lucide-react';
 
 export default function AdvertiserSettingsPage() {
   const { profile, isLoading: authLoading } = useAuth();
-  const { showToast } = useToast();
-
   const [advertiser, setAdvertiser] = useState<AdvertiserProfile | null>(null);
-  const [visibility, setVisibility] = useState<Visibility>('public');
-  const [isUpdating, setIsUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const loadData = useCallback(async () => {
+    if (profile) {
+      const adv = await advertisersService.getOwnAdvertiserProfile(profile.id);
+      if (adv) {
+        setAdvertiser(adv);
+      }
+    }
+    setLoading(false);
+  }, [profile]);
 
   useEffect(() => {
-    async function loadData() {
-      if (profile) {
-        const adv = await advertisersService.getOwnAdvertiserProfile(profile.id);
-        if (adv) {
-          setAdvertiser(adv);
-          const validVis: Visibility = (adv.visibility === 'private' || adv.visibility === 'hidden') ? adv.visibility : 'public';
-          setVisibility(validVis);
-        }
-      }
-      setLoading(false);
-    }
     if (!authLoading) {
       loadData();
     }
-  }, [profile, authLoading]);
-
-  const handleToggleVisibility = async (newVis: Visibility) => {
-    if (!advertiser || isUpdating) return;
-    setIsUpdating(true);
-
-    try {
-      const res = await advertisersService.updateVisibility(advertiser.id, newVis);
-      if (res.success) {
-        setVisibility(newVis);
-        setAdvertiser({ ...advertiser, visibility: newVis });
-        showToast({
-          type: 'success',
-          title: 'Visibilidade Atualizada',
-          message: newVis === 'public' ? 'Seu anúncio está visível publicamente.' : 'Seu anúncio foi ocultado das buscas públicas.',
-        });
-      } else {
-        showToast({ type: 'error', title: 'Erro ao alterar visibilidade' });
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+  }, [authLoading, loadData]);
 
   if (authLoading || loading) {
     return (
@@ -84,73 +54,131 @@ export default function AdvertiserSettingsPage() {
     );
   }
 
+  const isPaused = Boolean(advertiser?.paused_at) || (advertiser?.visibility === 'hidden' && Boolean(advertiser?.paused_at));
+  const isApproved = advertiser?.profile_status === 'approved' || advertiser?.profile_status === 'active';
+  const isActive = isApproved && !isPaused && advertiser?.visibility === 'public';
+
   return (
     <AdvertiserLayout advertiser={advertiser}>
       {/* Top Header */}
       <div style={{ marginBottom: '1.5rem' }}>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0 }}>Configurações do Anúncio</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0.25rem 0 0 0' }}>
-          Gerencie a visibilidade do seu perfil, pausa de atendimento e preferências gerais
+          Gerencie a visibilidade do seu perfil, pausa temporária de atendimento e preferências
         </p>
       </div>
 
-      {/* Visibility Control Card */}
-      <Card variant="glass" padding="lg" style={{ marginBottom: '1.75rem', border: '1px solid var(--border-subtle)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-          <Eye size={20} color="var(--accent-gold)" />
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Visibilidade Pública do Anúncio</h3>
+      {/* VISIBILIDADE DO ANÚNCIO (Section 11) */}
+      <Card
+        variant="glass"
+        padding="lg"
+        style={{
+          marginBottom: '1.75rem',
+          border: isPaused ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)',
+          background: isPaused
+            ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(18, 18, 20, 0.95) 100%)'
+            : 'var(--bg-card)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <Eye size={22} color="var(--accent-gold)" />
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Visibilidade do Anúncio</h3>
+          </div>
+
+          {/* Canonical Status Badge */}
+          {isPaused ? (
+            <Badge variant="gold">
+              <PauseCircle size={13} /> ⏸ Anúncio pausado
+            </Badge>
+          ) : isActive ? (
+            <Badge variant="success">
+              <CheckCircle2 size={13} /> ● Anúncio ativo
+            </Badge>
+          ) : (
+            <Badge variant="neutral">
+              Status: {advertiser?.profile_status}
+            </Badge>
+          )}
         </div>
 
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-          Controle se o seu perfil aparece nos resultados de busca do portal. Ocultar o perfil não apaga suas fotos ou dados cadastrados.
-        </p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <div
-            onClick={() => handleToggleVisibility('public')}
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '1rem',
-              borderRadius: 'var(--radius-md)',
-              background: visibility === 'public' ? 'rgba(212, 175, 55, 0.12)' : 'var(--bg-tertiary)',
-              border: `1px solid ${visibility === 'public' ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <Eye size={20} color={visibility === 'public' ? 'var(--accent-gold)' : 'var(--text-muted)'} />
+        {/* State Description */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          {isPaused ? (
+            <div
+              style={{
+                padding: '1rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                border: '1px solid rgba(212, 175, 55, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1rem',
+              }}
+            >
               <div>
-                <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Público (Ativo nas Buscas)</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Seu perfil aparece nas buscas de sua cidade e estado quando aprovado.</div>
+                <div style={{ fontWeight: 700, color: 'var(--accent-gold)', fontSize: '1rem', marginBottom: '0.2rem' }}>
+                  ⏸ Anúncio pausado
+                </div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Seu perfil está temporariamente oculto para visitantes nas buscas, cidades e categorias.
+                </div>
               </div>
-            </div>
-            {visibility === 'public' && <Check size={18} color="var(--accent-gold)" />}
-          </div>
 
-          <div
-            onClick={() => handleToggleVisibility('private')}
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '1rem',
-              borderRadius: 'var(--radius-md)',
-              background: visibility === 'private' ? 'rgba(163, 0, 33, 0.15)' : 'var(--bg-tertiary)',
-              border: `1px solid ${visibility === 'private' ? 'var(--accent-ruby)' : 'var(--border-subtle)'}`,
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <EyeOff size={20} color={visibility === 'private' ? 'var(--accent-ruby)' : 'var(--text-muted)'} />
-              <div>
-                <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Privado / Oculto Temporariamente</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Nenhum visitante poderá encontrar ou acessar seu perfil.</div>
-              </div>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => setModalOpen(true)}
+                leftIcon={<PlayCircle size={16} />}
+                style={{ background: 'var(--accent-gold)', color: '#000', fontWeight: 700 }}
+              >
+                Reativar anúncio
+              </Button>
             </div>
-            {visibility === 'private' && <Check size={18} color="var(--accent-ruby)" />}
-          </div>
+          ) : (
+            <div
+              style={{
+                padding: '1rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--bg-tertiary)',
+                border: '1px solid var(--border-subtle)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1rem',
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 700, color: 'var(--color-success)', fontSize: '1rem', marginBottom: '0.2rem' }}>
+                  ● Anúncio ativo
+                </div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Seu perfil está visível nas superfícies públicas elegíveis.
+                </div>
+              </div>
+
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => setModalOpen(true)}
+                leftIcon={<PauseCircle size={16} color="var(--accent-gold)" />}
+              >
+                Pausar anúncio
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Informative Guidance */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.825rem', lineHeight: 1.5 }}>
+          <Info size={15} style={{ flexShrink: 0, marginTop: '2px' }} />
+          <span>
+            Pausar seu anúncio oculta temporariamente sua página pública mantendo todas as suas fotos, dados, histórico e avaliações salvos.
+            A pausa não afeta o ciclo de faturamento da sua assinatura.
+          </span>
         </div>
       </Card>
 
@@ -201,6 +229,18 @@ export default function AdvertiserSettingsPage() {
           </Link>
         </Card>
       </div>
+
+      {/* Modal Integration */}
+      {advertiser && (
+        <ListingPauseResumeModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          advertiserId={advertiser.id}
+          stageName={advertiser.stage_name}
+          isCurrentlyPaused={isPaused}
+          onSuccess={() => loadData()}
+        />
+      )}
     </AdvertiserLayout>
   );
 }

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
 import { Database } from '@/types/database.types';
-import { AdvertiserProfile, AdvertiserProfileHistory, Visibility } from '@/types/app.types';
+import { AdvertiserProfile, AdvertiserProfileHistory, Visibility, ReactivationEligibilityResult } from '@/types/app.types';
 
 type AdvertiserInsert = Database['public']['Tables']['advertiser_profiles']['Insert'];
 type AdvertiserUpdate = Database['public']['Tables']['advertiser_profiles']['Update'];
@@ -224,5 +224,110 @@ export const advertisersService = {
       return { success: false, error: error.message };
     }
     return { success: true, data: data as AdvertiserProfile };
+  },
+
+  /**
+   * Canonically pauses an advertiser listing.
+   * Atomically switches visibility to 'hidden', registers paused_at and paused_by,
+   * while completely preserving previous approved moderation status and subscription integrity.
+   */
+  async pauseListing(
+    advertiserId: string,
+    reason: string = 'voluntary_pause'
+  ): Promise<{ success: boolean; status?: string; paused_at?: string; error?: string }> {
+    const supabase = createClient();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.rpc as any)('pause_advertiser_listing', {
+        p_advertiser_id: advertiserId,
+        p_reason: reason,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return {
+        success: data?.success ?? true,
+        status: data?.status,
+        paused_at: data?.paused_at,
+        error: data?.error,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Erro inesperado ao pausar anúncio.' };
+    }
+  },
+
+  /**
+   * Pre-flight check: evaluates real canonical publication eligibility without mutating state.
+   */
+  async checkReactivationEligibility(
+    advertiserId: string
+  ): Promise<ReactivationEligibilityResult> {
+    const supabase = createClient();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.rpc as any)('check_listing_reactivation_eligibility', {
+        p_advertiser_id: advertiserId,
+      });
+
+      if (error || !data) {
+        return {
+          eligible: false,
+          blockers: ['check_failed'],
+        };
+      }
+
+      return {
+        eligible: Boolean(data.eligible),
+        blockers: Array.isArray(data.blockers) ? data.blockers : [],
+        is_paused: Boolean(data.is_paused),
+        profile_status: data.profile_status,
+        verification_status: data.verification_status,
+        approved_media_count: data.approved_media_count,
+      };
+    } catch {
+      return {
+        eligible: false,
+        blockers: ['network_error'],
+      };
+    }
+  },
+
+  /**
+   * Canonically resumes a paused advertiser listing.
+   * Runs CAN_PUBLISH_NOW fail-closed validation on KYC, moderation, sanctions, and media
+   * before restoring public visibility.
+   */
+  async resumeListing(
+    advertiserId: string
+  ): Promise<{ success: boolean; status?: string; blockers?: string[]; error?: string }> {
+    const supabase = createClient();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.rpc as any)('resume_advertiser_listing', {
+        p_advertiser_id: advertiserId,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (!data?.success) {
+        return {
+          success: false,
+          status: 'blocked',
+          blockers: Array.isArray(data?.blockers) ? data.blockers : [],
+          error: data?.error || 'Reativação bloqueada por critérios de elegibilidade.',
+        };
+      }
+
+      return {
+        success: true,
+        status: data?.status || 'active',
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Erro inesperado ao reativar anúncio.' };
+    }
   },
 };

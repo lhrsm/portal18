@@ -526,6 +526,9 @@ export type Database = {
           updated_at: string
           verification_status: string
           visibility: string
+          paused_at: string | null
+          pause_reason: string | null
+          paused_by: string | null
         }
         Insert: {
           approx_latitude?: number | null
@@ -562,6 +565,9 @@ export type Database = {
           updated_at?: string
           verification_status?: string
           visibility?: string
+          paused_at?: string | null
+          pause_reason?: string | null
+          paused_by?: string | null
         }
         Update: {
           approx_latitude?: number | null
@@ -598,6 +604,9 @@ export type Database = {
           updated_at?: string
           verification_status?: string
           visibility?: string
+          paused_at?: string | null
+          pause_reason?: string | null
+          paused_by?: string | null
         }
         Relationships: [
           {
@@ -3608,6 +3617,7 @@ export type Database = {
           updated_at: string | null
           verification_status: string | null
           visibility: string | null
+          paused_at?: string | null
         }
         Relationships: [
           {

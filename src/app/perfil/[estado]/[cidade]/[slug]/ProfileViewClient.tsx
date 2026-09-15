@@ -40,7 +40,9 @@ import {
   Video,
   Crown,
   Lock,
-  MessageSquare
+  MessageSquare,
+  PauseCircle,
+  PlayCircle
 } from 'lucide-react';
 import { AgeGateModal } from '@/components/ageVerification/AgeGateModal';
 import { ageVerificationService } from '@/services/ageVerification/ageVerificationService';
@@ -51,6 +53,7 @@ import { ProfileReviewsResponse, ConsumerEntitlements } from '@/types/app.types'
 import { TrustPanel } from '@/components/public/TrustPanel';
 import { reputationService } from '@/services/reputation/reputationService';
 import { PublicAdvertiserTrust, ReviewFilterType } from '@/services/reputation/types';
+import { ListingPauseResumeModal } from '@/components/advertiser/ListingPauseResumeModal';
 
 // Dynamic imports for heavy non-critical modals
 const GalleryLightbox = dynamic(
@@ -75,6 +78,8 @@ export interface ProfileViewClientProps {
   stateSlug: string;
   citySlug: string;
   slug: string;
+  isPausedOwnerPreview?: boolean;
+  isAdminPreview?: boolean;
 }
 
 export function ProfileViewClient({
@@ -82,10 +87,13 @@ export function ProfileViewClient({
   stateSlug,
   citySlug,
   slug,
+  isPausedOwnerPreview = false,
+  isAdminPreview = false,
 }: ProfileViewClientProps) {
   const router = useRouter();
   const { user, profile } = useAuth();
   const { showToast } = useToast();
+  const [pauseModalOpen, setPauseModalOpen] = useState(false);
 
   // Fallback demo resolution if not passed
   const initialAdv = useMemo(() => {
@@ -496,6 +504,69 @@ export function ProfileViewClient({
 
   return (
     <div className="container" style={{ padding: '1.25rem 1rem 4rem 1rem', maxWidth: '1400px' }}>
+      {/* 0. PAUSED OWNER / ADMIN PREVIEW BANNER (Requirement 8) */}
+      {isPausedOwnerPreview && (
+        <div
+          style={{
+            background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(18, 18, 20, 0.95) 100%)',
+            border: '1px solid var(--accent-gold)',
+            borderRadius: 'var(--radius-md)',
+            padding: '1.25rem 1.5rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <PauseCircle size={28} color="var(--accent-gold)" />
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--accent-gold)' }}>
+                Seu anúncio está pausado
+              </div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                Esta é uma prévia privada visível apenas para você. Seu perfil está temporariamente oculto para visitantes.
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="md"
+            leftIcon={<PlayCircle size={16} />}
+            onClick={() => setPauseModalOpen(true)}
+            style={{ background: 'var(--accent-gold)', color: '#000', fontWeight: 700 }}
+          >
+            Reativar anúncio
+          </Button>
+        </div>
+      )}
+
+      {isAdminPreview && !isPausedOwnerPreview && (
+        <div
+          style={{
+            background: 'rgba(52, 152, 219, 0.12)',
+            border: '1px solid #3498db',
+            borderRadius: 'var(--radius-md)',
+            padding: '1rem 1.25rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+          }}
+        >
+          <ShieldAlert size={22} color="#3498db" />
+          <div>
+            <strong style={{ color: '#3498db' }}>Visualização Administrativa (Perfil Pausado)</strong>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              Este anúncio está pausado pela anunciante e oculto para o público em geral.
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 1. DISCREET BREADCRUMB */}
       <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
         <Link href="/" style={{ color: 'var(--text-muted)' }}>Início</Link>
@@ -1383,6 +1454,20 @@ export function ProfileViewClient({
             </a>
           </div>
         </div>
+      )}
+
+      {/* Listing Pause/Resume Modal for Owner */}
+      {advertiser && isPausedOwnerPreview && (
+        <ListingPauseResumeModal
+          isOpen={pauseModalOpen}
+          onClose={() => setPauseModalOpen(false)}
+          advertiserId={advertiser.advertiser_id}
+          stageName={advertiser.stage_name}
+          isCurrentlyPaused={true}
+          onSuccess={() => {
+            router.refresh();
+          }}
+        />
       )}
     </div>
   );
